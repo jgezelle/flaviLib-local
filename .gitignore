@@ -1,0 +1,35 @@
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Python / notebooks
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# sequence files 
+data/
+*.fa 
+*.fasta
+*.fastq
+*.fastq.gz
+*.bam
+*.bai
+*.bam.bai
+*.sam
+*.cram
+*.tar
+*.tar.gz
+
+# output files 
+*.csv
+work/
+*.tmp/
+
+# tracks
+*.bedGraph
+*.bw
+*.bed
+*.bigWig
+
