@@ -33,3 +33,4 @@ work/
 *.bed
 *.bigWig
 
+*.DS_Store
