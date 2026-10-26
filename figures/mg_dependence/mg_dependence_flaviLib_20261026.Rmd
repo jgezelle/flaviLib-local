@@ -1,0 +1,219 @@
+---
+title: "Mg2+ dependence of stall fraction, point to point (flaviLib)"
+output:
+  pdf_document: {fig_width: 11, fig_height: 8.5}
+  html_document: {fig_width: 11, fig_height: 8.5}
+---
+
+<!--
+WHY PAIRED, AND WHY IT MATTERS
+
+10 mM called 699 sites and 1 mM called 459. Two separate boxplots of those two sets compare
+DIFFERENT SITES, so any shift in the medians mixes the Mg2+ effect with which sites happened to pass
+the gates. The quantity wanted is the change in stall fraction AT THE SAME GENOMIC STALL SITE.
+
+Point = genomic stall site, keyed accession + stall_site_genomic_position. Paired upstream by
+scripts/pair_conditions_sf.py; see that script's docstring for the three choices that could each
+silently destroy the effect (key, union-not-intersection, read floor on both ends).
+
+BOXES ALONE ARE NOT ENOUGH. A pair of boxes showing a downward shift is consistent with two
+completely different biologies: every site weakening a little, or half the sites collapsing while
+the other half strengthen. Those mean opposite things for Mg2+-dependent folding. The slopegraph
+overlay is what distinguishes them, so it is not decoration.
+
+flaviLib ONLY. viromelib has no 1 mM condition, so there is nothing to pair.
+
+INPUT: representation/paired_sf.tsv from scripts/pair_conditions_sf.py
+-->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, dev = "cairo_pdf")
+library(tidyverse); library(scales); library(patchwork)
+```
+
+```{r config}
+BASE     <- "~/Desktop/viromelib/flaviLib/figures/mg_dependence"
+STRATEGY <- "20261026_pairedSF_tol1_minstall10"
+INDIR    <- file.path(path.expand(BASE), "inputs")      # flat; run is in the filename
+OUTDIR   <- file.path(path.expand(BASE), "plots", STRATEGY)
+dir.create(OUTDIR, recursive = TRUE, showWarnings = FALSE)
+
+A_NAME <- "10 mM Mg2+"; B_NAME <- "1 mM Mg2+"
+COND_COLS <- c(`10 mM Mg2+` = "#2166ac", `1 mM Mg2+` = "#b2182b")
+
+# Pair classes, ordered. Each says something different about what the pair can support, and they
+# must never be drawn identically.
+CLASS_LEVELS <- c("both_called", "one_called", "thin_in_other", "absent_from_table")
+CLASS_LABS <- c(
+  both_called       = "called in both conditions",
+  one_called        = "called in one; measurable in the other",
+  thin_in_other     = "partner below 10 stall reads — a COVERAGE change, not an SF change",
+  absent_from_table = "no candidate row in the other condition")
+CLASS_COLS <- c(both_called = "#35978f", one_called = "#9970ab",
+                thin_in_other = "#bf812d", absent_from_table = "grey65")
+```
+
+```{r load}
+p_path <- file.path(INDIR, "flaviLib_paired_sf.tsv")
+stopifnot("paired_sf.tsv not found — run scripts/pair_conditions_sf.py and copy it down" =
+            file.exists(p_path))
+p <- read_tsv(p_path, show_col_types = FALSE) |>
+  mutate(pair_class = factor(pair_class, levels = CLASS_LEVELS),
+         plottable  = as.logical(plottable))
+
+# Long form for the paired panels. Only plottable pairs: everywhere else one end of the slope
+# would be a stall fraction computed on one or two reads, which is not a measurement.
+pl <- p |> filter(plottable)
+long <- pl |>
+  select(accession, pos_a, pos_b, sf_a, sf_b, pair_class, any_of(c("genus", "organism", "family"))) |>
+  mutate(site = row_number()) |>
+  pivot_longer(c(sf_a, sf_b), names_to = "which", values_to = "sf") |>
+  mutate(cond = factor(if_else(which == "sf_a", A_NAME, B_NAME),
+                       levels = c(A_NAME, B_NAME)))
+
+n_pair  <- nrow(pl)
+n_up    <- sum(pl$delta_sf > 0, na.rm = TRUE)
+n_down  <- sum(pl$delta_sf < 0, na.rm = TRUE)
+wil <- if (n_pair >= 10) wilcox.test(pl$sf_a, pl$sf_b, paired = TRUE) else NULL
+```
+
+```{r panelA, fig.height=4.6}
+# PANEL A — the paired comparison. Boxes for the distributions, faint lines for the pairing.
+# Lines are drawn UNDER the boxes and kept very light: with hundreds of sites they are texture
+# showing whether the shift is consistent, not individually readable traces.
+pA <- ggplot(long, aes(cond, sf)) +
+  geom_line(aes(group = site), colour = "grey55", alpha = 0.16, linewidth = 0.22) +
+  geom_boxplot(aes(fill = cond), width = 0.34, outlier.shape = NA, alpha = 0.85,
+               linewidth = 0.35) +
+  scale_fill_manual(values = COND_COLS, guide = "none") +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
+  labs(x = NULL, y = "treated stall fraction (median across replicates)",
+       title = "A  Stall fraction at the same genomic stall site",
+       subtitle = sprintf(
+         "%s paired sites. One faint line per site, so a consistent shift and a mixture of\nopposing responses can be told apart — boxes alone cannot distinguish them.",
+         comma(n_pair))) +
+  theme_classic(base_size = 10) +
+  theme(plot.subtitle = element_text(size = 7.5))
+pA
+```
+
+```{r panelB, fig.height=4.6}
+# PANEL B — the paired difference directly. The quantity a reader actually wants: does a given
+# site go up or down, and by how much. Zero line is the null.
+pB <- ggplot(pl, aes(delta_sf)) +
+  geom_histogram(bins = 50, fill = "grey45", colour = NA) +
+  geom_vline(xintercept = 0, linewidth = 0.4) +
+  geom_vline(xintercept = median(pl$delta_sf, na.rm = TRUE),
+             colour = COND_COLS[[2]], linetype = "dashed", linewidth = 0.4) +
+  scale_x_continuous(limits = c(-1, 1), breaks = seq(-1, 1, 0.5)) +
+  labs(x = sprintf("Δ stall fraction  (%s − %s)", B_NAME, A_NAME), y = "sites",
+       title = "B  Paired difference per site",
+       subtitle = sprintf(
+         "median %+.3f (dashed). %s sites higher at 1 mM, %s higher at 10 mM.%s",
+         median(pl$delta_sf, na.rm = TRUE), comma(n_up), comma(n_down),
+         if (!is.null(wil)) sprintf("\nWilcoxon signed-rank p = %.3g — descriptive only, see note.",
+                                    wil$p.value) else "")) +
+  theme_classic(base_size = 10) +
+  theme(plot.subtitle = element_text(size = 7.5))
+pB
+```
+
+```{r panelC, fig.height=4.6}
+# PANEL C — the same data as a scatter against y = x, which shows WHERE in the SF range the
+# change happens. A uniform multiplicative effect and an effect only on strong sites look
+# identical in panels A and B and completely different here.
+pC <- ggplot(pl, aes(sf_a, sf_b)) +
+  geom_abline(slope = 1, intercept = 0, colour = "grey60", linewidth = 0.3) +
+  geom_point(aes(colour = pair_class), alpha = 0.6, size = 1.2) +
+  scale_colour_manual(values = CLASS_COLS, labels = CLASS_LABS, drop = FALSE, name = NULL) +
+  coord_equal(xlim = c(0, 1), ylim = c(0, 1)) +
+  labs(x = sprintf("stall fraction, %s", A_NAME), y = sprintf("stall fraction, %s", B_NAME),
+       title = "C  Where in the range the change happens",
+       subtitle = "points below the diagonal weaken at 1 mM; above, they strengthen") +
+  theme_classic(base_size = 10) +
+  theme(legend.position = "bottom", legend.direction = "vertical",
+        legend.key.size = unit(8, "pt"), plot.subtitle = element_text(size = 7.5),
+        legend.text = element_text(size = 6.5))
+pC
+```
+
+```{r panelD, fig.height=4.6}
+# PANEL D — what the paired panels necessarily leave out, shown rather than dropped.
+# Sites called in one condition only, and pairs whose partner was too thinly covered to measure,
+# ARE the Mg2+ dependence in its most extreme form. Silently excluding them would understate the
+# effect; drawing them as slopes would invent numbers. So they are counted instead.
+marg <- p |>
+  mutate(group = case_when(
+    !plottable & pair_class == "thin_in_other"     ~ "partner < 10 stall reads",
+    !plottable & pair_class == "absent_from_table" ~ "no candidate row in partner",
+    called_a & !called_b ~ sprintf("called %s only", A_NAME),
+    !called_a & called_b ~ sprintf("called %s only", B_NAME),
+    TRUE ~ "called in both")) |>
+  count(group) |> mutate(group = fct_reorder(group, n))
+
+pD <- ggplot(marg, aes(n, group)) +
+  geom_col(fill = "grey50", width = 0.65) +
+  geom_text(aes(label = comma(n)), hjust = -0.2, size = 2.8) +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.18))) +
+  labs(x = "sites", y = NULL,
+       title = "D  What the paired panels cannot show",
+       subtitle = paste("Sites present in one condition only are Mg dependence in its strongest",
+                        "form.\nThey cannot be drawn as slopes without inventing a number, so",
+                        "they are counted here\nrather than dropped silently.")) +
+  theme_classic(base_size = 10) +
+  theme(plot.subtitle = element_text(size = 7.5))
+pD
+```
+
+```{r panelE, fig.height=4.6}
+# Per-genus breakdown, if the pairing carried taxonomy. Mg dependence is expected to differ
+# between structural classes, so a single pooled distribution may average opposite behaviours.
+gcol <- intersect(c("genus", "family"), names(pl))[1]
+if (!is.na(gcol)) {
+  gg <- pl |> rename(grp = all_of(gcol)) |> filter(!is.na(grp)) |>
+    add_count(grp) |> filter(n >= 8) |>
+    mutate(grp = fct_reorder(grp, delta_sf, .fun = median))
+  pE <- ggplot(gg, aes(delta_sf, grp)) +
+    geom_vline(xintercept = 0, colour = "grey60", linewidth = 0.3) +
+    geom_boxplot(outlier.size = 0.5, width = 0.6, linewidth = 0.3, fill = "grey88") +
+    labs(x = sprintf("Δ stall fraction (%s − %s)", B_NAME, A_NAME), y = NULL,
+         title = sprintf("E  Paired difference by %s", gcol),
+         subtitle = sprintf("groups with >= 8 paired sites; a single pooled distribution can\naverage away opposite behaviours between groups")) +
+    theme_classic(base_size = 10) +
+    theme(plot.subtitle = element_text(size = 7.5))
+} else {
+  pE <- ggplot() + theme_void() +
+    annotate("text", 0, 0, size = 3,
+             label = "Panel E omitted: paired_sf.tsv carried no genus/family column.")
+}
+pE
+```
+
+```{r assemble}
+fig <- (pA | pB | pC) / (pD | pE) +
+  plot_layout(heights = c(1, 0.85)) +
+  plot_annotation(
+    title = "Mg\u00b2\u207a dependence of stall fraction, point to point \u2014 flaviLib",
+    subtitle = paste(
+      "Point = genomic stall site (accession + stall_site_genomic_position), paired between the two",
+      "independently called conditions.\nBoth ends of every plotted pair clear 10 stall reads: a",
+      "stall fraction computed on one or two reads can be 1.000 and is not a measurement.",
+      "\nCAVEAT the paired test is across sites, which are not independent — several sites can sit in",
+      "one structured element — and replicate is\nconfounded with RNA prep (reps 1-2 rJG0416, reps",
+      "3-4 rJG0441), so between-replicate variance includes batch. Treat p as descriptive."),
+    theme = theme(plot.subtitle = element_text(size = 7.5)))
+
+ggsave(file.path(OUTDIR, "mg_dependence_flaviLib.pdf"),
+       fig, width = 15, height = 10, device = cairo_pdf)
+ggsave(file.path(OUTDIR, "mg_dependence_flaviLib.png"),
+       fig, width = 15, height = 10, dpi = 300)
+fig
+```
+
+```{r tables}
+write_csv(p |> count(pair_class, plottable, .drop = FALSE),
+          file.path(OUTDIR, "pair_class_counts.csv"))
+write_csv(pl |> arrange(delta_sf), file.path(OUTDIR, "paired_sites_sorted_by_delta.csv"))
+knitr::kable(p |> count(pair_class, plottable, .drop = FALSE),
+             caption = "Pair classes. Only plottable pairs appear in panels A-C and E.")
+```

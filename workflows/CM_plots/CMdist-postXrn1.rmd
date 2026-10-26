@@ -1,0 +1,290 @@
+---
+title: "CM distributions - flaviLib"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+# refer also to script this is from - "~/Desktop/viromelib/flaviLib/scrips/plot_cm_class_by_genus.R"
+
+```{r setup, message=FALSE}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(scales)
+
+knitr::opts_knit$set(root.dir = "~/Desktop/viromelib/flaviLib")
+```
+
+```{r paths}
+tsv10 <- "work/07_postproc/260602/best_stalls_10mM_sf0.2.tsv"
+tsv01 <- "work/07_postproc/260602/best_stalls_01mM_sf0.2.tsv"
+fig_dir <- dirname(tsv10)
+MIN_SF       <- 0.2
+MIN_GENUS_N  <- 5
+```
+
+## Load & tidy
+
+```{r load}
+d10 <- read.delim(tsv10, stringsAsFactors = FALSE) %>%
+  mutate(condition = "10 mM Mg")
+d01 <- read.delim(tsv01, stringsAsFactors = FALSE) %>%
+  mutate(condition = "1 mM Mg")
+
+dat <- bind_rows(d10, d01) %>%
+  mutate(
+    genus = ifelse(is.na(genus) | genus == "", "Unclassified", genus),
+    family = ifelse(is.na(family) | family == "", "Unclassified", family),
+    cm_class = factor(
+      cm_class,
+      levels = c("cl1a", "cl1b", "cl2", "cl3", "dumbbell", "unannotated"),
+      labels = c("cl1a xrRNA", "cl1b xrRNA", "cl2 xrRNA",
+                 "cl3 xrRNA", "Dumbbell", "Unannotated")
+    ),
+    condition = factor(condition, levels = c("10 mM Mg", "1 mM Mg")),
+    treated_sf = as.numeric(treated_sf)
+  )
+
+cat("Total stall sites (10 mM):", nrow(d10), "\n")
+cat("Total stall sites (1 mM): ", nrow(d01), "\n")
+```
+
+## CM class summary
+
+```{r cm_summary}
+dat %>%
+  count(condition, cm_class) %>%
+  pivot_wider(names_from = condition, values_from = n, values_fill = 0) %>%
+  arrange(desc(`10 mM Mg`))
+```
+
+## Colour palette
+
+```{r palette}
+cm_colors <- c(
+  "cl1a xrRNA"  = "#1A5FA8",
+  "cl1b xrRNA"  = "#4EA8DE",
+  "cl2 xrRNA"   = "#F4A11D",
+  "cl3 xrRNA"   = "#D85A30",
+  "Dumbbell"    = "#5DAD6F",
+  "Unannotated" = "#C8C8C8"
+)
+```
+
+---
+
+## Figure 1 — CM class by viral genus
+
+```{r fig_genus_filter}
+# keep genera with enough stalls across both conditions
+genus_keep <- dat %>%
+  count(genus) %>%
+  filter(n >= MIN_GENUS_N) %>%
+  pull(genus)
+
+genus_order <- dat %>%
+  filter(genus %in% genus_keep) %>%
+  count(genus) %>%
+  arrange(desc(n)) %>%
+  pull(genus)
+
+dat_genus <- dat %>%
+  filter(genus %in% genus_keep) %>%
+  mutate(genus = factor(genus, levels = genus_order))
+```
+
+```{r fig1_summarise}
+genus_summary <- dat_genus %>%
+  count(genus, cm_class, condition) %>%
+  complete(genus, cm_class, condition, fill = list(n = 0))
+```
+
+```{r fig1_plot, fig.width=14, fig.height=6}
+p_genus <- ggplot(genus_summary,
+                  aes(x = genus, y = n, fill = cm_class)) +
+  geom_bar(stat = "identity", width = 0.75, colour = NA) +
+  facet_wrap(~ condition, ncol = 2) +
+  scale_fill_manual(values = cm_colors, name = "CM class") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+  labs(
+    title    = "Xrn1 stall sites by viral genus and CM class",
+    subtitle = paste0("SF \u2265 ", MIN_SF, "  |  10 mM vs 1 mM Mg  |  flaviLib 260602"),
+    x        = "Viral genus",
+    y        = "Number of stall sites"
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    axis.text.x        = element_text(angle = 40, hjust = 1, size = 10),
+    strip.background   = element_rect(fill = "#F0F0F0", colour = NA),
+    strip.text         = element_text(face = "bold", size = 11),
+    legend.position    = "right",
+    legend.key.size    = unit(0.5, "cm"),
+    plot.title         = element_text(face = "bold", size = 13),
+    plot.subtitle      = element_text(colour = "grey40", size = 10),
+    panel.grid.major.y = element_line(colour = "grey90", linewidth = 0.3)
+  )
+
+p_genus
+```
+
+```{r fig1_save}
+ggsave(file.path(fig_dir, "fig1_cm_class_by_genus.pdf"),
+       p_genus, width = 14, height = 6)
+ggsave(file.path(fig_dir, "fig1_cm_class_by_genus.png"),
+       p_genus, width = 14, height = 6, dpi = 300)
+message("Saved figure 1")
+```
+
+---
+
+## Figure 2 — CM class by viral family
+
+```{r fig2_plot, fig.width=10, fig.height=6}
+family_summary <- dat %>%
+  count(family, cm_class, condition) %>%
+  complete(family, cm_class, condition, fill = list(n = 0))
+
+family_order <- dat %>%
+  count(family) %>%
+  arrange(desc(n)) %>%
+  pull(family)
+
+family_summary$family <- factor(family_summary$family, levels = family_order)
+
+p_family <- ggplot(family_summary,
+                   aes(x = family, y = n, fill = cm_class)) +
+  geom_bar(stat = "identity", width = 0.65, colour = NA) +
+  facet_wrap(~ condition, ncol = 2) +
+  scale_fill_manual(values = cm_colors, name = "CM class") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+  labs(
+    title    = "Xrn1 stall sites by viral family and CM class",
+    subtitle = paste0("SF \u2265 ", MIN_SF, "  |  10 mM vs 1 mM Mg"),
+    x        = "Viral family",
+    y        = "Number of stall sites"
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    axis.text.x        = element_text(angle = 30, hjust = 1, size = 11),
+    strip.background   = element_rect(fill = "#F0F0F0", colour = NA),
+    strip.text         = element_text(face = "bold", size = 11),
+    legend.position    = "right",
+    legend.key.size    = unit(0.5, "cm"),
+    plot.title         = element_text(face = "bold", size = 13),
+    plot.subtitle      = element_text(colour = "grey40", size = 10),
+    panel.grid.major.y = element_line(colour = "grey90", linewidth = 0.3)
+  )
+
+p_family
+```
+
+```{r fig2_save}
+ggsave(file.path(fig_dir, "fig2_cm_class_by_family.pdf"),
+       p_family, width = 10, height = 6)
+message("Saved figure 2")
+```
+
+---
+
+## Figure 3 — SF distribution by CM class
+
+```{r fig3_plot, fig.width=10, fig.height=5}
+p_sf <- ggplot(dat,
+               aes(x = cm_class, y = treated_sf, fill = cm_class)) +
+  geom_violin(trim = TRUE, scale = "width", alpha = 0.7, colour = NA) +
+  geom_boxplot(width = 0.15, outlier.shape = NA,
+               fill = "white", colour = "grey30", linewidth = 0.4) +
+  facet_wrap(~ condition, ncol = 2) +
+  scale_fill_manual(values = cm_colors, guide = "none") +
+  scale_y_continuous(limits = c(0, 1),
+                     breaks = seq(0, 1, 0.2),
+                     labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    title    = "Stall fraction distribution by CM class",
+    subtitle = paste0("SF \u2265 ", MIN_SF, "  |  10 mM vs 1 mM Mg"),
+    x        = "CM class",
+    y        = "Treated stall fraction"
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    axis.text.x        = element_text(angle = 30, hjust = 1, size = 10),
+    strip.background   = element_rect(fill = "#F0F0F0", colour = NA),
+    strip.text         = element_text(face = "bold", size = 11),
+    plot.title         = element_text(face = "bold", size = 13),
+    plot.subtitle      = element_text(colour = "grey40", size = 10),
+    panel.grid.major.y = element_line(colour = "grey90", linewidth = 0.3)
+  )
+
+p_sf
+```
+
+```{r fig3_save}
+ggsave(file.path(fig_dir, "fig3_sf_by_cm_class.pdf"),
+       p_sf, width = 10, height = 5)
+message("Saved figure 3")
+```
+
+---
+
+## Figure 4 — Proportion stacked bar (normalised)
+
+Useful for comparing CM class composition across genera regardless of
+total stall count per genus.
+
+```{r fig4_plot, fig.width=14, fig.height=6}
+p_prop <- ggplot(genus_summary,
+                 aes(x = genus, y = n, fill = cm_class)) +
+  geom_bar(stat = "identity", position = "fill",
+           width = 0.75, colour = NA) +
+  facet_wrap(~ condition, ncol = 2) +
+  scale_fill_manual(values = cm_colors, name = "CM class") +
+  scale_y_continuous(labels = percent_format(accuracy = 1),
+                     expand = expansion(mult = c(0, 0.02))) +
+  labs(
+    title    = "CM class composition by viral genus (proportional)",
+    subtitle = paste0("SF \u2265 ", MIN_SF, "  |  10 mM vs 1 mM Mg"),
+    x        = "Viral genus",
+    y        = "Proportion of stall sites"
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    axis.text.x        = element_text(angle = 40, hjust = 1, size = 10),
+    strip.background   = element_rect(fill = "#F0F0F0", colour = NA),
+    strip.text         = element_text(face = "bold", size = 11),
+    legend.position    = "right",
+    legend.key.size    = unit(0.5, "cm"),
+    plot.title         = element_text(face = "bold", size = 13),
+    plot.subtitle      = element_text(colour = "grey40", size = 10),
+    panel.grid.major.y = element_line(colour = "grey90", linewidth = 0.3)
+  )
+
+p_prop
+```
+
+```{r fig4_save}
+ggsave(file.path(fig_dir, "fig4_cm_class_proportion_by_genus.pdf"),
+       p_prop, width = 14, height = 6)
+message("Saved figure 4")
+```
+
+---
+
+## Session info
+
+```{r session}
+sessionInfo()
+```
+
+In RStudio: File → New File → R Notebook, paste the chunks in, and run each chunk with the green play button. The output renders inline. When happy, click Preview to knit to HTML.
+The key advantage over a plain R script is you can iterate on individual chunks (e.g. tweak the plot) without re-running the data loading, and the HTML output is a shareable record of the analysis with figures embedded.
+Want me to write the full .Rmd file with all the chunks filled in?Want to be notified when Claude responds?NotifySonnet 4.6 Low
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+

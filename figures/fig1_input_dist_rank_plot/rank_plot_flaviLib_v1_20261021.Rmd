@@ -1,0 +1,436 @@
+---
+title: "flaviLib 150x150 — Rank plots (v1, re-post-processed 261021)"
+output:
+  html_document:
+    self_contained: true
+    toc: true
+    toc_float: true
+---
+
+Built from `rank_plot_v9` (viromelib), adapted for flaviLib. One knit produces, for **each of the two
+Mg2+ conditions**, an `all` and a `passing` rank plot as PDF / SVG / standalone interactive HTML / CSV —
+plus a **combined** plot putting 10 mM against 1 mM for the same accession.
+
+| what differs from the viromelib notebook | why |
+|---|---|
+| two conditions, looped | 10 mM and 1 mM were called separately and are not replicates of each other. They are never pooled |
+| `MIN_REPS <- 2` of **four** | flaviLib has 4 replicates per condition (decision 26). 84 % of 10 mM sites pass in all four, so this gate does little work |
+| **seven** CM columns | decisions 3/9/18: 1a, 1b, **1c**, 2, 3, 4, dumbbell — the same set as viromelib, so the legends match |
+| `class1c` has its own colour | it is a *subclass of class 1*, not a sixth class, so it is drawn light purple: clearly in the class-1 family, clearly not 1a or 1b |
+| `(no family assigned)` kept | 28 accessions have no family rank in NCBI (jingmenviruses, Shi-et-al. invertebrate viruses). 21 of the 699 10 mM sites are theirs and must not vanish |
+| ranks on the site table | flaviLib's `rank_matches_input_stall_site_rank` is `false`; this notebook ranks on the p-value it reads and does not use `stall_site_rank` |
+
+**How a point gets its colour.** `<model>.cm_hit` holds the cmsearch **E-value**. A *site* takes the model
+with the lowest E-value among those hitting it — the most confident call — never a hand-set priority order,
+which would settle a disagreement between two models by fiat and hide that it happened. An *accession* is
+then coloured by the CM of its **own strongest site**, so the colour and the y-position describe the same
+stall.
+
+Measured on this dataset: **0 of 699 sites in 10 mM are hit by more than one CM**, so the tie-break is
+currently inert. A 3'UTR may well carry both an xrRNA and a dumbbell, but they are different stalls, and
+each stall gets one call. `cm_all` (with E-values), `cm_n_hits`, `cm_multi_hit` and `n_sites_with_cm` are
+carried into the CSV and the hover text, and the knit prints a message if any multi-hit row appears.
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggrepel)
+library(svglite)
+library(plotly)
+library(htmlwidgets)
+library(glue)
+```
+
+## Paths and configuration
+
+```{r paths}
+# Copy from the cluster:
+#   $POSTPROC_BASE/<COND>/261021_flaviLib_150x150_<COND>.sites.csv
+#   $POSTPROC_BASE/<COND>/261021_flaviLib_150x150_<COND>.peaks_annotated.csv
+#   $ROOT/data/virus_taxonomy_flaviLib_261021.csv
+# This notebook lives in BASE; inputs are shared with the input-distribution notebook, and each
+# knit writes to its own dated, strategy-named folder under plots/ so successive strategies sit
+# side by side instead of overwriting one another.
+BASE    <- "~/Desktop/viromelib/flaviLib/figures/fig1_input_dist_rank_plot"
+IN_DIR  <- file.path(BASE, "inputs")
+STRATEGY <- "20261021_rank_2of4_percondition_plus_combined"
+# peaks_annotated.csv (the "all" set) carries family/genus/species from post_process_peaks.py but
+# NOT organism -- that is added later, by apply_publication_cutoffs.py, so only sites.csv has it.
+# The taxonomy table supplies it for the "all" set.
+TAX_CSV <- file.path(IN_DIR, "virus_taxonomy_flaviLib_261021.csv")
+OUT_DIR <- file.path(BASE, "plots", STRATEGY)
+dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
+
+DS         <- "261021_flaviLib_150x150"
+CONDITIONS <- c("10mM", "01mM")
+COND_LABEL <- c("10mM" = "10 mM Mg2+", "01mM" = "1 mM Mg2+")
+
+MIN_REPS <- 2            # of FOUR replicates (decision 26)
+RANK_ON  <- "auto"       # "auto" = meta_pvalue if present, else meta_qvalue
+TOP_N_LABELS <- 0
+RING_HIGHLIGHTS <- FALSE
+
+SZ_NONPASS <- 0.8
+SZ_NOHIT   <- 1.3
+SZ_CM      <- 3.0
+A_NONPASS  <- 0.35
+
+FIG_W <- 10; FIG_H <- 8
+
+# Accessions to call out, as in the viromelib notebook. Verified present in the 1 mM table
+# on 2026-10-21; every one of these resolves, so an unlabelled point means a real problem.
+#
+# Where a virus has several accessions in the library, the alternatives are listed in the comment
+# so the choice is visible rather than buried:
+#   West Nile virus       NC_009942.1 (lineage 1, NY99) | NC_001563.2 (lineage 2) | AY274504.1
+#   Hepatitis C virus     NC_004102.1 (genotype 1a, H77) | NC_009827.1 | NC_009823.1
+#                         | MH427312.1 | MN712204.1
+# Note `species` holds the ICTV binomial (Orthoflavivirus nilense, zikaense, usutuense), so the
+# common names below are ours; `organism` carries the familiar name where it is available.
+#
+# HEPATITIS C IS REMOVED, AND MUST NOT BE PUT BACK AS A NEGATIVE CONTROL.
+# An earlier version of this file called it "a strong negative control: present in the library and
+# not detected". That was WRONG, and the error is worth recording so it is not repeated.
+#
+# The control (R) libraries settle it (step 13c in the flaviLib run log). The five HCV accessions
+# have 6-40 control reads per TILE against a library median of 91,847 -- 2,000 to 15,000x below.
+# At that depth `stall_reads` can never reach the G1 threshold of 10, so HCV COULD NOT have been
+# detected whatever its structure. Its apparent "best SF 1.000" is one or two reads at a position.
+#
+# "Present in the library but has no xrRNA" and "never assayed deeply enough to tell" are OPPOSITE
+# claims. HCV supports only the second. Labelling it a negative control would assert the first.
+#
+# The mistake was reading zero passing sites from `peaks_annotated.csv` as evidence of absence.
+# That table carries only `tile_reads_treated_*`; treated depth confounds representation with
+# stalling, so a virus that degraded completely and a virus that was never there look identical.
+# Representation can only be measured in the CONTROL libraries.
+#
+# A replacement is still needed (decision 30): an accession above the marginal band of the
+# detectability floor with zero passing sites in BOTH conditions. Prefer a Hepacivirus or
+# Pestivirus so the contrast stays inside Flaviviridae.
+HIGHLIGHT <- tribble(
+  ~accession,      ~highlight_name,
+  "NC_012532.1",   "Zika virus",
+  "NC_009942.1",   "West Nile virus",
+  "NC_006551.1",   "Usutu virus",
+  "NC_015843.2",   "Tembusu virus",
+  "NC_024077.1",   "SbCNV-5"             # also in viromelib -- the one cross-library anchor.
+                                         # PLLG clade member: its strong stalls have NO CM home
+                                         # (decision 37), which the legend must state so it does
+                                         # not read as missing annotation.
+)
+```
+
+## CM models and colours
+
+```{r cms}
+# All seven annotated (decisions 3, 9, 18). The column name is "<model>.cm_hit".
+CM_COLS <- c(
+  class1a   = "CL_Class_1a_xrRNA_final.cm_hit",
+  class1b   = "CL_Class_1b_xrRNA_final.cm_hit",
+  class1c   = "class1c.cm_hit",
+  class2    = "CL_Class_2_xrRNA_final.cm_hit",
+  class3    = "cl3_NAR_2025.align.mpkadded.edited.confident.dedup.IDcurated.SS_cons.cm_hit",
+  class4    = "class4_cl4_v9_20260824.cm_hit",
+  dumbbell  = "dumbbell_RF00525.cm_hit"
+)
+
+# class1c is light purple: a class-1 subclass, visibly related to 1a/1b but distinct.
+# dumbbell is amber, deliberately outside the class series, since it is a different element.
+cm_colors <- c(
+  class1a  = "#B5179E",   # magenta
+  class1b  = "#7209B7",   # purple
+  class1c  = "#C3A1E8",   # light purple  <- subclass of class 1
+  class2   = "#3A0CA3",   # deep blue-purple
+  class3   = "#1B998B",   # teal
+  class4   = "#136F63",   # dark teal
+  dumbbell = "#E9A23B",   # amber
+  no_hit   = "#CCCCCC"
+)
+cm_labels <- c(
+  class1a = "Class 1a", class1b = "Class 1b", class1c = "Class 1c",
+  class2  = "Class 2",  class3  = "Class 3",  class4  = "Class 4",
+  dumbbell = "Dumbbell", no_hit = "No hit"
+)
+# `<model>.cm_hit` holds the cmsearch E-VALUE, not a flag. A site is assigned the CM with the
+# LOWEST E-value among those that hit it -- the most confident call -- never a hand-set priority
+# order. Priority ordering would resolve a disagreement between two models by fiat and hide it.
+# Measured on this dataset: 0 of 699 sites in 10 mM have more than one CM hit, so the rule is
+# currently inert; it exists so that a multi-hit site is handled by evidence if one appears.
+cm_order_for_display <- c("class1a", "class1b", "class1c", "class2", "class3", "class4", "dumbbell")
+
+NO_FAMILY <- "(no family assigned)"
+```
+
+## Load one condition
+
+```{r load_fn}
+load_set <- function(cond, rank_set) {
+  stopifnot(rank_set %in% c("all", "passing"))
+  pfx <- file.path(IN_DIR, glue("{DS}_{cond}"))
+  f <- if (rank_set == "passing") glue("{pfx}.sites.csv") else glue("{pfx}.peaks_annotated.csv")
+  if (!file.exists(f)) stop(glue("missing input: {f}"))
+  d <- read_csv(f, show_col_types = FALSE)
+
+  if (!"plain_accession" %in% names(d))
+    d <- d %>% mutate(plain_accession = str_extract(accession, "^[^|]+"))
+  d <- d %>% mutate(passed = !is.na(n_reps_passing) & as.integer(n_reps_passing) >= MIN_REPS)
+  if (rank_set == "passing") d$passed <- TRUE
+
+  # organism, for the "all" set
+  if (!"organism" %in% names(d)) {
+    if (!file.exists(TAX_CSV))
+      stop(glue("{basename(f)} has no `organism` column and {basename(TAX_CSV)} is not in IN_DIR; ",
+                "copy the taxonomy table across"))
+    tx <- read_csv(TAX_CSV, show_col_types = FALSE) %>%
+      select(plain_accession = accession, organism,
+             tax_family = family, tax_species = species) %>%
+      distinct(plain_accession, .keep_all = TRUE)
+    d <- d %>% left_join(tx, by = "plain_accession")
+    if (!"species" %in% names(d)) d$species <- d$tax_species
+    if (!"family"  %in% names(d)) d$family  <- d$tax_family
+    message(glue("  joined organism from {basename(TAX_CSV)}: ",
+                 "{sum(!is.na(d$organism))}/{nrow(d)} rows"))
+  }
+  if (!"species" %in% names(d)) d$species <- NA_character_
+
+  pcol <- if (RANK_ON != "auto") RANK_ON
+          else if ("meta_pvalue" %in% names(d)) "meta_pvalue" else "meta_qvalue"
+
+  d <- d %>%
+    mutate(family  = ifelse(is.na(family) | family %in% c("", "nan"), NO_FAMILY, family),
+           pval    = suppressWarnings(as.numeric(.data[[pcol]])),
+           log10p  = -log10(pmax(pval, 1e-300)))
+
+  # E-value per model, NA where the model did not hit this site
+  ev <- sapply(names(CM_COLS), function(k) {
+    col <- CM_COLS[[k]]
+    if (col %in% names(d)) suppressWarnings(as.numeric(as.character(d[[col]])))
+    else rep(NA_real_, nrow(d))
+  })
+  ev <- matrix(ev, nrow = nrow(d), dimnames = list(NULL, names(CM_COLS)))
+
+  d$cm_n_hits <- rowSums(!is.na(ev))
+  d$cm_class  <- apply(ev, 1, function(r)
+    if (all(is.na(r))) "no_hit" else names(r)[which.min(r)])          # lowest E-value wins
+  d$cm_class  <- replace_na(d$cm_class, "no_hit")   # an NA level adds a stray legend key
+  d$cm_evalue <- apply(ev, 1, function(r) if (all(is.na(r))) NA_real_ else min(r, na.rm = TRUE))
+  d$cm_all    <- apply(ev, 1, function(r) {
+    h <- names(r)[!is.na(r)]
+    if (!length(h)) "" else paste0(cm_labels[h], " (E=", signif(r[h], 2), ")",
+                                   collapse = "; ")
+  })
+  if (any(d$cm_n_hits > 1))
+    message(glue("  {sum(d$cm_n_hits > 1)} row(s) hit by more than one CM; ",
+                 "assigned the lowest-E-value model, all listed in cm_all"))
+
+  ranked <- d %>%
+    group_by(plain_accession) %>%
+    summarise(
+      organism  = first(na.omit(organism)),
+      species   = if ("species" %in% names(d)) first(na.omit(species)) else NA_character_,
+      family    = first(family),
+      n_rows    = n(),
+      n_passing = sum(passed, na.rm = TRUE),
+      best_log10p = max(log10p, na.rm = TRUE),
+      # the accession is coloured by the CM of its OWN strongest site, not by a pick across sites
+      cm_class     = cm_class[which.max(log10p)],
+      cm_evalue    = cm_evalue[which.max(log10p)],
+      cm_all       = cm_all[which.max(log10p)],
+      cm_multi_hit = any(cm_n_hits > 1),
+      n_sites_with_cm = sum(cm_n_hits > 0),
+      .groups = "drop") %>%
+    rename(accession = plain_accession) %>%
+    mutate(passed_any = n_passing > 0,
+           condition  = cond, rank_set = rank_set) %>%
+    arrange(desc(best_log10p)) %>%
+    mutate(rank = row_number(),
+           frac_rank = (rank - 1) / max(n() - 1, 1),
+           cm_class = factor(cm_class, levels = names(cm_colors)),
+           tip = glue("{coalesce(organism, '(no organism name)')}\n",
+                      "{accession}  |  rank {rank}  |  {COND_LABEL[cond]}\n",
+                      "{family}\n",
+                      "CM at the strongest site: {ifelse(cm_all == '', 'none', cm_all)}\n",
+                      "sites with a CM hit: {n_sites_with_cm} of {n_rows}\n",
+                      "{n_passing} of {n_rows} candidate positions passed all gates in >={MIN_REPS} of 4 reps\n",
+                      "strongest: -log10 {pcol} = {round(best_log10p, 2)}"))
+
+  # highlights join on accession; anything absent is reported rather than silently unlabelled
+  ranked <- ranked %>% left_join(HIGHLIGHT, by = "accession")
+  miss <- setdiff(HIGHLIGHT$accession, ranked$accession)
+  if (length(miss))
+    message(glue("  HIGHLIGHT accessions absent from {cond}/{rank_set}: ",
+                 "{paste(miss, collapse = ', ')}"))
+  ranked$label_name <- coalesce(ranked$highlight_name, ranked$organism)
+
+  message(glue("{cond} / {rank_set}: {nrow(ranked)} accessions, ",
+               "{sum(ranked$passed_any)} stall-positive, ",
+               "{sum(ranked$family == NO_FAMILY)} with no family, ranked on {pcol}"))
+  list(data = ranked, pcol = pcol, cond = cond, rank_set = rank_set)
+}
+```
+
+## Plot functions
+
+```{r plot_fns}
+# A CM class with no accessions gets a legend key with nothing to draw -- an empty box. This
+# one-row-per-level layer has NA coordinates, so it renders no point but registers every level
+# with the scale and the keys draw correctly. Same cause as the input-distribution figure.
+# Must carry every column the plots map globally -- including `tip`, which interactive_plot
+# puts in the base aes() and which this layer would otherwise inherit and fail to find.
+legend_levels <- tibble(frac_rank = NA_real_, best_log10p = NA_real_,
+                        p10 = NA_real_, p01 = NA_real_, tip = NA_character_,
+                        cm_class = factor(names(cm_colors), levels = names(cm_colors)))
+
+static_plot <- function(S) {
+  d <- S$data; y_max <- max(d$best_log10p, na.rm = TRUE) * 1.08
+  label_df <- d %>%
+    filter(!is.na(highlight_name) | (TOP_N_LABELS > 0 & rank <= TOP_N_LABELS)) %>%
+    mutate(label_text = paste0(label_name, "\n", accession))
+
+  ggplot(d, aes(x = frac_rank, y = best_log10p)) +
+    geom_point(data = filter(d, !passed_any),
+               colour = "grey82", size = SZ_NONPASS, alpha = A_NONPASS, shape = 1) +
+    geom_point(data = filter(d, passed_any, cm_class == "no_hit"),
+               colour = cm_colors[["no_hit"]], size = SZ_NOHIT, alpha = 0.8) +
+    geom_point(data = filter(d, passed_any, cm_class != "no_hit"),
+               aes(fill = cm_class), shape = 21, size = SZ_CM, alpha = 1,
+               colour = "grey25", stroke = 0.25) +
+    {if (RING_HIGHLIGHTS)
+       geom_point(data = label_df, shape = 21, size = SZ_CM + 1.6, stroke = 0.5,
+                  colour = "grey35", fill = NA) else NULL} +
+    geom_point(data = legend_levels, aes(fill = cm_class), shape = 21, size = SZ_CM,
+               colour = "grey25", stroke = 0.25, na.rm = TRUE) +
+    scale_fill_manual(values = cm_colors, breaks = names(cm_colors),
+                      labels = unname(cm_labels[names(cm_colors)]),
+                      name = "CM class", drop = FALSE, na.translate = FALSE) +
+    geom_label_repel(data = label_df, aes(label = label_text),
+      colour = "black", fontface = "bold", size = 3.3, fill = alpha("white", 0.78),
+      label.size = 0.25, label.padding = unit(0.25, "lines"), box.padding = unit(0.5, "lines"),
+      point.padding = unit(0.45, "lines"), max.overlaps = Inf, min.segment.length = 0,
+      segment.colour = "grey40", segment.size = 0.4, direction = "y",
+      nudge_x = 0.10, hjust = 0, force = 6, seed = 42, show.legend = FALSE) +
+    labs(title = glue("flaviLib {COND_LABEL[S$cond]} ({S$rank_set}) — {nrow(d)} accessions, ",
+                      "{sum(d$passed_any)} stall-positive"),
+         subtitle = glue("ranked on {S$pcol} of the strongest site per genome; ",
+                         "gate >= {MIN_REPS} of 4 replicates; ",
+                         "{if (S$rank_set == 'all') 'open grey = no site passing the gates' else 'passing accessions only'}"),
+         x = "Fractional rank (0 = strongest)",
+         y = if (S$pcol == "meta_pvalue") expression(-log[10](p[meta])) else expression(-log[10](q[meta]))) +
+    scale_x_continuous(limits = c(-0.02, 1.02), expand = c(0, 0)) +
+    scale_y_continuous(limits = c(0, y_max), expand = c(0, 0)) +
+    theme_classic(base_size = 13) +
+    theme(plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
+          plot.subtitle = element_text(size = 9, colour = "grey40", hjust = 0.5),
+          legend.position = "right",
+          panel.grid.major.y = element_line(colour = "#F0F0F0", linewidth = 0.3))
+}
+
+interactive_plot <- function(S) {
+  d <- S$data
+  p <- ggplot(d, aes(x = frac_rank, y = best_log10p, text = tip)) +
+    geom_point(data = filter(d, !passed_any),
+               colour = "grey82", size = SZ_NONPASS + 0.2, alpha = A_NONPASS, shape = 1) +
+    geom_point(data = filter(d, passed_any, cm_class == "no_hit"),
+               colour = cm_colors[["no_hit"]], size = SZ_NOHIT + 0.3, alpha = 0.8) +
+    geom_point(data = filter(d, passed_any, cm_class != "no_hit"),
+               aes(colour = cm_class), size = SZ_CM - 0.4, alpha = 1) +
+    geom_point(data = legend_levels, aes(colour = cm_class), size = SZ_CM - 0.4, na.rm = TRUE) +
+    scale_colour_manual(values = cm_colors, breaks = names(cm_colors),
+                        labels = unname(cm_labels[names(cm_colors)]),
+                        name = "CM class", drop = FALSE, na.translate = FALSE) +
+    labs(x = "Fractional rank (0 = strongest)", y = glue("-log10 {S$pcol}"),
+         title = glue("flaviLib {COND_LABEL[S$cond]} ({S$rank_set}) — hover for detail")) +
+    theme_classic(base_size = 12) + theme(legend.position = "right")
+  ggplotly(p, tooltip = "text") %>%
+    layout(hoverlabel = list(align = "left", font = list(size = 11)))
+}
+```
+
+## Build every condition x set
+
+```{r build, fig.width=10, fig.height=8, message=FALSE}
+sets <- list()
+for (cond in CONDITIONS) for (rs in c("all", "passing")) {
+  S <- load_set(cond, rs)
+  sets[[paste(cond, rs, sep = "_")]] <- S
+  stem <- glue("rank_{cond}_{rs}")
+  g <- static_plot(S)
+  print(g)
+  ggsave(file.path(OUT_DIR, glue("{stem}.pdf")), g, width = FIG_W, height = FIG_H, device = cairo_pdf)
+  ggsave(file.path(OUT_DIR, glue("{stem}.svg")), g, width = FIG_W, height = FIG_H)
+  write_csv(S$data, file.path(OUT_DIR, glue("{stem}.csv")))
+  saveWidget(interactive_plot(S), file.path(OUT_DIR, glue("{stem}.html")),
+             selfcontained = TRUE, title = glue("flaviLib {cond} {rs}"))
+}
+```
+
+## Combined: 10 mM against 1 mM
+
+Same accession, both conditions. Points off the diagonal are Mg2+-dependent — the comparison this library
+exists to make, and the one thing the per-condition plots cannot show.
+
+```{r combined, fig.width=8, fig.height=7.5}
+a <- sets[["10mM_passing"]]$data %>% select(accession, organism, family, cm_class, cm_all,
+                                            hi = highlight_name, p10 = best_log10p)
+b <- sets[["01mM_passing"]]$data %>% select(accession, p01 = best_log10p)
+cmb <- full_join(a, b, by = "accession") %>%
+  mutate(only_in = case_when(is.na(p01) ~ "10 mM only", is.na(p10) ~ "1 mM only", TRUE ~ "both"),
+         p10 = replace_na(p10, 0), p01 = replace_na(p01, 0),
+         cm_class = factor(replace_na(as.character(cm_class), "no_hit"), levels = names(cm_colors)))
+message(glue("combined: {nrow(cmb)} accessions | both {sum(cmb$only_in=='both')} | ",
+             "10 mM only {sum(cmb$only_in=='10 mM only')} | 1 mM only {sum(cmb$only_in=='1 mM only')}"))
+
+lim <- c(0, max(c(cmb$p10, cmb$p01), na.rm = TRUE) * 1.05)
+g <- ggplot(cmb, aes(p10, p01)) +
+  geom_abline(slope = 1, intercept = 0, colour = "grey80", linewidth = 0.4, linetype = 2) +
+  geom_point(data = filter(cmb, cm_class == "no_hit"),
+             colour = cm_colors[["no_hit"]], size = SZ_NOHIT + 0.4, alpha = 0.8) +
+  geom_point(data = filter(cmb, cm_class != "no_hit"),
+             aes(fill = cm_class), shape = 21, size = SZ_CM, colour = "grey25", stroke = 0.25) +
+  geom_point(data = legend_levels, aes(fill = cm_class), shape = 21, size = SZ_CM,
+             colour = "grey25", stroke = 0.25, na.rm = TRUE) +
+  geom_label_repel(data = filter(cmb, !is.na(hi)), aes(label = hi),
+                   size = 3.2, fontface = "bold", fill = alpha("white", 0.8),
+                   box.padding = unit(0.5, "lines"), max.overlaps = Inf, seed = 42) +
+  scale_fill_manual(values = cm_colors, breaks = names(cm_colors),
+                    labels = unname(cm_labels[names(cm_colors)]),
+                    name = "CM class", drop = FALSE, na.translate = FALSE) +
+  coord_equal(xlim = lim, ylim = lim) +
+  labs(title = "flaviLib: strongest site per genome, 10 mM vs 1 mM Mg2+",
+       subtitle = glue("passing accessions in either condition; a 0 means no passing site in that ",
+                       "condition. {sum(cmb$only_in != 'both')} accessions pass in one condition only"),
+       x = expression(10~mM~Mg^"2+"~~-log[10](p[meta])),
+       y = expression(1~mM~Mg^"2+"~~-log[10](p[meta]))) +
+  theme_classic(base_size = 13) +
+  theme(plot.title = element_text(size = 12, face = "bold"),
+        plot.subtitle = element_text(size = 9, colour = "grey40"))
+g
+ggsave(file.path(OUT_DIR, "rank_combined_10mM_vs_01mM.pdf"), g, width = 8, height = 7.5, device = cairo_pdf)
+ggsave(file.path(OUT_DIR, "rank_combined_10mM_vs_01mM.svg"), g, width = 8, height = 7.5)
+write_csv(cmb, file.path(OUT_DIR, "rank_combined_10mM_vs_01mM.csv"))
+```
+
+**Reading the zeros.** An accession with no passing site in one condition is plotted at 0 on that axis,
+not dropped — otherwise the figure would show only the accessions that work in both and hide exactly the
+Mg2+-dependent ones. The two bands along the axes are those accessions; the count is in the subtitle.
+
+## Interactive versions, embedded
+
+```{r embed, echo=FALSE}
+htmltools::tagList(lapply(names(sets), function(k) {
+  htmltools::tagList(htmltools::h3(k), interactive_plot(sets[[k]]))
+}))
+```
+
+## CM class counts
+
+```{r cm_counts}
+bind_rows(lapply(names(sets), function(k)
+  sets[[k]]$data %>% filter(passed_any) %>%
+    count(condition, rank_set, cm_class) %>% mutate(set = k))) %>%
+  filter(rank_set == "passing") %>%
+  select(condition, cm_class, n) %>%
+  pivot_wider(names_from = condition, values_from = n, values_fill = 0) %>%
+  mutate(cm_class = cm_labels[as.character(cm_class)]) %>%
+  knitr::kable(caption = "Accessions by CM class (highest-priority hit), passing sets")
+```

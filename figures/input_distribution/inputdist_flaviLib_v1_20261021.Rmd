@@ -1,0 +1,440 @@
+---
+title: "flaviLib 150x150 — input/output distribution (v1, 261021)"
+output:
+  html_document:
+    self_contained: true
+    toc: true
+    toc_float: true
+---
+
+The flaviLib counterpart of viromelib's `fig1A_v7_4panel`. Four panels on one shared taxonomic axis:
+what went into the library, what came out as stall sites, which CMs matched, and how long the features are.
+
+**The axis is genus, not family.** flaviLib has only three families — Flaviviridae 270, Hepaciviridae 97,
+Pestiviridae 44, plus 28 accessions with no family rank — so a family axis is four bars and carries no
+information. Genus is assigned for 294 of 439 accessions; the remaining 145 have a `lowest_group` from the
+taxonomy table, which is used as a **fallback** and marked, so nothing is dropped and nothing is silently
+promoted to a rank it does not hold.
+
+```
+genus_display = genus                         where NCBI assigns one
+              = "<lowest_group> (unranked)"   where it does not but a lowest_group exists
+              = "(unclassified)"              otherwise
+```
+
+**Both Mg2+ conditions are shown together.** 10 mM and 1 mM were called separately and are not replicates
+of each other, so the output panels draw them as paired bars rather than pooling them. The input panel has
+no condition — it is the library.
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(scales)
+library(cowplot)
+library(svglite)
+library(glue)
+```
+
+## Paths
+
+```{r paths}
+# Copy from the cluster into IN_DIR:
+#   data/virus_taxonomy_flaviLib_261021.csv
+#   work/07_postproc/261021_flaviLib_150x150/<COND>/261021_flaviLib_150x150_<COND>.sites.csv
+# This notebook lives in BASE; inputs are shared with the rank-plot notebook, and each knit writes
+# to its own dated, strategy-named folder under plots/ so successive strategies sit side by side
+# instead of overwriting one another.
+BASE    <- "~/Desktop/viromelib/flaviLib/figures/input_distribution"
+# Was figures/fig1_input_dist_rank_plot/, which held TWO figures (this one and the other
+# of the pair) -- the reason "input_dist" appeared in two directory names meaning
+# different things. Split 2026-10-26, one figure per directory. inputs/ is shared
+# between the two and was COPIED into each, with figure_inputs.md5 kept in both so any
+# later drift between the copies is detectable.
+IN_DIR  <- file.path(BASE, "inputs")
+STRATEGY <- "20261021_inputdist_genus_axis_fallback"
+OUT_DIR <- file.path(BASE, "plots", STRATEGY)
+dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
+
+DS         <- "261021_flaviLib_150x150"
+CONDITIONS <- c("10mM", "01mM")
+COND_LABEL <- c("10mM" = "10 mM", "01mM" = "1 mM")
+COND_COL   <- c("10 mM" = "#3A0CA3", "1 mM" = "#9D8DF1")
+
+TAX_CSV <- file.path(IN_DIR, "virus_taxonomy_flaviLib_261021.csv")
+
+MIN_GENUS_N <- 1      # genera with fewer library accessions than this are pooled into "Other"
+FIG_W <- 13; FIG_H <- 7.5
+```
+
+## Taxonomy, and the genus axis
+
+```{r taxonomy}
+tax <- read_csv(TAX_CSV, show_col_types = FALSE) %>%
+  mutate(
+    genus_display = case_when(
+      !is.na(genus) & genus != ""                 ~ genus,
+      !is.na(lowest_group) & lowest_group != ""   ~ paste0(lowest_group, " (unranked)"),
+      TRUE                                        ~ "(unclassified)"),
+    family_display = ifelse(is.na(family) | family == "", "(no family assigned)", family),
+    # feature length from the feature name: ACC|start-end_region
+    feat_len = NA_real_)
+
+message(glue("taxonomy: {nrow(tax)} accessions | {n_distinct(tax$taxid)} TaxIDs | ",
+             "{sum(!is.na(tax$genus))} with a genus | ",
+             "{sum(is.na(tax$genus) & !is.na(tax$lowest_group))} using the lowest_group fallback | ",
+             "{n_distinct(tax$genus_display)} axis levels"))
+
+knitr::kable(tax %>% count(family_display, sort = TRUE), caption = "Accessions by family")
+knitr::kable(tax %>% count(genus_display, sort = TRUE) %>% head(25),
+             caption = "Accessions by genus (with fallback), top 25")
+```
+
+## Sites, both conditions
+
+```{r sites}
+CM_COLS <- c(
+  class1a   = "CL_Class_1a_xrRNA_final.cm_hit",
+  class1b   = "CL_Class_1b_xrRNA_final.cm_hit",
+  class1c   = "class1c.cm_hit",
+  class2    = "CL_Class_2_xrRNA_final.cm_hit",
+  class3    = "cl3_NAR_2025.align.mpkadded.edited.confident.dedup.IDcurated.SS_cons.cm_hit",
+  class4    = "class4_cl4_v9_20260824.cm_hit",
+  dumbbell  = "dumbbell_RF00525.cm_hit"
+)
+cm_colors <- c(class1a = "#B5179E", class1b = "#7209B7", class1c = "#C3A1E8",
+               class2 = "#3A0CA3", class3 = "#1B998B", class4 = "#136F63",
+               dumbbell = "#E9A23B", no_hit = "#CCCCCC")
+# viromelib's panel 4 colours 3'UTR orange and intergenic blue. flaviLib has no intergenic
+# features, but it does split into annotated vs inferred 3'UTRs, which is the equivalent
+# distinction and is worth showing with the same idiom.
+region_colors <- c("annotated 3'UTR" = "#E8871A", "inferred 3'UTR" = "#3A7CA5", "other" = "#999999")
+
+cm_labels <- c(class1a = "Class 1a", class1b = "Class 1b", class1c = "Class 1c",
+               class2 = "Class 2", class3 = "Class 3", class4 = "Class 4",
+               dumbbell = "Dumbbell", no_hit = "No hit")
+
+read_sites <- function(cond) {
+  f <- file.path(IN_DIR, glue("{DS}_{cond}.sites.csv"))
+  if (!file.exists(f)) stop(glue("missing: {f}"))
+  d <- read_csv(f, show_col_types = FALSE)
+  if (!"plain_accession" %in% names(d))
+    d <- d %>% mutate(plain_accession = str_extract(accession, "^[^|]+"))
+  # CM by lowest E-value, as in the rank plot
+  ev <- sapply(names(CM_COLS), function(k) {
+    col <- CM_COLS[[k]]
+    if (col %in% names(d)) suppressWarnings(as.numeric(as.character(d[[col]])))
+    else rep(NA_real_, nrow(d))
+  })
+  ev <- matrix(ev, nrow = nrow(d), dimnames = list(NULL, names(CM_COLS)))
+  d$cm_class <- apply(ev, 1, function(r)
+    if (all(is.na(r))) "no_hit" else names(r)[which.min(r)])
+  d$cm_class <- replace_na(d$cm_class, "no_hit")   # never NA: an NA level adds a stray legend key
+  # feature extent, from the feature name: ACC|start-end_region
+  d %>% mutate(condition = COND_LABEL[[cond]],
+               feat_start = as.numeric(str_match(accession, "\\|(\\d+)-(\\d+)")[, 2]),
+               feat_end   = as.numeric(str_match(accession, "\\|(\\d+)-(\\d+)")[, 3]),
+               feat_len   = feat_end - feat_start + 1,
+               # region, from the tail of the feature name: "_3UTR" vs "_inferred_3UTR"
+               region_raw = replace_na(str_match(accession, "\\d+-\\d+_(.+)$")[, 2], ""),
+               region     = case_when(str_detect(region_raw, "inferred") ~ "inferred 3'UTR",
+                                      str_detect(region_raw, "3UTR")     ~ "annotated 3'UTR",
+                                      TRUE ~ "other"))
+}
+
+sites <- bind_rows(lapply(CONDITIONS, read_sites)) %>%
+  left_join(tax %>% select(plain_accession = accession, genus_display, family_display),
+            by = "plain_accession") %>%
+  mutate(genus_display = replace_na(genus_display, "(unclassified)"),
+         condition = factor(condition, levels = unname(COND_LABEL)),
+         cm_class  = factor(cm_class, levels = names(cm_colors)))
+
+message(glue("sites: {nrow(sites)} across both conditions | ",
+             "{sum(sites$condition == '10 mM')} at 10 mM, {sum(sites$condition == '1 mM')} at 1 mM"))
+message("cm_class counts (NA here would add a stray legend key):")
+print(table(sites$cm_class, useNA = "ifany"))
+```
+
+## Axis order
+
+Genera are ordered by library size, largest at the top, so the input panel reads as a ranking and the other
+three are read against it.
+
+```{r axis}
+lib_n <- tax %>% count(genus_display, name = "n_input")
+small <- lib_n %>% filter(n_input < MIN_GENUS_N) %>% pull(genus_display)
+collapse_axis <- function(x) ifelse(x %in% small, "Other", x)
+
+tax    <- tax    %>% mutate(axis = collapse_axis(genus_display))
+sites  <- sites  %>% mutate(axis = collapse_axis(genus_display))
+
+axis_levels <- tax %>% count(axis) %>% arrange(n) %>% pull(axis)
+tax   <- tax   %>% mutate(axis = factor(axis, levels = axis_levels))
+sites <- sites %>% mutate(axis = factor(axis, levels = axis_levels))
+message(glue("{length(axis_levels)} axis levels",
+             if (length(small)) glue("; {length(small)} pooled into Other") else ""))
+```
+
+## Panel A — library input
+
+```{r panel_a, fig.width=4, fig.height=7}
+dA <- tax %>%
+  group_by(axis) %>%
+  summarise(accessions = n(), viruses = n_distinct(taxid), .groups = "drop")
+
+# bars = accessions, dots = distinct viruses (TaxIDs). Mapped to a scale so they get a legend;
+# without one the dots read as an unexplained annotation.
+pA <- ggplot(dA, aes(y = axis)) +
+  geom_col(aes(x = accessions, fill = "Accessions (sequence records)"), width = 0.72) +
+  geom_point(aes(x = viruses, colour = "Viruses (distinct NCBI TaxIDs)"), size = 1.8) +
+  geom_text(aes(x = accessions, label = accessions), hjust = -0.3, size = 2.6, colour = "grey25") +
+  # No legend: panel A is too narrow for one, and a legend wider than its panel overflows
+  # across the neighbours -- its background rectangle is the "translucent block". The two
+  # series are named in the subtitle instead, which has the width for it.
+  scale_fill_manual(values = c("Accessions (sequence records)" = "#BFBFBF"),
+                    name = NULL, guide = "none") +
+  scale_colour_manual(values = c("Viruses (distinct NCBI TaxIDs)" = "#3A0CA3"),
+                      name = NULL, guide = "none") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.22)), n.breaks = 4,
+                     sec.axis = dup_axis(name = NULL)) +
+  labs(x = "Accessions in the library", y = NULL,
+       title = "A  Library input",
+       subtitle = glue("grey bars = {comma(nrow(tax))} accessions; ",
+                       "dots = {comma(n_distinct(tax$taxid))} viruses (TaxIDs)")) +
+  theme_classic(base_size = 11) +
+  theme(plot.title = element_text(size = 10.5, face = "bold"),
+        plot.subtitle = element_text(size = 6.9, colour = "grey40"),
+        axis.text.y = element_text(size = 7.2),
+        legend.position = "none",
+        plot.margin = margin(2, 10, 1, 2))
+pA
+```
+
+The dots matter here: **439 accessions are 273 viruses**, because segmented jingmenviruses contribute one
+accession per segment. Where a bar is far to the right of its dot, that genus is segmented.
+
+## Panel B — stall-positive accessions
+
+```{r panel_b, fig.width=3.6, fig.height=7}
+dB <- sites %>%
+  group_by(axis, condition) %>%
+  summarise(n_acc = n_distinct(plain_accession), .groups = "drop") %>%
+  complete(axis, condition, fill = list(n_acc = 0)) %>%
+  left_join(dA %>% select(axis, accessions), by = "axis") %>%
+  mutate(pct = ifelse(accessions > 0, 100 * n_acc / accessions, NA_real_))
+
+pB <- ggplot(dB, aes(x = n_acc, y = axis, fill = condition)) +
+  geom_col(position = position_dodge(width = 0.75), width = 0.72) +
+  scale_fill_manual(values = COND_COL, name = NULL) +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.18)), n.breaks = 4,
+                     sec.axis = dup_axis(name = NULL)) +
+  labs(x = "Accessions with >=1 site", y = NULL,
+       title = "B  Stall-positive",
+       subtitle = "gate: >=2 of 4 replicates") +
+  theme_classic(base_size = 11) +
+  theme(plot.title = element_text(size = 10.5, face = "bold"),
+        plot.subtitle = element_text(size = 7.6, colour = "grey40"),
+        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        plot.margin = margin(2, 10, 1, 2),
+        legend.position = c(0.98, 0.02), legend.justification = c(1, 0),
+        legend.text = element_text(size = 7), legend.key.size = unit(0.7, "lines"),
+        legend.background = element_blank(), legend.key = element_blank())
+pB
+```
+
+## Panel C — sites by CM class
+
+```{r panel_c, fig.width=4, fig.height=7}
+# .drop = FALSE keeps factor levels with no rows. Without it a class that never occurs
+# (class 3 and class 4 here) gets a legend key with nothing to draw -- an empty white box.
+dC <- sites %>% count(axis, condition, cm_class, name = "n", .drop = FALSE)
+message(glue("panel C: {nrow(dC)} rows; classes with zero sites: ",
+             paste(setdiff(names(cm_colors), unique(as.character(sites$cm_class))),
+                   collapse = ", ")))
+
+pC <- ggplot(dC, aes(x = n, y = axis, fill = cm_class)) +
+  geom_col(width = 0.72) +
+  facet_wrap(~condition, nrow = 1) +
+  # limits pins every class into the legend in a fixed order, so the two libraries' legends
+  # match even where a class has no sites in this one
+  # breaks + labels indexed by name, so a class with no sites still gets its own coloured key
+  # and the labels cannot slide out of step with the colours
+  scale_fill_manual(values = cm_colors,
+                    breaks = names(cm_colors),
+                    labels = unname(cm_labels[names(cm_colors)]),
+                    name = "CM class", drop = FALSE, na.translate = FALSE) +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.12)), n.breaks = 3) +
+  labs(x = "Sites", y = NULL,
+       title = "C  Sites by CM class",
+       subtitle = "lowest E-value per site") +
+  theme_classic(base_size = 11) +
+  theme(plot.title = element_text(size = 10.5, face = "bold"),
+        plot.subtitle = element_text(size = 7.6, colour = "grey40"),
+        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        strip.background = element_blank(), strip.text = element_text(size = 8),
+        # a real gutter between the facets: without it the left panel's last label runs
+        # straight into the right panel's "0" and reads as one number ("3000")
+        panel.spacing.x = unit(1.1, "lines"),
+        plot.margin = margin(2, 8, 1, 2),
+        legend.position = "right", legend.text = element_text(size = 7),
+        legend.key.size = unit(0.7, "lines"))
+pC
+```
+
+## Panel D — feature length
+
+```{r panel_d, fig.width=3.2, fig.height=7}
+# Same construction as viromelib's panel 4: boxes with outliers suppressed, the actual points
+# jittered over them, coloured by region. A boxplot alone hides how few features some genera have.
+dD <- sites %>% distinct(axis, accession, feat_len, region) %>% filter(!is.na(feat_len))
+BAR_W <- 0.72
+message(glue("panel D: {nrow(dD)} features | regions: ",
+             paste(names(table(dD$region)), table(dD$region), sep = "=", collapse = ", ")))
+
+pD <- ggplot(dD, aes(x = feat_len, y = axis, fill = region)) +
+  geom_boxplot(aes(colour = region), outlier.shape = NA,
+               width = BAR_W * 0.42, linewidth = 0.25,
+               position = position_dodge(width = BAR_W), show.legend = TRUE) +
+  geom_point(aes(colour = region), shape = 16, size = 0.35, alpha = 0.45,
+             position = position_jitterdodge(jitter.height = 0.12, dodge.width = BAR_W),
+             show.legend = FALSE) +
+  scale_fill_manual(values = region_colors, name = NULL, drop = TRUE) +
+  scale_colour_manual(values = region_colors, name = NULL, drop = TRUE) +
+  scale_x_continuous(limits = c(0, NA), breaks = c(0, 500, 1000, 1500),
+                     labels = c("0", "500", "1,000", "1,500"),
+                     expand = expansion(mult = c(0, 0.02)),
+                     sec.axis = dup_axis(name = NULL)) +
+  # override.aes must supply one value per legend KEY, and only the regions present get keys
+  # (flaviLib has two of the three, no intergenic features), so nothing is hard-coded here.
+  guides(fill = guide_legend(override.aes = list(alpha = 1, shape = NA)),
+         colour = "none") +
+  labs(x = "nt", y = NULL,
+       title = "D  Feature length",
+       subtitle = "features carrying >=1 site") +
+  theme_classic(base_size = 11) +
+  theme(plot.title = element_text(size = 10.5, face = "bold"),
+        plot.subtitle = element_text(size = 7.6, colour = "grey40"),
+        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        plot.margin = margin(2, 4, 1, 2),
+        legend.position = c(0.98, 0.04), legend.justification = c(1, 0),
+        legend.text = element_text(size = 6.8), legend.key.size = unit(0.7, "lines"),
+        legend.background = element_blank(), legend.key = element_blank())
+pD
+```
+
+## Assemble
+
+```{r assemble, fig.width=13, fig.height=7.5}
+fig <- plot_grid(pA, pB, pC, pD, nrow = 1, rel_widths = c(1.35, 0.8, 1.2, 0.95),
+                 align = "h", axis = "tb")
+fig
+ggsave(file.path(OUT_DIR, "flaviLib_inputdist.pdf"), fig, width = FIG_W, height = FIG_H, device = cairo_pdf)
+ggsave(file.path(OUT_DIR, "flaviLib_inputdist.svg"), fig, width = FIG_W, height = FIG_H)
+write_csv(dA, file.path(OUT_DIR, "source_input_by_genus.csv"))
+write_csv(dB, file.path(OUT_DIR, "source_stallpositive_by_genus.csv"))
+write_csv(dC, file.path(OUT_DIR, "source_cm_by_genus.csv"))
+message("-> ", file.path(OUT_DIR, "flaviLib_inputdist.pdf"))
+```
+
+## Summary table
+
+```{r summary}
+dA %>%
+  left_join(dB %>% select(axis, condition, n_acc) %>%
+              pivot_wider(names_from = condition, values_from = n_acc, values_fill = 0),
+            by = "axis") %>%
+  arrange(desc(accessions)) %>%
+  knitr::kable(caption = "Library input and stall-positive accessions per genus (with fallback)")
+```
+
+## Raw counts: genus x CM class
+
+Unrounded counts, one table per Mg2+ condition, for pasting into a slide. Written as CSV and, if
+`writexl` is installed, as XLSX — copying a block out of Excel keeps the grid when pasted into
+PowerPoint, where a CSV opened as text does not.
+
+Every CM class appears as a column even when it has no sites, so the two conditions (and the two
+libraries) have identical columns and can be put side by side.
+
+```{r raw_counts}
+cm_levels <- names(cm_colors)
+
+raw_counts <- function(cond_label) {
+  base <- tibble(axis = levels(sites$axis)) %>%
+    left_join(dA %>% select(axis, accessions, viruses) %>% mutate(axis = as.character(axis)),
+              by = "axis")
+  sc <- sites %>%
+    filter(condition == cond_label) %>%
+    mutate(axis = as.character(axis),
+           cm_class = factor(as.character(cm_class), levels = cm_levels))
+  wide <- sc %>%
+    count(axis, cm_class, name = "n", .drop = FALSE) %>%
+    pivot_wider(names_from = cm_class, values_from = n, values_fill = 0)
+  for (lv in cm_levels) if (!lv %in% names(wide)) wide[[lv]] <- 0L
+  wide <- wide[, c("axis", cm_levels)]
+  names(wide) <- c("axis", unname(cm_labels[cm_levels]))
+  acc <- sc %>% group_by(axis) %>%
+    summarise(`Accessions with a site` = n_distinct(plain_accession),
+              `Sites` = n(), .groups = "drop")
+  base %>%
+    left_join(acc, by = "axis") %>%
+    left_join(wide, by = "axis") %>%
+    mutate(across(where(is.numeric), ~replace_na(.x, 0))) %>%
+    rename(Genus = axis, `Accessions in library` = accessions, `Viruses (TaxIDs)` = viruses) %>%
+    arrange(desc(`Accessions in library`))
+}
+
+tbl_10 <- raw_counts("10 mM")
+tbl_01 <- raw_counts("1 mM")
+
+write_csv(tbl_10, file.path(OUT_DIR, "raw_counts_genus_x_cm_10mM.csv"))
+write_csv(tbl_01, file.path(OUT_DIR, "raw_counts_genus_x_cm_01mM.csv"))
+
+# long form, both conditions, for anything that wants to re-pivot
+bind_rows(tbl_10 %>% mutate(Condition = "10 mM"),
+          tbl_01 %>% mutate(Condition = "1 mM")) %>%
+  relocate(Condition) %>%
+  write_csv(file.path(OUT_DIR, "raw_counts_genus_x_cm_both.csv"))
+
+if (requireNamespace("writexl", quietly = TRUE)) {
+  writexl::write_xlsx(list(`10 mM` = tbl_10, `1 mM` = tbl_01),
+                      file.path(OUT_DIR, "raw_counts_genus_x_cm.xlsx"))
+  message("-> raw_counts_genus_x_cm.xlsx (two sheets)")
+} else {
+  message("writexl not installed; CSV only. install.packages('writexl') for the XLSX")
+}
+
+# totals, as a check that nothing was lost in the pivot
+message(glue("10 mM: {sum(tbl_10$Sites)} sites across the table vs ",
+             "{sum(sites$condition == '10 mM')} in the data"))
+message(glue("1 mM:  {sum(tbl_01$Sites)} sites across the table vs ",
+             "{sum(sites$condition == '1 mM')} in the data"))
+```
+
+```{r raw_counts_10, echo=FALSE}
+knitr::kable(tbl_10, caption = "flaviLib 10 mM Mg2+ — raw counts by genus and CM class")
+```
+
+```{r raw_counts_01, echo=FALSE}
+knitr::kable(tbl_01, caption = "flaviLib 1 mM Mg2+ — raw counts by genus and CM class")
+```
+
+A row's `Sites` is the sum of its CM-class columns, and `Accessions with a site` is at most
+`Accessions in library`. The two messages above check the first of those against the data, so a
+pivot that silently dropped a level would show up as a mismatch rather than as a quietly short table.
+
+## Caption draft
+
+```{r caption, results='asis', echo=FALSE}
+cat(glue("
+**flaviLib input and output by genus.** The axis is NCBI genus where one is assigned
+({sum(!is.na(tax$genus))} of {nrow(tax)} accessions); where it is not, the lowest assigned taxonomic group
+is used and marked '(unranked)', and accessions with neither are grouped as '(unclassified)'. Family is not
+used as the axis because the library spans only three families.
+(**A**) Accessions in the ordered library per genus (bars) and distinct viruses, i.e. NCBI TaxIDs (dots);
+the two differ because segmented genomes contribute one accession per segment
+({comma(nrow(tax))} accessions, {comma(n_distinct(tax$taxid))} viruses).
+(**B**) Accessions with at least one stall site passing every gate in >=2 of 4 replicates, for each Mg2+
+condition. The two conditions were peak-called separately and are not pooled anywhere in this figure.
+(**C**) Stall sites coloured by the covariance model with the lowest cmsearch E-value at that site.
+(**D**) Length of the features carrying at least one site.
+"))
+```
