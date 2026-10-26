@@ -1,0 +1,47 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(forcats)
+
+df <- read_csv("groups/20260218/window_all_long.with_taxonomy.csv")
+
+# Keep rows that have genus; you can decide whether to keep no_group or filter it out
+# df <- df %>% filter(class_label != "no_group")
+
+plot_df <- df %>%
+  filter(!is.na(genus), genus != "") %>%
+  count(genus, class_label, name = "n") %>%
+  mutate(pct_total = 100 * n / sum(n)) %>%
+  group_by(genus) %>%
+  mutate(genus_total_pct = sum(pct_total)) %>%
+  ungroup() %>%
+  mutate(genus = fct_reorder(genus, genus_total_pct, .desc = TRUE))
+
+ggplot(plot_df, aes(x = genus, y = pct_total, fill = class_label)) +
+  geom_col() +
+  labs(
+    x = "Viral genus",
+    y = "% of total accessions/windows",
+    fill = "Group (class_label)",
+    title = "Group distribution by viral genus (percent of total)"
+  ) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
