@@ -46,6 +46,21 @@ figures/**
 !**/inputs/**/*.md5
 !**/plots/**/*.md5
 
+# ── R Markdown / htmlwidgets GENERATED output. Added 2026-10-26 after plotly, jQuery,
+# crosstalk and typedarray bundles (~30 files, most of a 1.4 MiB push) were committed from
+# figures/rank/20261019/rank_all_files/. knitr writes a `<name>_files/` directory beside any
+# non-self-contained HTML output and regenerates it on every knit.
+# NOTE this is also why a knit must write into plots/<date>_<strategy>/ -- that output went to
+# figures/rank/20261019/ instead, so the **/plots/** rules never applied to it.
+*_files/
+*_cache/
+*.js
+*.css
+*.scss
+*.map
+*.igv_batch
+*.igv_session.xml
+
 # ── Tabular data and rendered output, globally. Regenerable from a notebook plus its inputs.
 # *.md is deliberately never ignored: keep documentation in Markdown, not .txt.
 *.csv
