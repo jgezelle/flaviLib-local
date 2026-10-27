@@ -63,7 +63,7 @@ p <- read_tsv(p_path, show_col_types = FALSE) |>
 
 # Long form for the paired panels. Only plottable pairs: everywhere else one end of the slope
 # would be a stall fraction computed on one or two reads, which is not a measurement.
-pl <- p |> filter(plottable)
+pl <- p |> filter(plottable) |> mutate(pair_class = droplevels(pair_class))
 long <- pl |>
   select(accession, pos_a, pos_b, sf_a, sf_b, pair_class, any_of(c("genus", "organism", "family"))) |>
   mutate(site = row_number()) |>
@@ -125,7 +125,9 @@ pB
 pC <- ggplot(pl, aes(sf_a, sf_b)) +
   geom_abline(slope = 1, intercept = 0, colour = "grey60", linewidth = 0.3) +
   geom_point(aes(colour = pair_class), alpha = 0.6, size = 1.2) +
-  scale_colour_manual(values = CLASS_COLS, labels = CLASS_LABS, drop = FALSE, name = NULL) +
+  # drop = TRUE: pl holds only plottable pairs, so thin_in_other and absent_from_table have no
+  # points here and drop = FALSE would draw legend keys with nothing to render.
+  scale_colour_manual(values = CLASS_COLS, labels = CLASS_LABS, drop = TRUE, name = NULL) +
   coord_equal(xlim = c(0, 1), ylim = c(0, 1)) +
   labs(x = sprintf("stall fraction, %s", A_NAME), y = sprintf("stall fraction, %s", B_NAME),
        title = "C  Where in the range the change happens",
@@ -142,26 +144,46 @@ pC
 # Sites called in one condition only, and pairs whose partner was too thinly covered to measure,
 # ARE the Mg2+ dependence in its most extreme form. Silently excluding them would understate the
 # effect; drawing them as slopes would invent numbers. So they are counted instead.
+# THE PARTITION HAS TO MATCH THE HEADLINE NUMBER. The first version classified by pair_class
+# FIRST, so a site called only at 10 mM whose partner row was thin or absent landed in those
+# categories instead -- splitting the 337 vs 111 asymmetry across three bars and showing 218 vs 69.
+# The asymmetry IS the main result, so detection status is the primary split and measurability is
+# the fill. (Caught 2026-10-26 on the first knit.)
 marg <- p |>
-  mutate(group = case_when(
-    !plottable & pair_class == "thin_in_other"     ~ "partner < 10 stall reads",
-    !plottable & pair_class == "absent_from_table" ~ "no candidate row in partner",
-    called_a & !called_b ~ sprintf("called %s only", A_NAME),
-    !called_a & called_b ~ sprintf("called %s only", B_NAME),
-    TRUE ~ "called in both")) |>
-  count(group) |> mutate(group = fct_reorder(group, n))
+  mutate(
+    detection = case_when(
+      called_a &  called_b ~ "called in both",
+      called_a & !called_b ~ sprintf("called %s only", A_NAME),
+      !called_a & called_b ~ sprintf("called %s only", B_NAME)),
+    measurable = if_else(plottable, "partner measurable (>= 10 stall reads)",
+                         if_else(pair_class == "thin_in_other",
+                                 "partner < 10 stall reads",
+                                 "no candidate row in partner"))) |>
+  count(detection, measurable) |>
+  mutate(detection = fct_reorder(detection, n, .fun = sum))
 
-pD <- ggplot(marg, aes(n, group)) +
-  geom_col(fill = "grey50", width = 0.65) +
-  geom_text(aes(label = comma(n)), hjust = -0.2, size = 2.8) +
+tot <- marg |> group_by(detection) |> summarise(n = sum(n), .groups = "drop")
+
+pD <- ggplot(marg, aes(n, detection, fill = measurable)) +
+  geom_col(width = 0.65) +
+  geom_text(data = tot, aes(x = n, y = detection, label = comma(n)),
+            inherit.aes = FALSE, hjust = -0.2, size = 3, fontface = "bold") +
+  scale_fill_manual(values = c("partner measurable (>= 10 stall reads)" = "grey45",
+                               "partner < 10 stall reads"              = "#bf812d",
+                               "no candidate row in partner"           = "grey75"),
+                    name = NULL) +
   scale_x_continuous(expand = expansion(mult = c(0, 0.18))) +
   labs(x = "sites", y = NULL,
-       title = "D  What the paired panels cannot show",
-       subtitle = paste("Sites present in one condition only are Mg dependence in its strongest",
-                        "form.\nThey cannot be drawn as slopes without inventing a number, so",
-                        "they are counted here\nrather than dropped silently.")) +
+       title = "D  Detection is what Mg\u00b2\u207a changes",
+       subtitle = sprintf(
+         "%s sites called at %s only against %s at %s only \u2014 a %.1f-fold asymmetry.\nThese cannot be drawn as slopes without inventing a number, so they are counted rather than\ndropped. Fill shows whether the partner condition was measurable at all.",
+         comma(sum(p$called_a & !p$called_b)), A_NAME,
+         comma(sum(!p$called_a & p$called_b)), B_NAME,
+         sum(p$called_a & !p$called_b) / max(1, sum(!p$called_a & p$called_b)))) +
   theme_classic(base_size = 10) +
-  theme(plot.subtitle = element_text(size = 7.5))
+  theme(legend.position = "bottom", legend.direction = "vertical",
+        legend.key.size = unit(8, "pt"), legend.text = element_text(size = 6.5),
+        plot.subtitle = element_text(size = 7.5))
 pD
 ```
 
