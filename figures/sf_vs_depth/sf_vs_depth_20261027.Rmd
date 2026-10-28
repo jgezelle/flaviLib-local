@@ -1,0 +1,408 @@
+---
+title: "Stall fraction against read depth"
+output:
+  pdf_document: {fig_width: 11, fig_height: 8.5}
+  html_document: {fig_width: 11, fig_height: 8.5}
+---
+
+<!--
+WHAT THIS FIGURE IS FOR
+
+The `stall_reads >= 10` floor (gate G1; the rank plots need it reapplied at plot time) is currently
+justified by argument: at 1-2 reads a stall fraction can be 1.000 and mean nothing. The
+relationship it corrects for has never been plotted. This figure shows it, so the threshold is
+visible rather than asserted, and so that any single site's SF can be read against what sites at
+comparable depth actually give.
+
+WHICH SET IS DRAWN, AND WHY IT MATTERS. `peaks_annotated.csv` retains EVERY candidate row
+regardless of the v7.3 gates; `sites.csv` is the gated set. The rank plots draw their grey "all"
+background from the annotated file, which is why both rank plots need the floor reapplied. This notebook reads the annotated
+file deliberately -- the ungated rows ARE the subject -- and marks the gate boundaries rather
+than filtering them away.
+
+ONE NOTEBOOK, BOTH LIBRARIES. Set LIB below and knit twice.
+
+INPUTS: the per-condition peaks_annotated.csv, copied down from the cluster into the figure's
+inputs/ directory. Nothing is recomputed here.
+-->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, dev = "cairo_pdf")
+library(tidyverse); library(scales); library(patchwork)
+
+# Every plot chunk is saved as both .svg and .pdf as well as rendering inline, to
+# plots/<chunk_label>.{svg,pdf}. Same convention as zero_pass_wellpowered_distribution.Rmd.
+FIG_DIR <- "plots"
+dir.create(FIG_DIR, showWarnings = FALSE)
+
+save_plot <- function(plot, label, width = 11, height = 4.2) {
+  ggsave(file.path(FIG_DIR, paste0(label, ".svg")), plot = plot,
+         width = width, height = height, device = "svg")
+  ggsave(file.path(FIG_DIR, paste0(label, ".pdf")), plot = plot,
+         width = width, height = height, device = "pdf")
+}
+```
+
+```{r config}
+# ---- THE ONLY THING TO CHANGE BETWEEN THE TWO KNITS -------------------------------------
+LIB <- "flaviLib"          # "flaviLib" or "viromelib"
+
+CFG <- list(
+  flaviLib = list(
+    base       = "~/Desktop/viromelib/flaviLib/figures/sf_vs_depth",
+    tables     = c("10mM" = "261021_flaviLib_150x150_10mM.peaks_annotated.csv",
+                   "01mM" = "261021_flaviLib_150x150_01mM.peaks_annotated.csv"),
+    n_reps     = 4,
+    min_reps   = 2,
+    gate_label = "2 of 4 replicates"
+  ),
+  viromelib = list(
+    base       = "~/Desktop/viromelib/figures/sf_vs_depth",
+    tables     = c("X" = "261019_orderedRef_peaks_annotated.csv"),
+    n_reps     = 3,
+    min_reps   = 2,
+    gate_label = "2 of 3 replicates"
+  )
+)[[LIB]]
+
+# v7.3 gates, for the reference lines. Not applied -- drawn.
+GATE <- list(stall_reads = 10, treated_sf = 0.3, qvalue = 0.01)
+
+# The gate panels D/E call "passing", and the one the reading notes were measured under.
+# Deliberately NOT the v7.3 qvalue: 0.05 with 3 of 4 replicates is the stricter replicate
+# requirement, and it is what produced the 38-read effective floor recorded below.
+FIG <- list(qvalue = 0.05, min_reps = 3)
+
+# Sites to mark individually. Leave empty for the general figure; fill in to interrogate a
+# specific candidate. accession is the BARE accession, pos the genomic stall position.
+HIGHLIGHT <- tribble(
+  ~label,              ~accession,   ~pos,
+  "cand_FJTB_261026",  "NC_001809",  10765,
+  "cand_FJTB_261026",  "NC_003687",  10734,
+  "cand_FJTB_261026",  "NC_003690",  10838,
+  "cand_FJTB_261026",  "NC_001672",  11036,
+  "cand_FJTB_261026",  "NC_027709",  10764,
+  "cand_FJTB_261026",  "NC_005062",  10681,
+  "cand_FJTB_261026",  "MN830233",   10711,
+  "cand_FJTB_261026",  "MH688511",   10680,
+  "cand_FJTB_261026",  "KT224356",   10874,
+  "cand_FJTB_261026",  "JF416957",   10667,
+  "cand_FJTB_261026",  "JF416967",   10641
+)
+```
+
+```{r load}
+read_one <- function(cond, fn) {
+  read_csv(file.path(CFG$base, "inputs", fn), show_col_types = FALSE) |>
+    mutate(condition = cond)
+}
+raw <- imap_dfr(CFG$tables, ~ read_one(.y, .x))
+
+rep_cols <- function(prefix) paste0(prefix, "_R", seq_len(CFG$n_reps))
+
+d <- raw |>
+  mutate(
+    accession_bare = str_replace(str_split_i(accession, fixed("|"), 1), "\\.\\d+$", ""),
+    pos            = suppressWarnings(as.numeric(stall_site_genomic_position)),
+    # Summed treated stall reads across replicates. The alternative -- the best replicate -- is
+    # more charitable; summed is what detectability_floor.py uses, so keep it consistent and say so.
+    stall_reads    = rowSums(across(any_of(rep_cols("stall_reads_treated"))), na.rm = TRUE),
+    sf             = suppressWarnings(as.numeric(median_treated_sf)),
+    # median_treated_sf is the median across ALL replicates, including ones that failed their
+    # own peak gate. sf_pass is the median over passing replicates only. Measured 2026-10-28:
+    # the two differ only for n_reps_passing == 3 rows (by construction), and the 10 mM median
+    # there rises 0.343 -> 0.368. The larger effect is compositional, see sf_by_reps below.
+
+    q              = suppressWarnings(as.numeric(meta_qvalue)),
+    pval           = suppressWarnings(as.numeric(meta_pvalue)),
+    reps_passing   = suppressWarnings(as.numeric(n_reps_passing))
+  ) |>
+  filter(!is.na(sf), !is.na(stall_reads), stall_reads > 0)
+
+# SF over PASSING replicates only. peak_pass_R* is written by Python as True/False, which readr
+# may read as character, so compare on the uppercased string rather than relying on the parse.
+sf_m <- as.matrix(d[, rep_cols("treated_sf")])
+pp_m <- as.matrix(d[, rep_cols("peak_pass")])
+storage.mode(sf_m) <- "double"
+sf_m[toupper(trimws(as.character(pp_m))) != "TRUE"] <- NA_real_
+d$sf_pass <- apply(sf_m, 1, median, na.rm = TRUE)
+d$sf_pass[!is.finite(d$sf_pass)] <- NA_real_
+
+# CM class per row, from whichever *.cm_hit column is non-NA. A row can carry more than one;
+# label those "multiple" rather than silently taking the first (decision 28).
+hit_cols <- names(d)[str_detect(names(d), "\\.cm_hit$")]
+HAS_CM <- length(hit_cols) > 0
+# Defensive only. The 261021 tables DO carry all seven models' columns plus any_hit (91 columns);
+# an earlier note here claiming otherwise was wrong.
+if (!HAS_CM) warning("no *.cm_hit columns in these tables -- panel C is skipped.")
+cm_short <- function(x) x |>
+  str_remove("\\.cm_hit$") |> str_remove("^CL_") |> str_remove("_xrRNA_final") |>
+  str_remove("_NAR_2025.*") |> str_remove("_cl4_v9_20260824") |> str_remove("_RF00525")
+
+d <- if (HAS_CM) {
+  d |> mutate(n_hits = rowSums(across(all_of(hit_cols), ~ !is.na(.x))),
+              cm_class = case_when(
+                n_hits == 0 ~ "no hit",
+                n_hits  > 1 ~ "multiple",
+                TRUE ~ cm_short(hit_cols[apply(across(all_of(hit_cols), ~ !is.na(.x)), 1, which.max)])
+              ))
+} else {
+  d |> mutate(n_hits = NA_integer_, cm_class = NA_character_)
+}
+d <- d |> mutate(passes = reps_passing >= CFG$min_reps)
+
+# HIGHLIGHT carries its own `pos`, which collides with d$pos on the join and is silently
+# suffixed to pos.x / pos.y. Rename before joining so both are addressable by name.
+marked <- d |>
+  inner_join(HIGHLIGHT |> rename(hl_pos = pos), by = c("accession_bare" = "accession")) |>
+  filter(is.na(hl_pos) | abs(pos - hl_pos) <= 3)
+```
+
+```{r panelA, fig.height=4.2}
+# A. the relationship the floor corrects for
+pA <- ggplot(d, aes(stall_reads, sf)) +
+  geom_point(aes(colour = passes), size = 0.5, alpha = 0.25) +
+  geom_vline(xintercept = GATE$stall_reads, linetype = "dashed") +
+  geom_hline(yintercept = GATE$treated_sf, linetype = "dotted") +
+  annotate("text", x = GATE$stall_reads, y = 1.04, hjust = -0.1, size = 3,
+           label = paste0("G1: stall_reads >= ", GATE$stall_reads)) +
+  annotate("text", x = Inf, y = GATE$treated_sf, hjust = 1.05, vjust = -0.5, size = 3,
+           label = paste0("treated SF >= ", GATE$treated_sf)) +
+  { if (nrow(marked)) list(
+      geom_point(data = marked, colour = "black", size = 1.8, shape = 21, fill = NA, stroke = 0.7),
+      ggrepel::geom_text_repel(data = marked, aes(label = accession_bare),
+                               size = 2.4, max.overlaps = 20, min.segment.length = 0)
+    ) } +
+  scale_x_log10(labels = label_number(big.mark = ",")) +
+  scale_colour_manual(values = c(`TRUE` = "grey20", `FALSE` = "grey70"),
+                      labels = c(`TRUE` = CFG$gate_label, `FALSE` = "below replicate gate"),
+                      name = NULL) +
+  facet_wrap(~ condition, nrow = 1) +
+  labs(x = "summed treated stall reads across replicates (log)",
+       y = "median treated stall fraction",
+       title = "A. Stall fraction against depth, every candidate row",
+       subtitle = "peaks_annotated.csv, ungated. The dashed line is the floor the rank plots reapply.") +
+  theme_minimal(base_size = 9)
+pA
+save_plot(pA, "panelA")
+```
+
+```{r panelB, fig.height=4.2}
+# B. is SF depth-biased? Binned, so the shape is visible rather than inferred from the cloud.
+bins <- c(0, 2, 5, 10, 30, 100, 300, 1000, Inf)
+pB <- d |>
+  mutate(bin = cut(stall_reads, bins, labels = c("1-2","3-5","6-10","11-30","31-100",
+                                                 "101-300","301-1k",">1k"))) |>
+  filter(!is.na(bin)) |>
+  ggplot(aes(bin, sf)) +
+  geom_violin(fill = "grey85", colour = NA, scale = "width") +
+  geom_boxplot(width = 0.18, outlier.size = 0.3, fill = "white") +
+  geom_hline(yintercept = GATE$treated_sf, linetype = "dotted") +
+  facet_wrap(~ condition, nrow = 1) +
+  labs(x = "summed treated stall reads", y = "median treated stall fraction",
+       title = "B. The same, binned",
+       subtitle = "If the leftmost bins sit high, low-depth rows are inflating SF and the floor is doing real work.") +
+  theme_minimal(base_size = 9)
+pB
+save_plot(pB, "panelB")
+```
+
+```{r panelC, fig.height=4.2, eval=HAS_CM}
+# C. SF by CM class, WELL-POWERED ROWS ONLY. The class comparison in CMdist-postXrn1.rmd's fig3
+# was drawn over all rows; restricting to depth makes it a statement about the elements rather
+# than about coverage.
+WELL <- 100
+pC <- d |>
+  filter(stall_reads >= WELL, passes) |>
+  mutate(cm_class = fct_reorder(cm_class, sf, .fun = median)) |>
+  ggplot(aes(cm_class, sf)) +
+  geom_violin(fill = "grey85", colour = NA, scale = "width") +
+  geom_boxplot(width = 0.18, outlier.size = 0.3, fill = "white") +
+  { if (nrow(marked)) geom_point(
+      data = marked |> filter(stall_reads >= WELL, passes),
+      colour = "black", size = 1.6, shape = 21, fill = NA, stroke = 0.7) } +
+  coord_flip() +
+  facet_wrap(~ condition, nrow = 1) +
+  labs(x = NULL, y = "median treated stall fraction",
+       title = paste0("C. Stall fraction by CM class, rows with >= ", WELL, " summed stall reads"),
+       subtitle = "Restricted to well-powered, replicate-passing rows, so SF is comparable across classes.") +
+  theme_minimal(base_size = 9)
+pC
+save_plot(pC, "panelC")
+```
+
+```{r depthbins}
+# Shared depth bins for panels D and E. Same edges as panel B so the three read together.
+BIN_EDGES <- c(0, 2, 5, 10, 30, 100, 300, 1000, Inf)
+BIN_LABS  <- c("1-2", "3-5", "6-10", "11-30", "31-100", "101-300", "301-1k", ">1k")
+d <- d |> mutate(depth_bin = cut(stall_reads, breaks = BIN_EDGES, labels = BIN_LABS))
+```
+
+```{r panelD, fig.height=4.2}
+# D. The p-value side of the same question. The point is the red line, not the boxes: it is the
+# SMALLEST p anywhere in each bin, so it shows what significance a given depth can even reach.
+floor_by_bin <- d |> group_by(condition, depth_bin) |>
+  summarise(best = suppressWarnings(min(pval, na.rm = TRUE)), .groups = "drop") |>
+  filter(is.finite(best))
+
+pD <- ggplot(d, aes(depth_bin, -log10(pmax(pval, 1e-50)))) +
+  geom_boxplot(outlier.shape = NA, fill = "grey88", linewidth = 0.35) +
+  geom_line(data = floor_by_bin, aes(depth_bin, -log10(best), group = 1),
+            colour = "firebrick", linewidth = 0.6) +
+  geom_point(data = floor_by_bin, aes(depth_bin, -log10(best)),
+             colour = "firebrick", size = 1.4) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", colour = "grey35") +
+  facet_wrap(~ condition, nrow = 1) +
+  labs(x = "summed treated stall reads across replicates",
+       y = expression(-log[10] ~ "meta p-value"),
+       title = "D. Small p-values are unattainable at low depth",
+       subtitle = paste("Red: smallest p observed in the bin. Dashed: p = 0.05.",
+                        "A thin row cannot reach significance even when its SF is 1.000.")) +
+  theme_minimal(base_size = 9)
+pD
+save_plot(pD, "panelD")
+```
+
+```{r panelE, fig.height=4.2}
+# E. Where the GATED set actually lives. The replicate requirement is the operative depth filter;
+# G1 sits far below the lowest-depth site that survives it, so raising G1 alone changes nothing.
+eff_floor <- d |> filter(q < FIG$qvalue, reps_passing >= FIG$min_reps) |> group_by(condition) |>
+  summarise(lo = min(stall_reads), n = n(), .groups = "drop")
+
+pE <- ggplot(d, aes(stall_reads, sf)) +
+  geom_point(data = ~ filter(.x, !(q < FIG$qvalue & reps_passing >= FIG$min_reps)),
+             colour = "grey82", size = 0.4) +
+  geom_point(data = ~ filter(.x, q < FIG$qvalue, reps_passing >= FIG$min_reps),
+             colour = "#1f6fb4", size = 0.7, alpha = 0.75) +
+  geom_vline(xintercept = GATE$stall_reads, linetype = "dashed", colour = "firebrick") +
+  geom_vline(data = eff_floor, aes(xintercept = lo), linetype = "dotted", colour = "#1f6fb4") +
+  geom_text(data = eff_floor, aes(x = lo, y = 0.30, label = paste0("lowest passing site: ", lo, " reads")),
+            hjust = -0.06, size = 2.6, colour = "#1f6fb4") +
+  scale_x_log10(labels = label_number(big.mark = ",")) +
+  facet_wrap(~ condition, nrow = 1) +
+  labs(x = "summed treated stall reads across replicates (log)",
+       y = "median treated stall fraction",
+       title = "E. The replicate requirement already enforces a far higher floor than G1",
+       subtitle = paste0("Blue: q < ", FIG$qvalue, " and >= ", FIG$min_reps, " replicates. Red dashed: G1. ",
+                         "Blue dotted: the lowest-depth site that survives the gates.")) +
+  theme_minimal(base_size = 9)
+pE
+save_plot(pE, "panelE")
+```
+
+```{r floor_tradeoff, results='asis'}
+# What a stricter floor would actually cost, on the gated set.
+d |> filter(q < FIG$qvalue, reps_passing >= FIG$min_reps) |> group_by(condition) |>
+  group_modify(~ map_dfr(c(10, 20, 30, 50, 100, 200, 500), function(T) {
+    lost <- .x |> filter(stall_reads < T)
+    tibble(threshold = T, n_total = nrow(.x), n_lost = nrow(lost),
+           pct_lost = round(100 * nrow(lost) / nrow(.x), 1),
+           median_sf_of_lost = round(median(lost$sf), 3))
+  })) |> knitr::kable(caption = "Sites lost if the depth floor were raised, gated set only")
+```
+
+```{r sf_by_reps, results='asis'}
+# Does the all-replicate median skew SF? Two separate questions, answered separately.
+cat("\n### SF: all replicates vs passing replicates only\n\n")
+d |> filter(q < FIG$qvalue, reps_passing >= FIG$min_reps) |>
+  group_by(condition, reps_passing) |>
+  summarise(n = n(),
+            `median, all reps`     = round(median(sf, na.rm = TRUE), 3),
+            `median, passing reps` = round(median(sf_pass, na.rm = TRUE), 3),
+            .groups = "drop") |>
+  knitr::kable(caption = paste("Within a row the two differ only when a replicate failed,",
+                               "so only reps_passing < n_reps rows move.")) |> print()
+
+cat("\n### The compositional effect, which is the larger one\n\n")
+d |> filter(q < FIG$qvalue, reps_passing >= FIG$min_reps) |>
+  group_by(condition, cm_class) |>
+  summarise(n = n(),
+            `% at 3 of 4`   = round(100 * mean(reps_passing == 3), 1),
+            `median SF`     = round(median(sf, na.rm = TRUE), 3),
+            `median SF, 4 of 4 only` = round(median(sf[reps_passing == 4], na.rm = TRUE), 3),
+            .groups = "drop") |>
+  arrange(condition, desc(n)) |>
+  knitr::kable(caption = paste("Sites passing 3 of 4 have systematically lower SF than those",
+                               "passing 4 of 4, and they are unevenly distributed, so a group",
+                               "with more of them looks weaker than it is.")) |> print()
+```
+
+```{r numbers, results='asis'}
+cat("\n### Numbers quoted in the caption\n\n")
+d |> group_by(condition) |>
+  summarise(rows = n(),
+            `rows below G1` = sum(stall_reads < GATE$stall_reads),
+            `SF median, <G1` = round(median(sf[stall_reads <  GATE$stall_reads]), 3),
+            `SF median, >=G1` = round(median(sf[stall_reads >= GATE$stall_reads]), 3),
+            `SF = 1.000, <G1` = sum(sf == 1 & stall_reads <  GATE$stall_reads),
+            `SF = 1.000, >=G1` = sum(sf == 1 & stall_reads >= GATE$stall_reads),
+            .groups = "drop") |>
+  knitr::kable() |> print()
+
+if (nrow(marked)) {
+  cat("\n### Highlighted sites\n\n")
+  marked |>
+    transmute(condition, label, accession_bare, pos, stall_reads,
+              sf = round(sf, 3), q = signif(q, 2), reps_passing, cm_class) |>
+    arrange(condition, accession_bare) |>
+    knitr::kable() |> print()
+}
+```
+
+<!--
+READING IT -- computed on the 261021 tables 2026-10-27, so the expected shape is known
+
+Panel B: SF is NOT inflated at low depth. Median SF by bin at 10 mM runs
+  1-2: 0.043 | 3-5: 0.042 | 6-10: 0.043 | 11-30: 0.049 | 31-100: 0.056
+  101-300: 0.070 | 301-1k: 0.106 | >1k: 0.515
+flat below the floor and climbing with depth, because a real stall accumulates reads and
+fraction together. The SF = 1.000 artefact is narrow, not systematic: 215 rows of 7,531 in the
+1-2 bin at 10 mM (256 of 8,818 at 1 mM), and 3 rows above the floor. So reapplying the floor on both rank plots is justified by
+removing those specific rows, NOT by a general low-depth bias -- the tracker's wording
+("at 1-2 reads SF can be 1.000 and means nothing") describes 2.6 % of that bin.
+
+Panel C, same date, reads >= 100 and reps >= 2, 10 mM / 1 mM medians:
+  dumbbell 0.379 / 0.401 | cl3 0.448 / - | no hit 0.449 / 0.435 | Class_2 0.459 / 0.397
+  class1c 0.693 / 0.710  | Class_1b 0.720 / 0.737 | Class_1a 0.766 / 0.809
+Class 2 is indistinguishable from `no hit` and far below class 1a/1b/1c. So an SF near 0.45 is
+NOT weak evidence for a candidate -- it is what class 2 gives. Judge a candidate against the
+class its host genomes carry, not against class 1a.
+
+885 well-powered replicate-passing `no hit` sites at median SF 0.449 (10 mM), 415 at 1 mM.
+
+Panel C answers "is this site's SF normal for its class". Restricting to >= 100 summed reads
+matters: `CMdist-postXrn1.rmd`'s fig3 drew SF by class over all rows, so a class with many
+thin rows looked different from one with few.
+
+Panels D and E, added 2026-10-28, computed on the 1 mM table only (40,324 rows). These answer
+whether the floor should be stricter, and the answer is that the floor is not the binding filter.
+
+Panel D -- the p-value is self-protecting where SF is not. Smallest p ANYWHERE in each bin:
+  1-2: 1.5e-02 | 3-5: 5.1e-06 | 6-10: 1.1e-09 | 11-30: 2.5e-19
+  31-100: 1.1e-31 | 101-300: 1.4e-37 | 301-1k: 8.5e-46 | >1k: 4.2e-49
+At 1-2 reads NO row reaches q < 0.05 -- 0 of 8,818. A thin row can report SF = 1.000 and still
+cannot reach significance, so the meta p-value already excludes what the SF artefact admits.
+Rows reaching q < 0.05 by bin: 0 | 2.2 % | 6.2 % | 14.8 % | 36.1 % | 64.2 % | 87.6 % | 99.0 %.
+
+Panel E -- the effective floor is 38 summed reads, not 10. Of 1,277 sites with q < 0.05 and
+>= 3 passing replicates, the lowest-depth one carries 38 summed stall reads. G1 at 10 removes
+nothing from the gated set; the replicate requirement is doing the filtering.
+
+Cost of a stricter floor on the gated set (n = 1,277):
+  >= 50: lose 4 (0.3 %) | >= 100: 25 (2.0 %) | >= 200: 65 (5.1 %) | >= 500: 169 (13.2 %)
+The lost sites have HIGH median SF (0.839 at 50, 0.793 at 100), so a stricter floor removes the
+high-SF thin sites specifically -- which is either the residual artefact or real strong elements
+in poorly covered features, and this figure cannot separate the two.
+
+UNRESOLVED, and the reason to keep looking. Among passing sites the median SF is NOT monotonic
+in depth: 31-100: 0.763 | 101-300: 0.500 | 301-1k: 0.457 | >1k: 0.755. The bump at 31-100
+(n = 26, the thinnest passing band) is what residual inflation would look like, and it is the
+band a ~30-read candidate falls into. Either confirm it as inflation and raise the floor to 100,
+or explain it. Do this before quoting SF for any site in that band.
+
+CAVEAT on the depth measure. `stall_reads` here is SUMMED across replicates, matching
+detectability_floor.py. The alternative is the best single replicate, which is more charitable
+and is what zero_pass_wellpowered used. The two were reconciled in favour of best-tile for the
+representation figure; for SF the summed count is the right denominator companion, but the choice
+should be stated in the caption either way.
+-->
