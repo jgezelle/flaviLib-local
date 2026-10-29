@@ -18,7 +18,7 @@ dated records of what was run on those days and are not maintained.
 
 Model md5s belong in `~/Desktop/viromelib/work/infernal/cm/MANIFEST.tsv` (not yet created).
 
-Last updated 2026-10-27.
+Last updated 2026-10-29.
 
 ---
 
@@ -1044,6 +1044,109 @@ NC_001672 three, NC_025677 three, NC_027709 three.
 This is the same arrangement as `cand_FJTB_261026`, which sits downstream of a class 2 tandem
 pair. It is apparently the common case rather than that candidate's peculiarity.
 
+### Step 18 — rebuild class1c from its library-wide hits (`cmalign` round)
+
+Takes class1c's own library hits, realigns them to the model and rebuilds. Same procedure as the
+`pesti_cmalign` round that produced class1c, applied one level up.
+
+**This is self-refitting, which has a recorded failure mode.** Decision 35: `class4_cl4_v9` went
+through nine such rounds, and `clusterA_refined.cm` reached eff_nseq 1.55 — "about as much
+independent statistical information as one and a half sequences". One round is normal
+(`hepaci_hits_v2` did one and reached eff_nseq 19.93 from 55 sequences); the test is whether
+eff_nseq holds up, not whether the hit count grows. Current baseline: **nseq 46, eff_nseq 9.54,
+clen 84, 15 bps, 1 bif, rel. entropy 0.676.**
+
+```bash
+# step 18a -- paths
+INFERNAL=~/Desktop/viromelib/flaviLib/work/infernal
+STOCKDIR=$INFERNAL/flaviLib_20260914/candidate_short1b/pesti_cmalign
+CM=$STOCKDIR/class1c20260917/class1c.cm
+TBL=$INFERNAL/tblout/class1c_20260917.tbl
+FA=$INFERNAL/fa/flavi_library_20260228pretile20260818_TRUEordered_uniqueIDs.fa
+WORK=$INFERNAL/build/class1c/iter_v2_cmalign; mkdir -p "$WORK"
+
+cmstat "$CM" | grep -v '^#'          # record the baseline before changing anything
+```
+
+```bash
+# step 18b -- fetch list from the existing tblout
+# $10=="+" : the September search did not use --toponly, so minus-strand rows are
+#            reverse-complement self-hits and must be dropped (decision 36)
+# $17=="!" : Infernal's own inclusion flag
+# ($7-$6)>=70 : at least 70 of class1c's 84 model columns, dropping single-stem fragments.
+#               This is the filter used for the hepaci round; adjust or remove deliberately.
+grep -v '^#' "$TBL" \
+  | awk '$10=="+" && $17=="!" && ($7-$6)>=70 {print $1"/"$8"-"$9, $8, $9, $1}' \
+  > "$WORK/hits.fetchlist"
+wc -l < "$WORK/hits.fetchlist"
+awk '{print $4}' "$WORK/hits.fetchlist" | cut -d'|' -f1 | sort -u | wc -l   # distinct accessions
+
+esl-sfetch --index "$FA"
+esl-sfetch -Cf "$FA" "$WORK/hits.fetchlist" > "$WORK/hits.fa"
+grep -c '^>' "$WORK/hits.fa"
+```
+
+Count check before going further: the 261021 annotation carries **53 distinct class1c-annotated
+sites** at 10 mM. A fetchlist far larger than that means the strand or length filter is not doing
+its job; far smaller means the column filter is too strict.
+
+```bash
+# step 18c -- align to the current model, then dedup
+cmalign --cpu 4 --outformat Stockholm -o "$WORK/hits_aligned.stk" "$CM" "$WORK/hits.fa"
+python "$ROOT/flaviLib/scripts/dedup_stockholm.py" \
+  "$WORK/hits_aligned.stk" "$WORK/hits_aligned_dedup.stk"
+grep -c '^[^#]' "$WORK/hits_aligned_dedup.stk"
+```
+
+`dedup_stockholm.py` removes exact duplicate **aligned** sequences. It will not collapse
+near-identical ones; `cd-hit-est -c 0.98` on `hits.fa` before `cmalign` is the alternative, and is
+what the hepaci round used (55 sequences from 59 hits). Tandem paralogs within one accession are
+distinct sequences and are kept by both — the pesti round kept them deliberately.
+
+```bash
+# step 18d -- build both ways and compare; the choice changes clen
+cmbuild --hand -F -n class1c_v2hand "$WORK/class1c_v2hand.cm" "$WORK/hits_aligned_dedup.stk"
+cmbuild        -F -n class1c_v2     "$WORK/class1c_v2.cm"     "$WORK/hits_aligned_dedup.stk"
+cmstat "$CM" "$WORK/class1c_v2hand.cm" "$WORK/class1c_v2.cm"
+```
+
+`cmalign` output carries `#=GC RF` from the model, so `--hand` holds the consensus columns at
+clen 84 and only `eff_nseq` and relative entropy move. Plain `cmbuild` re-infers match columns by
+occupancy and may change clen, bps and bifs. The original class1c was built **without** `--hand`
+from a CaCoFold-refined alignment, so neither is "the" convention here — pick one and record it.
+
+**Accept or reject on these, in order:**
+
+1. `eff_nseq` must not collapse. Baseline 9.54 from 46 sequences (ratio 0.207). The rejection
+   case on record is eff_nseq 1.55. A large nseq with a flat eff_nseq means the new sequences are
+   redundant with the seed.
+2. No existing hit may lose bit score. This is the class1b lesson: that merge gained one
+   classification and cost AB021287.1 18.17 → 14.12 bits with the alignment truncated at column
+   62 instead of 81.
+3. `clen`, `bps`, `bifs` should be stable under `--hand`. If they move, the alignment is not
+   column-consistent with the seed.
+
+```bash
+# step 18e -- calibrate and compare per-sequence, not by hit count
+for V in v2hand v2; do cmcalibrate --cpu 4 "$WORK/class1c_$V.cm"; done
+cmsearch --toponly --incE 1e-10 --cpu 4 --tblout "$WORK/v0.tbl" "$CM" "$FA" > /dev/null
+for V in v2hand v2; do
+  cmsearch --toponly --incE 1e-10 --cpu 4 --tblout "$WORK/$V.tbl" "$WORK/class1c_$V.cm" "$FA" > /dev/null
+  echo "== $V: worst per-sequence bit-score changes against v0"
+  join -j1 <(awk '$17=="!"{print $1"_"$8, $15}' "$WORK/v0.tbl" | sort) \
+           <(awk '$17=="!"{print $1"_"$8, $15}' "$WORK/$V.tbl" | sort) \
+    | awk '{printf "%-46s %8.2f %8.2f %+7.2f\n", $1, $2, $3, $3-$2}' | sort -k4,4g | head -8
+  echo "   accessions: $(awk '$17=="!"{print $1}' "$WORK/$V.tbl" | cut -d'|' -f1 | sort -u | wc -l)"
+done
+```
+
+Record in the run log: `nseq`, `eff_nseq`, `clen`, `bps`, `bifs` for all three models, the worst
+per-sequence delta, and the accession count before and after.
+
+**Relation to step 17.** Step 17 tests two specific borderline sequences; step 18 takes every
+passing hit. Run 18 first and use its model as the baseline for 17, or the two sets of changes
+cannot be attributed.
+
 ### Step 17 — class1c with and without the borderline hits
 
 Build three models and compare, isolating each accession's effect. Rebuild the baseline with the
@@ -1444,32 +1547,45 @@ the two Sept trees hold the vsearch clusters and per-genus pools that the candid
 | 2026-09-15 | `esl-sfetch` + `cmalign` + rebuild on 24 | nseq 24, eff_nseq **1.55** — fell. Work stopped: "way too conserved" |
 | 2026-10-27 | `cmsearch` vs RNAvirus_CompleteAssem_No_CoV-2.fa | _(running / fill in)_ |
 
+### `class1c`
+
+| date | step | result |
+|---|---|---|
+| 2026-10-29 | step 17 v0 (seed only, plain cmbuild = how the model was built) | nseq=46 eff_nseq=9.54 clen=84 bps=15 bifs=1 relent_cm=0.676; 47 ! hits / 20 accessions |
+| 2026-10-29 | step 17 ky (+KY370101, cmalign --mapali, cmbuild --hand) | nseq=47 eff_nseq=9.59 clen=84 bps=15 bifs=1 relent_cm=0.676; 51 ! hits / 24 accessions; vs v0: matched=47 lost=0 gained=4 lower_bits=42 worst_delta=-5.60; added: KY370101.1 58.6b/8.3e-17/! PP 0.77; other new ! hits: NC_025677.1:252 ON949931.1:419 BK013349.1:75 MN587695.1:77 . Per-hit: /Users/jeaninegezelle/Desktop/viromelib/flaviLib/work/infernal/build/class1c/iter_v2_borderline/ky/search.tbl.compare.tsv |
+| 2026-10-29 | step 17 on (+ON949931, cmalign --mapali, cmbuild --hand) | nseq=47 eff_nseq=11.06 clen=84 bps=15 bifs=1 relent_cm=0.676; 51 ! hits / 24 accessions; vs v0: matched=47 lost=0 gained=4 lower_bits=29 worst_delta=-1.30; added: ON949931.1 38.1b/3.6e-10/! PP 0.90; other new ! hits: NC_034017.1:177 NC_034204.1:170 BK013349.1:75 . Per-hit: /Users/jeaninegezelle/Desktop/viromelib/flaviLib/work/infernal/build/class1c/iter_v2_borderline/on/search.tbl.compare.tsv |
+| 2026-10-29 | step 17 nc (+NC_025677, cmalign --mapali, cmbuild --hand) | nseq=47 eff_nseq=10.34 clen=84 bps=15 bifs=1 relent_cm=0.676; 49 ! hits / 21 accessions; vs v0: matched=46 lost=1 gained=3 lower_bits=40 worst_delta=-2.70; added: NC_025677.1 28.8b/2e-07/! PP 0.74; other new ! hits: KY370101.1:388 MN587678.1:88 . Per-hit: /Users/jeaninegezelle/Desktop/viromelib/flaviLib/work/infernal/build/class1c/iter_v2_borderline/nc/search.tbl.compare.tsv |
+| 2026-10-29 | step 17 ky_on (+KY370101,ON949931, cmalign --mapali, cmbuild --hand) | nseq=48 eff_nseq=10.46 clen=84 bps=15 bifs=1 relent_cm=0.676; 52 ! hits / 25 accessions; vs v0: matched=47 lost=0 gained=5 lower_bits=44 worst_delta=-5.70; added: KY370101.1 58.4b/5.2e-17/! PP 0.77; ON949931.1 35.0b/2.7e-09/! PP 0.90; other new ! hits: NC_034204.1:170 NC_025677.1:252 BK013349.1:75 MN587695.1:77 . Per-hit: /Users/jeaninegezelle/Desktop/viromelib/flaviLib/work/infernal/build/class1c/iter_v2_borderline/ky_on/search.tbl.compare.tsv |
+
 ## NEXT
 
 Rewritten 2026-10-28. Grouped by what blocks what, not by priority alone.
 
 ### Ready to run now
 
-1. **Step 17 — class1c with and without the borderline pestivirus hits.** Four models: baseline,
+1. **Step 18 — rebuild class1c from its library-wide hits.** `cmalign` the passing hits back into
+   the model and rebuild. Watch `eff_nseq` against the 9.54 baseline, not the hit count. Run
+   before step 17 so the two sets of changes stay separable.
+2. **Step 17 — class1c with and without the borderline pestivirus hits.** Four models: baseline,
    +KY370101, +NC_025677, +both, all built with identical commands and `cmbuild --hand`. Judge on
    per-sequence bit scores across the 53 existing hits, never on hit counts. Commands under
    "Step 17".
-2. **Steps 15 and 16 — is MN564793's Class_1b assignment wrong?** Relaxed `-E 100` search of
+3. **Steps 15 and 16 — is MN564793's Class_1b assignment wrong?** Relaxed `-E 100` search of
    class1c at position 9566, then merge the 9565–9658 span into the class1c seed and test the same
    way. If class1c wins, the library's only Class_1b + class1c co-occurrence disappears.
-3. **Step 14a/14b — is `cand_FJTB_261026` a diverged class 2 copy?** Run `cmstat` on the model
+4. **Step 14a/14b — is `cand_FJTB_261026` a diverged class 2 copy?** Run `cmstat` on the model
    actually in `cm/` first: the candidates table says 2 bifurcations, the P2-removal variant says
    1, and the argument depends on which.
-4. **Read `post_process_peaks.py`'s annotation defaults.** It made every `.cm_hit` column, step 11b
+5. **Read `post_process_peaks.py`'s annotation defaults.** It made every `.cm_hit` column, step 11b
    passes it no `--evalue`, and its thresholds and overlap rule are unknown. The defaults recorded
    for `annotate_infernal_hits.py` belong to a different script and demonstrably do not apply —
    hits at 3.7e-03 survive in these tables.
-5. **Re-derive the "still unclassified" lists.** The Sept 2026 pestivirus and hepacivirus lists
+6. **Re-derive the "still unclassified" lists.** The Sept 2026 pestivirus and hepacivirus lists
    predate the 261021 annotation: KY370100, KY370101 and NC_025677 all carry Class_1b hits now.
    The hepacivirus count is nine, not eight — OX394189 was omitted.
-6. **Resolve `cand_FJTB_261026`'s +1 accession.** Which accession hit that is not in the seed, and
+7. **Resolve `cand_FJTB_261026`'s +1 accession.** Which accession hit that is not in the seed, and
    do all 16 recover themselves? 39 rows from 17 accessions is ~2.3 each — check for tandem copies.
-7. **`cand_PLLG_260915` library-wide with `--toponly --incE 1e-10`.** September used the default
+8. **`cand_PLLG_260915` library-wide with `--toponly --incE 1e-10`.** September used the default
    and both strands. If 48 rows drop to 24, decision 36 closes for this model.
 
 ### Discovery, in order of what the evidence supports
