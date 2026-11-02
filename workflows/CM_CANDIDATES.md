@@ -30,7 +30,7 @@ The file is in parts, most current first. Every dated section says when the work
 |---|---|---|
 | 1 | **Status: goal, where each workstream stands, next steps** | 2026-11-02 |
 | 2 | The 7 annotating models, their limits, Infernal versions | 2026-10-21 – 10-30 |
-| 3 | **Gap filling: clusters with no CM** — the main work | 2026-10-28 – 11-02 |
+| 3 | **Gap filling** — the **gap register** (every gap in one table), candidate cards, the work per gap | 2026-10-28 – 11-02 |
 | 4 | Earlier candidates: `cand_FJTB_261026`, `cand_PLLG_260915` | 2026-09-15 – 10-27 |
 | 5 | class1c review: saturation, borderline hits (step 17) | 2026-10-28 – 10-30 |
 | 6 | class1b and class1c: overlap, merge question, class1b expansion attempt | 2026-09 – 10-30 |
@@ -66,24 +66,25 @@ unchanged by them.
 | 3 | merge class1b and class1c? | 10-29 – 10-30 | one model or two? | Two. class1c had the lower E-value at none of its 16 overlaps with Class_1b (1, 4 and 11 across the three class1c models tested). Overlaps are resolved per site by lower E-value. Part 6 | **closed** |
 | 4 | Class_1b expansion | 10-30 | Class_1b has 68 library hits not in its seed; add them? | Every rebuild loses at least one existing hit (AB021287). The original model was built with Infernal 1.1.2, which changed how comparisons must be made. Part 6 | **paused** — AB021287 `--max` check outstanding |
 | 5 | explorer scan with the missing models | 10-29 | how many explorer "None found" sites are already class1c / cl3? | 45 class1c, 3 cl3 (loquat, fz 110). 163 no-CM sites remain; 6 no-CM clusters of ≥ 3 sites. Part 3 | **done** |
-| 6 | **gap filling: FJIS fz 106, fz 5** | 10-30 – 11-02 | new candidates | aligned (strong alifold); R-scape underpowered with 3 and 5 sequences; class1c-guided seed tried and abandoned. Part 3 | **in progress** |
-| 7 | **gap filling: FJJI fz 41 / fz 44, HPPV fz 39, fz 64, fz 117** | — | new candidates | windows fetched from the reference (fz 41–39); not aligned | **next** |
+| 6 | **gap filling: FJIS (G1)** | 10-30 – 11-02 | new candidate | **`cand_FJIS_261029`**: pooled fz 5 + fz 106, 80-nt windows, MATER edit (2 pseudoknots). Covariation gate passed (4 covarying vs 0.2 expected); model built; library saturated; sibling of class1c, not part of it. Part 3 | **in progress** — Class_1b comparison, RNAvirus DB |
+| 7 | **gap filling: FJJI fz 41 / fz 44 (G2), HPPV fz 39 (G3), fz 64 (G4), fz 117 (G5)** | — | new candidates | windows fetched (fz 41–39); not aligned | **next** — G2 first |
 | 8 | earlier candidates `cand_FJTB_261026`, `cand_PLLG_260915` | 09-15 – 10-27 | | built; blocked on sequence diversity; RNAvirus-database searches started 10-27, results not recorded | **results pending** |
 | 9 | Mifsud-clade pools beyond the explorer clusters | 10-28 | | pool queue ranked (Part 3); pool FASTAs not built | **queued** |
 
 ## Next steps, in order
 
-1. **FJIS fz 106 and fz 5** (Part 3): in MATER, trim each alignment to the element that starts at
-   the stall; record what changed with `clog`. Build a preliminary model from each (plain
-   `cmbuild`), `cm_iterate.sh --check-only` against the library, then against the RNAvirus
-   database — more divergent sequences are the only way to gain covariation power.
-2. **FJJI fz 41, fz 44 (and pooled), HPPV fz 39**: run the alignment block in Part 3. Look at
-   fz 64 and fz 117.
-3. **Record the 10-27 RNAvirus-database results** for `cand_FJTB_261026` and `cand_PLLG_260915`
-   (`tblout/RNAvirusDB_261027.tbl` in each build).
-4. **Class_1b**: run the AB021287 `--max` check (Part 6), then accept or close.
-5. **Clade pools** with `make_pool_fastas.py` for the clades the explorer clusters do not cover
-   (PLLG remainder, HPPV, HPHV, FJMB, not-in-Mifsud).
+The full list of gaps, with state and where each is described, is the **gap register** at the top of
+Part 3.
+
+1. **G1 `cand_FJIS_261029`**: Class_1b comparison (reciprocal + library overlap), then the
+   RNAvirus-database search; `cmalign --mapali` any novel hits into the seed and re-run R-scape.
+2. **G2 FJJI fz 41 + fz 44**: the FJIS route — explorer 80-nt windows (`explorer_cm_scan.py seqs`),
+   mlocarna single and pooled, MATER edit, R-scape, first model, library search. Then G3 (HPPV
+   fz 39); look at G4 / G5 (check G5 against `cand_PLLG_260915` first).
+3. **G6 / G7**: record the 10-27 RNAvirus-database results for `cand_FJTB_261026` and
+   `cand_PLLG_260915`.
+4. **E4 Class_1b**: the AB021287 `--max` check, then accept or close.
+5. **Clade pools** G8–G14 with `make_pool_fastas.py`.
 
 ---
 
@@ -188,6 +189,95 @@ only, and extend them by appending to the seed with `cmalign --mapali` (Part 6).
 
 # Part 3. Gap filling: clusters with no CM (2026-10-28 – 11-02)
 
+## Gap register — 2026-11-02
+
+**The one list of every gap**: sites or groups of sites that no annotating model explains, plus
+the extensions of existing models that were tried. Each row says where the work is described and
+which run-log table holds its steps. A gap nobody has worked on has no run-log rows, so this table
+is the only place it shows as pending. Update the row when its state changes.
+
+Explorer clusters (`fz`, Part 9 → Naming) are subsets of the clade pools below them: G1 ⊂ FJIS,
+G2 ⊂ FJJI, G3 ⊂ HPPV, G4 / G6 ⊂ FJTB, G5 / G7 ⊂ PLLG. Pool counts include their clusters' sites;
+do not add the two.
+
+### Gaps
+
+| id | gap | source | size | state | last | described in | run log |
+|---|---|---|---|---|---|---|---|
+| **G1** | FJIS insect-specific flaviviruses: explorer fz 106 + fz 5 → **`cand_FJIS_261029`** | explorer | 8 sites, 8 species (+ NC_012671 found by the model) | **model built; passes covariation; library saturated.** Next: Class_1b comparison, RNAvirus DB | 11-02 | Part 3, card + FJIS section | `cand_FJIS_261029` (and the superseded single-cluster tables) |
+| **G2** | FJJI Jingmen tick viruses and relatives: explorer fz 41 + fz 44 | explorer | 12 + 8 sites | **next**: 80-nt windows → mlocarna → MATER | 10-29 (fetched) | Part 3, explorer section | — |
+| G3 | HPPV rodent pegiviruses: explorer fz 39 | explorer | 4 sites | queued (Sept pegivirus genus pool set aside at −3.56) | 10-29 (fetched) | Part 3 | — |
+| G4 | FJTB TBEV serocomplex: explorer fz 64 (MT354614 10670, NC_001672 10912, NC_027709 10641) | explorer | 3 sites | not looked at. A second FJTB site besides `cand_FJTB_261026`; check its position against the class 2 pair and G6 first | — | — | — |
+| G5 | PLLG Bole tick virus 4 / Flaviviridae sp.: explorer fz 117 (ON408075 15841, ON811709 16053, ON811731 16056) | explorer | 3 sites | not looked at. Same taxa as `cand_PLLG_260915`: check whether G7's model already hits these | — | — | — |
+| G6 | `cand_FJTB_261026` (explorer fz 3) | Sept vsearch / explorer | 16 seqs | model built 10-27; diversity-blocked; RNAvirus DB search started 10-27, **result not recorded** | 10-27 | Part 4 | `cand_FJTB_261026` |
+| G7 | `cand_PLLG_260915` (clusterA/B/C) | PLLG clade pool | 24 of 60 PLLG | model built 09-15; refit stopped (too conserved); RNAvirus DB **result not recorded** | 10-27 | Part 4 | `cand_PLLG_260915` |
+| G8 | PLLG remainder | PLLG clade pool | 36 of 60 members; pool 66 sites / 35 acc | not started; cluster within (spread 6,756 nt) | — | Part 3 pool queue; Part 7 | — |
+| G9 | HPHV hepaciviruses | clade pool + Sept lists | pool 34 sites / 24 acc; lists: 9 unclassified accessions, 13 partial Class_1b matches, 9 dropped from the class1b merge (may overlap) | not started; reconcile the three lists in one comparison first | — | Part 3 pool queue; Part 5 "Known uncovered"; Part 6 | — |
+| G10 | PLPV pestiviruses | clade pool + Sept list | pool 15 sites / 9 acc; 8 sequences trimmed from the Sept seed | not started | — | Part 3 pool queue; Part 5 "Known uncovered" | — |
+| G11 | FJMB mosquito-borne | clade pool | 17 sites / 12 acc | not started | — | Part 3 pool queue | — |
+| G12 | FJAF aquatic | clade pool | 9 sites / 6 acc | not started | — | Part 3 pool queue | — |
+| G13 | FJUN unclassified | clade pool | 7 sites / 3 acc | not started | — | Part 3 pool queue | — |
+| G14 | not in Mifsud | clade pool (by genus) | 29 sites / 15 acc | not started | — | Part 3 pool queue | — |
+| G15 | mixed explorer clusters with a no-CM member beside Class_1b sites: fz 21 (CFAV LR694076 10565, Kamiti River NC_005064 11245), fz 135 (MW897328 10653) | explorer | 3 sites | not looked at; first test whether Class_1b scores them below threshold | — | — | — |
+| G16 | unannotated site downstream of the last annotated one in the same genome | 261021 tables | 56 of 173 annotated accessions | target list only | 10-28 | Part 7 | `The unmatched pool` |
+| — | Sept orthoflavivirus vsearch clusters 1, 3–30 | genus pool | 29 clusters | **superseded** by the explorer clusters and clade pools (recorded rule: split by clade, not genus) | — | Part 7 | — |
+
+### Extensions of existing models (not gaps; recorded so they are not retried)
+
+| id | what | state | last | described in | run log |
+|---|---|---|---|---|---|
+| E1 | class1c refit on the library (step 18) | **closed**: library hits = seed | 10-29 | Part 5 | `class1c` |
+| E2 | class1c + borderline hits (step 17) | **closed**: no variant accepted | 10-30 | Part 5 | `class1c` |
+| E3 | merge class1b + class1c | **closed**: keep both, lower E wins per site | 10-30 | Part 6 | `class1c` |
+| E4 | Class_1b + its 68 novel library hits | **paused**: AB021287 `--max` check | 10-30 | Part 6 | `class1b` |
+| E5 | loquat fz 110 | **closed**: cl3 hits all three sites | 10-29 | Part 3 | `cl3` |
+
+## Candidate cards — 2026-11-02
+
+One card per live candidate: what it is, where its files are, which gates it has passed.
+Gates are in Part 8 (Build procedure and gates).
+
+#### `cand_FJIS_261029` — insect-specific flavivirus element (G1)
+
+| | |
+|---|---|
+| members | fz 106: ON949931 10608, NC_034017 10511, NC_034204 10523; fz 5: AB981186 10732, MH827524 10759, NC_008604 10707, NC_021069 10735, NC_024299 10747 |
+| seed | `build/cand_FJIS_261029/iter_v2_explorer80/mlocarna/results/result-oneblock_edit261102-MATER-wiggle-refined.stk` (explorer 80-nt windows, hand-edited, MATER wiggle-refined) |
+| structure | P1 7–10/60–63, P2 11–17/23–29, P3 36–39/48–51, PK A 4–6/53–55, PK B 42–45/67–70 (22 bp); class 1-like layout |
+| model | `build/cand_FJIS_261029/iter_v2_explorer80/cm/cand_FJIS_261029.cm` — 8 / 4.44 / clen 82 / 13 bp / 1 bif, calibrated |
+| GATE 1 alifold | pooled 80-nt: see run log (the 80-nt pooled alifold row lacks energies) |
+| covariation | **passed**: 4 covarying vs 0.2 ± 0.5 expected, avgid 53.1, every nested helix supported; both PKs untested (power 0) |
+| library search | 9 hits / 9 accessions at 1e-10, 0 novel: saturated. Extra hit NC_012671 10735 (weak stall, 2/4 reps) |
+| relation to class1c | reciprocal: weak one way, moderate the other → sibling family |
+| relation to Class_1b | **not yet tested** |
+| position overlap, 7 models | not yet checked; in the library no FJIS hit overlaps a Class_1b stall (tandem, downstream) |
+| RNAvirus DB | not yet run |
+| name | `cand_` until accepted; a class 1 name (e.g. class1d) is consistent with the layout but implies the pseudoknots, which are untested |
+
+#### `cand_FJTB_261026` — third FJTB stall downstream of the class 2 pair (G6)
+
+| | |
+|---|---|
+| members | 16 sequences, TBEV serocomplex (explorer fz 3) |
+| model | `cm/cand_FJTB_261026.cm` — 16 / 1.63 / 80 / 23 bp / 2 bifs |
+| covariation | 4 covarying of 24, expected 0.4 ± 0.6, avgid 86.29: conserved, low power |
+| library search | 17 accessions from 16 |
+| open | RNAvirus DB result (10-27); step 14a (diverged class 2 copy?) |
+
+#### `cand_PLLG_260915` — clusterA, tick-associated PLLG (G7)
+
+| | |
+|---|---|
+| members | 12 (clusterA) → recovers 24 of 60 PLLG members |
+| model | `cm/cand_PLLG_260915.cm` — 12 / 1.90 / 76 / 15 bp / 0 bifs; refit on 24 fell to eff_nseq 1.55 |
+| open | RNAvirus DB result (10-27); `--toponly --incE 1e-10` rerun; whether it already hits G5 |
+
+#### Superseded candidates
+
+`cand_FJIS_fz106_261029` and `cand_FJIS_fz5_261029` (single-cluster, 171-nt windows, 10-30) are
+superseded by `cand_FJIS_261029` (pooled, 80-nt, 11-02). Their run-log tables are kept.
+
+
 ## Live workflow: pools without a CM
 
 Added 2026-10-29. One procedure for every Mifsud clade and genus pool that has no CM, with each
@@ -204,7 +294,7 @@ models of `cm_set_261021` (2026-10-28 table). Ordered by distinct species, the r
 |---|---:|---:|---:|---:|---|---|---|---|---|---|---|
 | **PLLG** | 66 | 35 | 18 | 0.421 | `cand_PLLG_260915` covers clusters A/B/C; exclude its hits first | — | — | — | — | — | _(running 10-27)_ |
 | **HPPV** | 40 | 21 | 17 | 0.567 | Sept genus pool set aside at −3.56, built from `downstream_seq` | — | explorer fz 39 (4 rodent pegiviruses); FASTA 4/4 | not yet | — | — | — |
-| **FJIS** | 34 | 20 | 14 | 0.620 | none. Dereplicate *Quang Binh virus* (4 accessions). fz 106 has a sub-threshold class1c match (ON949931) | — | explorer fz 5 (5), fz 106 (3); FASTA 5/5, 3/3 | fz 106 −34.42, fz 5 −26.53; pooled worse (2026-10-30) | — | — | — |
+| **FJIS** | 34 | 20 | 14 | 0.620 | none. Dereplicate *Quang Binh virus* (4 accessions). fz 106 has a sub-threshold class1c match (ON949931) | — | explorer fz 5 + fz 106 → `cand_FJIS_261029` | 80-nt pooled + MATER: 4 covarying (11-02) | built 11-02 | 9 hits, saturated | — |
 | **FJJI** | 57 | 50 | 13 | 0.549 | none; Jingmenvirus genus has no CM coverage at all. Spread 181 nt | — | explorer fz 41 (12), fz 44 (8); FASTA 12/12, 8/8 | not yet | — | — | — |
 | **HPHV** | 34 | 24 | 12 | 0.595 | `hepaci_unclas` rejected; part of `class1c` seed | — | — | — | — | — | — |
 | FJMB | 17 | 12 | 11 | 0.409 | none | — | — | — | — | — | — |
@@ -294,11 +384,12 @@ reference before aligning):
 | 41 | 12 | FJJI | Jingmen tick virus ×7, Takachi, Heilongjiang tick, Alongshan, Yanggou tick | 0.55–0.86 | 10 mM only | stall 2493–2672 |
 | 44 | 8 | FJJI | Jingmen tick virus ×6, Rhipicephalus assoc. flavi-like | 0.50–0.65 | mostly both | stall 2448–2563; different segment accessions from fz 41 — align 41 + 44 together once, to test one element across segments |
 | 3 | 8 | FJTB | TBEV serocomplex | 0.51–0.70 | 1 mM only | = `cand_FJTB_261026` |
-| 5 | 5 | FJIS | Culex flavivirus, Quang Binh, Mosquito flavivirus ×2, Nienokoue | 0.69–0.90 | 10 mM only | **`cand_FJIS_fz5_261029`**, aligned 2026-10-30 |
+| 5 | 5 | FJIS | Culex flavivirus, Quang Binh, Mosquito flavivirus ×2, Nienokoue | 0.69–0.90 | 10 mM only | pooled with fz 106 as **`cand_FJIS_261029`** (G1), 2026-11-02 |
 | 39 | 4 | HPPV | rodent pegiviruses | 0.73–0.84 | 10 mM only | |
-| 106 | 3 | FJIS | NC_034017, NC_034204, ON949931 | 0.84–0.94 | both | sub-threshold class1c in ON949931; **`cand_FJIS_fz106_261029`**, aligned 2026-10-30 |
+| 106 | 3 | FJIS | NC_034017, NC_034204, ON949931 | 0.84–0.94 | both | sub-threshold class1c in ON949931; pooled with fz 5 as **`cand_FJIS_261029`** (G1), 2026-11-02 |
 | 110 | 3 | FJJI-related (plant host) | *Loquat jingmen-related virus 1*, one site per segment | 0.51–0.61 | 10 mM only | **class 3** — cl3 26.0–36.8 bits on all three (2026-10-29); out of the no-hit pool |
-| 64, 117 | 3 each | — | | | | not yet looked at |
+| 64 | 3 | FJTB | MT354614 10670, NC_001672 10912, NC_027709 10641 | 0.51–0.63 | one condition each | G4, not looked at |
+| 117 | 3 | PLLG | ON408075 15841, ON811709 16053, ON811731 16056 (Bole tick virus 4, Flaviviridae sp.) | 0.54–0.59 | mostly 1 mM | G5; check against `cand_PLLG_260915` |
 
 **How the cluster sequences were extracted** (full detail and commands: Methods M3 and the
 Regenerate / Aligning blocks):
@@ -384,12 +475,93 @@ none. The few supported helices lie ~60–130 nt downstream of the stall, so the
 downstream structure rather than to the element at the stall. Outputs:
 `build/<candidate>/rscape/result-oneblock_1.{cov,power,helixcov,R2R.sto.pdf}`.
 
-**Next.** MATER: trim each alignment to the element that starts at the stall and decide whether
+**Next (as written 10-30; done 11-02 for the pooled candidate, below).** MATER: trim each alignment to the element that starts at the stall and decide whether
 the downstream helices belong to it; record R-scape / trimming / pseudoknot / CaCoFold changes with
 `clog`. Then a preliminary model (plain `cmbuild` — no `--hand`, the mlocarna alignment has no RF),
 `cm_iterate.sh --check-only` against the library and then the RNAvirus database. Once an fz 106
 model exists, score it on class1c's seed and class1c on its seed: strong both ways = one family,
 weak both ways = siblings sharing an architecture.
+
+#### Superseded reading of the 171-nt runs (2026-11-02)
+
+The R-scape support in the 171-nt alignments sat 60–130 nt past the stall, in a downstream
+stem-loop that is not part of the element; the stall-proximal region was untested. The
+single-cluster candidates above are superseded by the pooled 80-nt candidate below.
+
+#### `cand_FJIS_261029`: pooled, 80-nt windows, MATER edit — 2026-11-02
+
+**Windows.** The explorer's own `downstream_seq` (starts at the stall, 80 nt for all 8), written by
+`explorer_cm_scan.py seqs` into `build/class1c/explorer_scan_261029/FJIS_{fz106,fz5}_explorer80.fa`.
+
+**mlocarna, 80-nt** (`build/<candidate>/iter_v2_explorer80/`):
+
+| candidate | alifold (total = energy + covariance) |
+|---|---|
+| fz 106 (3) | −25.65 = −13.97 + −11.68 |
+| fz 5 (5) | −28.97 = −15.96 + −13.01 |
+| pooled (8) | not captured (row has the structure only) |
+
+R-scape on the raw 80-nt alignments: fz 106 2 of 18 pairs (13–24, 16–21), fz 5 none in structure,
+pooled 2 of 11 (33–46, 35–44); all underpowered. Support now sits near the stall.
+
+**Manual edit and MATER** (both in `iter_v2_explorer80/mlocarna/results/`):
+
+- `result-oneblock_edit261102.stk` — hand edit of the pooled alignment;
+- `result-oneblock_edit261102-MATER-wiggle-refined.stk` — wiggle-refined; **the seed**.
+
+| element | columns | canonical, fz 106 | canonical, fz 5 |
+|---|---|---:|---:|
+| P1 | 7–10 / 60–63 | | |
+| P2 | 11–17 / 23–29 | (P1–P3) 39/45 | 63/75 |
+| P3 | 36–39 / 48–51 | | |
+| PK A (5′ end) | 4–6 / 53–55 | 9/9 | 15/15 |
+| PK B (P3 loop → downstream) | 42–45 / 67–70 | 12/12 | 13/20 |
+| all 22 bp | | 91 % (edit 82 %) | 83 % (edit 79 %) |
+
+**R-scape** (MATER, `-s --onemsa`; output in
+`…/results/result-oneblock_edit261102-MATER-wiggle-refined-MATER-R-scape/`, `.zip` beside it;
+command-line run in `iter_v2_explorer80/rscape_refined/` gives identical results):
+avgid 53.08, 22 bp, **4 covarying vs 0.2 ± 0.5 expected**, FP 0, PPV 100; covarying P1 9–61,
+P2 17–23, P3 37–50 and 39–48 (E 0.010–0.049). PK A and PK B: 0–2 substitutions, power 0.
+Covariation between fz 5 and fz 106 sequences is the evidence that the two clusters share one
+structure.
+
+**Model**: plain `cmbuild` (no RF), `cmcalibrate` → `iter_v2_explorer80/cm/cand_FJIS_261029.cm`,
+8 / 4.44 / clen 82 / 13 bp / 1 bif. cmbuild drops the two letter-pair pseudoknots, as for all
+classes, and placed 2 of the 15 bracket pairs in insert columns.
+
+**Library search** (`cm_iterate.sh --check-only`, `--incE 1e-10`; `iter_v2_explorer80/search_library/`):
+9 hits / 9 accessions, 0 novel — the 8 seed sites (each starting at its stall; MH827524 594 =
+stall 10759) plus **NC_012671** (Quang Binh virus) 544–623, 78.6 bits, genomic 10735. In the
+261021 10 mM table that position has a stall at 2 of 4 replicates, SF 0.311 — it failed the
+≥ 3-replicate gate; nothing passing at 1 mM. Element present, stall weak. In Culex flavivirus and
+Quang Binh virus the element lies downstream of the Class_1b stalls (feature 544–709 vs 114–466).
+
+**Reciprocal test with class1c** (`iter_v2_explorer80/cm/{class1c_on_fjis_seed,fjis_on_class1c_seed}.tbl`):
+class1c on the 8 FJIS seeds — only ON949931, 13.3 bits. FJIS model on the 46 class1c seeds — 12
+hits: 8 pangolin pestiviruses full-length, 12.5–21.9 bits (ON024090 E 6.8e-06); 4 hepaciviruses
+partial (cm 11–42 / 26–42), 7.6–10.9 bits. Weak one way, moderate the other: **siblings, not one
+family.**
+
+**Before acceptance** (card above): Class_1b reciprocal + library overlap; RNAvirus DB search and
+`cmalign --mapali` of novel hits; R-scape on the expanded alignment (pseudoknot power); position
+overlap with all 7 models; name; deployment (cm/, MANIFEST, new cm_set, cluster steps 10–13).
+
+```bash
+# Class_1b comparison (not yet run)
+SEED1B=~/Desktop/viromelib/work/infernal/cm/seeds/CL_Class_1b_xrRNA_final.sto
+FJIS_TBL=$ITER/search_library/r0/search.tbl
+python3 $FLAVISCRIPTS/cm_round_stats.py overlap "$FJIS_TBL" "$C1C/iter_v2_borderline/vs_class1b/class1b.tbl" FJIS class1b | tail -4
+python3 $FLAVISCRIPTS/cm_round_stats.py overlap "$FJIS_TBL" "$C1C/tblout/class1c_20260917.tbl" FJIS class1c | tail -4
+esl-reformat fasta "$SEED1B" > "$ITER/cm/class1b_seed_ungapped.fa"
+cmsearch --toponly -T 0 -o /dev/null --tblout "$ITER/cm/class1b_on_fjis_seed.tbl" "$CMSET/CL_Class_1b_xrRNA_final.cm" "$ITER/cm/fjis_seed_ungapped.fa"
+cmsearch --toponly -T 0 -o /dev/null --tblout "$ITER/cm/fjis_on_class1b_seed.tbl" "$ITER/cm/$CAND.cm" "$ITER/cm/class1b_seed_ungapped.fa"
+
+# RNAvirus database (long)
+DB=~/Desktop/viromelib/work/infernal/fa/RNAvirus_CompleteAssem_No_CoV-2.fa
+$FLAVISCRIPTS/cm_iterate.sh --name "$CAND" --cm "$ITER/cm/$CAND.cm" --seed "$REFINED" \
+  --target "$DB" --label RNAvirusDB --workdir "$ITER/search_RNAvirusDB" --doc "$DOC" --check-only
+```
 
 ### Aligning the no-CM explorer clusters — block updated 2026-11-02
 
@@ -757,7 +929,7 @@ awk '$1!~/^#/' "$OUT_DIR/class2_vs_candidate.tbl" | sort -k16,16g | head -20
 # step 14b — all seven models against the candidate windows, best hit each, for comparison
 for CM in "$CM_DIR"/CL_*.cm; do
   printf '%s\t' "$(basename "$CM" .cm)"
-  cmsearch --toponly -E 100 --tblout /dev/stdout "$CM" "$CAND_FA" 2>/dev/null \
+  cmsearch --toponly -E 100 -o /dev/null --tblout /dev/stdout "$CM" "$CAND_FA" 2>/dev/null \
     | awk '$1!~/^#/' | sort -k16,16g | head -1 | awk '{print $16"\t"$8"-"$9}'
 done
 ```
@@ -1551,7 +1723,7 @@ CM_DIR=~/Desktop/viromelib/work/infernal/cm          # confirm
 esl-sfetch <reference.fa> MN564793.1 > /tmp/MN564793.fa
 for CM in "$CM_DIR"/class1c.cm "$CM_DIR"/CL_Class_1b_xrRNA_final.cm; do
   echo "== $(basename "$CM")"
-  cmsearch --toponly -E 100 --tblout /dev/stdout "$CM" /tmp/MN564793.fa 2>/dev/null \
+  cmsearch --toponly -E 100 -o /dev/null --tblout /dev/stdout "$CM" /tmp/MN564793.fa 2>/dev/null \
     | awk '$1!~/^#/ {print $8"-"$9, $16}' | sort -k2,2g | head
 done
 ```
@@ -1738,7 +1910,7 @@ for M in "$CL1B" "$CLASS1B_INF112/strong/class1b_alignHits_strong_inf112.cm" "$C
   for MODE in default max; do
     OPT=""; [ $MODE = max ] && OPT="--max"
     printf '%-40s %-7s ' "$(basename "$M" .cm)" "$MODE"
-    cmsearch --toponly $OPT -E 100 --tblout /dev/stdout "$M" "$CLASS1B_INF112/AB021287.fa" 2>/dev/null \
+    cmsearch --toponly $OPT -E 100 -o /dev/null --tblout /dev/stdout "$M" "$CLASS1B_INF112/AB021287.fa" 2>/dev/null \
       | awk '$1!~/^#/ {print "cm "$6"-"$7, $8"-"$9, $15" bits", "E "$16, $17; f=1; exit} END{if(!f) print "no hit"}'
   done
 done
@@ -1780,6 +1952,8 @@ were conflated once already (see Corrections).
 | **well-powered, replicate-passing sites with no CM hit** | **885 / 415** | stall sites | 10 mM / 1 mM | the site-level discovery frontier |
 
 ### Progress table
+
+The 2026-10-28 snapshot. Current state per gap: the gap register, Part 3.
 
 One row per Mifsud sub-clade and per cluster. `—` means not checked, which is different from "no".
 
@@ -2162,6 +2336,9 @@ Each of these broke a command once.
 | `permission denied` on a script | downloaded files lose the executable bit | `chmod +x`, or `bash script.sh` |
 | `duplicate seq name` from R-scape / Easel | LocARNA 2.0.1 writes `result.stk` as two blocks with no blank line between (`#=GF SQ 6` for 3 sequences) | join with `stk_oneblock` first |
 | alifold line logged without energies | mlocarna wraps the alignment, and the alifold line, at ~120 characters | the `awk` extraction below |
+| `cmsearch --tblout /dev/stdout` output mixed with the alignment report | cmsearch also prints its main report to stdout | add `-o /dev/null`, or write the tblout to a file (fixed in Parts 4–6 on 2026-11-02) |
+| `command not found: alifold_line` (or `clog`, `stk_oneblock`) | functions last only for the terminal session | paste the definitions below into each new terminal |
+| a `<…>` placeholder copied into a command | placeholders are not paths | replace before running |
 
 ```bash
 clog() { python3 "$FLAVISCRIPTS/cm_log.py" "$DOC" --model "$1" --step "$2" --result "$3"; }
@@ -2495,6 +2672,12 @@ which is why the `RFview` path under `~/local/lib/RFview/` is broken.
 vsearch cluster indices (`cluster_2`, `clusterA`) are not names — they depend on the input FASTA,
 the `--id` threshold and the run date. Record them as provenance.
 
+**`fz N`** = **frozen cluster N** of the flavi150 explorer: the 2026-10-28 clustering of the 416
+pooled sites by LocARNA similarity, cut at 0.55 with the largest component recut at 0.57 (colour by
+"frozen cluster (20261028)" in the explorer). The number is an index from that one clustering, not
+a name; it goes into a candidate's first log row as provenance. `G<n>` / `E<n>` are gap-register ids
+(Part 3).
+
 Helices are `P1`, `P2`, `P3` and pseudoknots `PK`, following the flavivirus xrRNA literature. An
 `H1`/`H2` appear in older notes and mean `P1`/`P2`.
 
@@ -2750,6 +2933,9 @@ the same stall position per accession". Measured effect: 56 % of no-hit rows at 
 | 2026-10-30 | same, spans extended to hit start +99 | cm 1-35, 17-66, 1-70; -12.17, -13.19, -14.69 b. Resemblance ends near class1c col 75 and is weak: class1c-guided seed abandoned |
 | 2026-11-02 | R-scape -s on result.stk | failed: duplicate seq name (LocARNA two-block Stockholm). Fixed with stk_oneblock -> result-oneblock.stk |
 | 2026-11-02 | R-scape -s on result-oneblock.stk (3 seqs, 185 cols) | 49 bp tested; significant: 128-149 (in structure), 22-181 (not); Sen 2.04, PPV 50. Helix 126-133/144-151 1 of 8 bp covarying. Power 0.00-0.10: underpowered |
+| 2026-11-02 | mlocarna, 3 seqs, explorer downstream_seq windows (<=80 nt from the stall; iter_v2_explorer80) | alifold |
+| 2026-11-02 | mlocarna alifold, explorer downstream_seq windows (iter_v2_explorer80), corrected row: alifold_line was undefined in the first logging | alifold ..((((...(((((((....)))))))...((((........))))))))..(((........)))................... (-25.65 = -13.97 + -11.68) |
+| 2026-11-02 | superseded | by `cand_FJIS_261029` (pooled fz 5 + fz 106, 80-nt windows, MATER edit) |
 
 ### `cand_FJIS_fz5_261029`
 
@@ -2758,6 +2944,9 @@ the same stall position per accession". Measured effect: 56 % of no-hit rows at 
 | 2026-10-30 | mlocarna --probabilistic --consistency-transformation, 5 seqs from explorer FJIS_fz5 (stall -20/+150 from the reference) | alifold ..((.((..(((((....)))))))))(((((((((.....)))).(((((........))))).......)))))...(((((((((..(((((...(((((((((((((.......)) |
 | 2026-11-02 | mlocarna alifold, corrected (earlier row truncated by line wrapping) | 5 seqs, 156 cols: (-80.63 = -54.10 + -26.53), 50 bp, covariance -0.53 per bp |
 | 2026-11-02 | R-scape -s on result-oneblock.stk (5 seqs, 153 cols) | 50 bp tested; significant 87-141, 88-140, both in structure (PPV 100, Sen 4.00). Helix 80-88/140-150 2 of 9 bp. Power 0.00-0.10: underpowered. Supported helices ~60-130 nt downstream of the stall |
+| 2026-11-02 | mlocarna, 5 seqs, explorer downstream_seq windows (<=80 nt from the stall; iter_v2_explorer80) | alifold |
+| 2026-11-02 | mlocarna alifold, explorer downstream_seq windows (iter_v2_explorer80), corrected row: alifold_line was undefined in the first logging | alifold ...(((......((((.....)))).(((((........))))))))......(((..(((((.((.....)).)))))))).. (-28.97 = -15.96 + -13.01) |
+| 2026-11-02 | superseded | by `cand_FJIS_261029` (pooled fz 5 + fz 106, 80-nt windows, MATER edit) |
 
 ### `cand_FJIS_261029`
 
@@ -2765,6 +2954,18 @@ the same stall position per accession". Measured effect: 56 % of no-hit rows at 
 |---|---|---|
 | 2026-10-30 | mlocarna --probabilistic --consistency-transformation, 8 seqs from explorer FJIS_fz5,FJIS_fz106 (stall -20/+150 from the reference) | alifold .........(((((.....)))))....(((((((((.....)))).(....((((........)))))............)).))).......(.......(..(...((((...(((( |
 | 2026-11-02 | mlocarna alifold, corrected (earlier row truncated by line wrapping) | 8 seqs (fz 5 + fz 106), 194 cols: (-50.10 = -27.19 + -22.91), 43 bp, -0.53 per bp. Weaker than either cluster alone: fz 5 and fz 106 kept as separate candidates |
+| 2026-11-02 | mlocarna, 8 seqs, explorer downstream_seq windows (<=80 nt from the stall; iter_v2_explorer80) | alifold |
+| 2026-11-02 | mlocarna alifold, explorer downstream_seq windows (iter_v2_explorer80), corrected row: alifold_line was undefined in the first logging | alifold ...(((......((((.....))))......((((........)))).)))..................................... |
+| 2026-11-02 | r0 cmsearch vs library, --toponly --incE 1e-10 | cand_FJIS_261029.cm: nseq=8 eff_nseq=4.44 clen=82 bps=13 bifs=1 relent_cm=0.692.        9 ! hits /        9 accessions; 9 pass coverage >= 0.85; **0 novel** vs seed (8 seqs). SATURATED on library -- a cmalign round would only re-fit seed (8 seqs). Detail: /Users/jeaninegezelle/Desktop/viromelib/flaviLib/work/infernal/build/cand_FJIS_261029/iter_v2_explorer80/search_library/r0/hits.novel.tsv |
+| 2026-11-02 | manual edit of the pooled 80-nt alignment, 2026-11-02 | build/cand_FJIS_261029/iter_v2_explorer80/mlocarna/results/result-oneblock_edit261102.stk (hand edit of result-oneblock.stk; 8 seqs: fz 106 x3 + fz 5 x5, explorer downstream_seq windows, all 80 nt). 97 cols, 22 bp: P1 7-10/60-63, P2 11-17/23-29, P3 36-39/48-51, PK A 4-6/53-55 (5 prime end), PK B 42-45/67-70 (P3 loop to downstream). Canonical: fz106 82 pct, fz5 79 pct |
+| 2026-11-02 | MATER wiggle-refine of the edit, 2026-11-02 | build/cand_FJIS_261029/iter_v2_explorer80/mlocarna/results/result-oneblock_edit261102-MATER-wiggle-refined.stk. Same SS_cons; canonical fz106 60/66 (91 pct), fz5 91/110 (83 pct); PK A 9/9 and 15/15, PK B 12/12 (fz106) and 13/20 (fz5, weakest helix). Class 1-like layout (5 prime PK + loop-to-downstream PK). cmbuild keeps only the nested 15 bp. This is the seed for the first model |
+| 2026-11-02 | R-scape in MATER (-s --onemsa) on the wiggle-refined edit, 2026-11-02 | input build/cand_FJIS_261029/iter_v2_explorer80/mlocarna/results/result-oneblock_edit261102-MATER-wiggle-refined.stk; output build/cand_FJIS_261029/iter_v2_explorer80/rscape_mater/. 8 seqs, avgid 53.08, 22 bp, 4 covarying vs 0.2 +/- 0.5 expected, FP 0, PPV 100, Sen 18.18; 1.5 substitutions per bp. Covarying: P1 9-61, P2 17-23, P3 37-50 and 39-48 (E 0.010-0.049). PK A 4-6/53-55 and PK B 42-45/67-70 untested (0-2 subs, power 0). Passes the covariation gate: every nested helix supported |
+| 2026-11-02 | path correction for the MATER R-scape row above | MATER R-scape output is in build/cand_FJIS_261029/iter_v2_explorer80/mlocarna/results/result-oneblock_edit261102-MATER-wiggle-refined-MATER-R-scape/ (unzipped; the .zip is beside it), not rscape_mater/. Command-line R-scape on the same file: build/cand_FJIS_261029/iter_v2_explorer80/rscape_refined/ |
+| 2026-11-02 | library search, cm_iterate.sh --check-only, --toponly --incE 1e-10 | build/cand_FJIS_261029/iter_v2_explorer80/search_library/: 9 ! hits / 9 accessions, 0 novel (saturated on the library). The 8 seed sites (MH827524 594 = stall 10759, model starts at the stall) plus NC_012671 (Quang Binh virus) 544-623, 78.6 bits, genomic 10735 -- no explorer stall there (its 4 stalls are Class_1b); check the peaks tables |
+| 2026-11-02 | reciprocal test with class1c (cmsearch -T 0 against each seed, ungapped) | class1c.cm on the 8 FJIS seeds: only ON949931, 13.3 bits. cand_FJIS_261029.cm on the 46 class1c seeds: 12 hit, 8 pangolin pestivirus full-length (cm 1-82) 12.5-21.9 bits (ON024090 E 6.8e-06), 4 hepaci partial (cm 11-42 / 26-42) 7.6-10.9 bits. Weak one way, moderate the other: sibling families with a shared class 1-like architecture, not one family. Files build/cand_FJIS_261029/iter_v2_explorer80/cm/{class1c_on_fjis_seed,fjis_on_class1c_seed}.tbl |
+
+| 2026-11-02 | NC_012671 10735 in the 261021 peaks tables | 10 mM: stall at 10735, n_reps_passing 2, SF 0.311 (failed the >=3-replicate gate); other tile rows 0 reps. 1 mM: nothing passing within 40 nt. Element present (78.6 bits), stall weak; relative MH827524 stalls at the same element (SF 0.863). Element downstream of the Class_1b stalls in Culex / Quang Binh genomes (feature 114-466 vs 544-709): tandem, no overlap |
+| 2026-11-02 | status | covariation gate passed; library saturated; sibling of class1c. Open: Class_1b comparison, RNAvirus DB search, position overlap with the 7 models, name. Card in Part 3 (G1) |
 
 ---
 

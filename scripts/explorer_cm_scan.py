@@ -12,6 +12,9 @@ directly; nothing is scraped from the rendered page.
   annotate OUTDIR TBL MODEL [--call-bits 30]
       best plus-strand hit per node from a `cmsearch --tblout` run on nodes.fa
       -> OUTDIR/nodes_<MODEL>.tsv, and prints the per-cluster composition with MODEL calls
+  seqs     OUTDIR CLUSTER NAME
+      -> OUTDIR/<NAME>.fa: the explorer's own window for each node of that cluster, i.e. the
+         peaks table's `downstream_seq` (starts at the stall, <= 80 nt), named FEATURE/stall
   fetch    OUTDIR CLUSTER NAME [--up 20] [--down 150] [--ref REFERENCE.fa]
       -> OUTDIR/<NAME>.fetchlist for `esl-sfetch -Cf <reference.fa>`: stall -UP .. +DOWN in
          feature coordinates, clipped to the feature length (from --ref, else end - start)
@@ -93,6 +96,20 @@ def annotate(a):
     print("wrote", out)
 
 
+def seqs(a):
+    N = load(a.outdir)["nodes"]
+    out = os.path.join(a.outdir, f"{a.name}.fa")
+    n_out = 0
+    with open(out, "w") as fh:
+        for n in N:
+            if str(n["fz"]) != str(a.cluster):
+                continue
+            feat, stall = n["id"].rsplit("|", 1)
+            fh.write(f">{feat}/stall{stall} sp={n['sp'].replace(' ', '_')} sf={n['sf']} len={len(n['seq'])}\n{n['seq']}\n")
+            n_out += 1
+    print(f"{n_out} sites -> {out}")
+
+
 def ref_lengths(fa):
     L, name, n = {}, None, 0
     for line in open(fa):
@@ -139,6 +156,7 @@ sp = ap.add_subparsers(dest="cmd", required=True)
 p = sp.add_parser("extract"); p.add_argument("html"); p.add_argument("outdir"); p.set_defaults(f=extract)
 p = sp.add_parser("annotate"); p.add_argument("outdir"); p.add_argument("tbl"); p.add_argument("model")
 p.add_argument("--call-bits", type=float, default=30); p.set_defaults(f=annotate)
+p = sp.add_parser("seqs"); p.add_argument("outdir"); p.add_argument("cluster"); p.add_argument("name"); p.set_defaults(f=seqs)
 p = sp.add_parser("fetch"); p.add_argument("outdir"); p.add_argument("cluster"); p.add_argument("name")
 p.add_argument("--up", type=int, default=20); p.add_argument("--down", type=int, default=150)
 p.add_argument("--ref", help="reference FASTA; feature lengths are read from it (recommended)"); p.set_defaults(f=fetch)
