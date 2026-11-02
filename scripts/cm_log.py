@@ -41,7 +41,9 @@ def main() -> int:
         rl = next(i for i, l in enumerate(lines) if l.strip() == "## Run log")
     except StopIteration:
         sys.exit("cm_log.py: no '## Run log' heading in " + a.doc)
-    end = next((i for i in range(rl + 1, len(lines)) if lines[i].startswith("## ")), len(lines))
+    # the section ends at the next level-1 or level-2 heading (the file is in "# Part N" parts)
+    end = next((i for i in range(rl + 1, len(lines))
+                if lines[i].startswith("## ") or re.match(r"^# \S", lines[i])), len(lines))
 
     head_re = re.compile(r"^###\s+`?" + re.escape(a.model) + r"`?\s*$")
     sec = next((i for i in range(rl + 1, end) if head_re.match(lines[i])), None)
@@ -49,7 +51,7 @@ def main() -> int:
     if sec is None:
         # new subsection just before the next top-level heading, skipping trailing blanks
         ins = end
-        while ins > rl + 1 and lines[ins - 1].strip() == "":
+        while ins > rl + 1 and lines[ins - 1].strip() in ("", "---"):
             ins -= 1
         block = ["", f"### `{a.model}`", "", "| date | step | result |", "|---|---|---|", row]
         lines[ins:ins] = block
