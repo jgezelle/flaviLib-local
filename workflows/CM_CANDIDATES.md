@@ -18,7 +18,7 @@ dated records of what was run on those days and are not maintained.
 
 Model md5s belong in `~/Desktop/viromelib/work/infernal/cm/MANIFEST.tsv` (not yet created).
 
-Last updated 2026-11-03 (sub-threshold Class_1b additions rejected; the triple read with windows and PP; seed-shift question answered). Reorganised into dated parts on 2026-11-02; no content removed
+Last updated 2026-11-03 (sub-threshold Class_1b additions rejected; the triple read with windows and PP; seed-shift question answered; explicit Class_1b membership table; cluster 106 plan). Reorganised into dated parts on 2026-11-02; no content removed
 (superseded passages are kept and marked).
 
 ## How to read this file
@@ -225,7 +225,7 @@ PLLG 117 and `cand_PLLG_260915` ⊂ PLLG. Pool counts include their clusters' si
 | gap | what it is | source | size | state | last | described in | run log |
 |---|---|---|---|---|---|---|---|
 | **FJIS cluster 5** | insect-specific flaviviruses, explorer cluster 5 (+ NC_012671) | explorer | 6 sites | **closed 2026-11-02: joined Class_1b.** The published P1-deviant ISF subtype; carries the base triple; `class1b_plusFJIS_cluster5_inf112` accepted. See the Class_1b extension row | 11-03 | Part 3, FJIS section | `class1b`, `cand_FJIS_261029` |
-| **FJIS cluster 106** | NC_034017, NC_034204 (Menghai), ON949931 | explorer | 3 sites | **open.** Not Class_1b: alignment PP 0.38–0.47, 11–17 hits lost, and the base triple's pair is deleted. 3 sequences cannot support its own model — needs sequences from outside this library | 11-03 | Part 3, FJIS section | `cand_FJIS_261029` |
+| **FJIS cluster 106** | NC_034017 *Xishuangbanna aedes flavivirus*, NC_034204 *Menghai flavivirus*, ON949931 *Kilpisjarvi flavivirus* | explorer | 3 sites | **open.** Not class1c (guided seed 1.55 / 1.33 / −2.14 bits), not Class_1b (PP 0.38–0.47, 5′-truncated, 11–17 hits lost). The triple's pair reads as deleted, but at overall PP 0.465 that is not evidence. **Next: align cluster 106 alone at 80 nt** for a consensus structure in its own coordinates, then a provisional model to search the RNAvirus DB and a targeted NCBI ISF set — 3 near-identical sequences cannot support a model or pass the covariation gate | 11-03 | Part 3, cluster 106 section | `cand_FJIS_cluster106_261103` |
 | **FJJI 41 + 44** | Jingmen tick viruses and relatives, explorer clusters 41 and 44 | explorer | 12 + 8 sites | **two separate candidates** (pooling fails): `cand_FJJI_cluster41_261029` (10 mM only), `cand_FJJI_cluster44_261029`. Next: MATER per cluster | 11-02 | Part 3, FJJI section | `cand_FJJI_cluster41_261029`, `…cluster44…`, `…cluster41-44_pooled…` |
 | **HPPV 39** | rodent pegiviruses, explorer cluster 39 | explorer | 4 sites | queued (Sept pegivirus genus pool set aside at −3.56) | 10-29 (fetched) | Part 3 | — |
 | **FJTB 64** | TBEV serocomplex, explorer cluster 64 (MT354614 10670, NC_001672 10912, NC_027709 10641) | explorer | 3 sites | not looked at. A second FJTB site besides `cand_FJTB_261026`; check its position against the class 2 pair and G6 first | — | — | — |
@@ -769,6 +769,75 @@ all, the idea is worth recording as a hypothesis — with the caveat that a part
 cm 17–63 is weak evidence either way, and the published structures, not these models, would
 settle it.
 
+#### Membership of the expanded Class_1b: what went in, what was kept out (2026-11-03)
+
+Added here on request, because the six added sequences were previously recorded only in pieces —
+the gap register, the candidate card, the reciprocal-scoring table and four run-log rows — with no
+single list. **This table is authoritative for the composition of
+`class1b_plusFJIS_cluster5_inf112`.**
+
+**Added to the seed: 6 sequences.** All six are the `!` library hits of the FJIS candidate model
+(`cand_FJIS_261029`), minus the three cluster-106 accessions — the `fjis_cluster5.fetchlist`
+built by the block above. They entered by `cmalign --mapali`, so the 88 original Class_1b seed
+sequences are untouched: 88 + 6 = 94 (`cmstat` 94 / 50.24 / clen 81 / W 255 / 19 bp / 2 hairpins).
+
+| # | accession | virus | explorer stall | how it relates to the original Class_1b seed |
+|---:|---|---|---:|---|
+| 1 | `NC_008604.2` | *Culex flavivirus* (CXFV) | 10707 | **fifth array copy**, just downstream of the seed's own xr4 (ends 10675). The seed holds xr1–xr4 of this genome, including the two U…A-U triple exceptions |
+| 2 | `NC_012671.1` | *Quang Binh virus* (QBV, reference) | 10735 | **fifth array copy** (seed xr4 ends 10703). **Not an explorer cluster-5 member** — see the caveat below |
+| 3 | `NC_021069.1` | mosquito flavivirus | 10735 | **fifth array copy** (seed xr4 ends 10704) |
+| 4 | `NC_024299.2` | *Nienokoue virus* (NIEV) | 10747 | **fifth array copy** (seed xr4 ends 10716). This genome ends up with a **three-copy array**: Class_1b at features 92–185 and 230–315, FJIS at 629–709 |
+| 5 | `AB981186.1` | mosquito flavivirus | 10732 | **genome absent from the seed entirely** |
+| 6 | `MH827524.1` | *Quang Binh virus* | 10759 | **genome absent from the seed entirely** |
+
+So the expansion does two things: it **extends the ISF tandem array by one copy** at a consistent
+position (10707–10759) in four genomes the seed already covered, and it **brings in two genomes the
+seed never had**.
+
+**Caveat on NC_012671.** It is a *sixth* sequence beyond the five explorer cluster-5 sites, picked
+up because the FJIS model hits it at 78.6 bits (feature 544–623, genomic 10735) and the fetchlist
+was built from hits, not from cluster membership. Its stall is real but **failed the ≥3-replicate
+gate** (10 mM: 2 reps, SF 0.311; 1 mM: nothing within 40 nt), which is why the explorer shows no
+stall there. Its relative MH827524 stalls at the same element at SF 0.863. The gap register
+therefore says "cluster 5 (+ NC_012671)" and counts 6 sites, not 5.
+
+**What the expansion gained in the library: 10 hits, 0 lost.** Six are the added sequences' own
+sites. The other four are **loci of the seed's own sequences that the original model failed to
+recover**:
+
+| gained hit | what it is | original Class_1b | expanded |
+|---|---|---|---|
+| `NC_027817` 543 | Parramatta River virus **xr4** (PaRV_xr4) | 22.3 b, E 0.021, `?` | 28.3 b, `!` |
+| `NC_027819` 561 | Mercadeo virus **xr1** (MECDV_xr1) — its only seed copy | 22.3 b, E 0.021, `?` | 27.7 b, `!` |
+| `LR694076` 476 | cell fusing agent virus **xr3** (CFAV_xr3), isolate in the library | 19.9 b, E 0.067, `?` | 23.4 b, `!` |
+| `MH237596` 478 | the same CFAV xr3 copy, second isolate | 19.9 b, E 0.067, `?` | 23.4 b, `!` |
+
+Those four are exactly the P1-deviant sequences PMC7527734 named. **The expansion closes a recovery
+failure on the model's own members rather than defining a new family.**
+
+> **Open inconsistency to resolve.** The rejection of the further additions is stated in terms of
+> losing `OP860412 297`, "the hit cluster 5 gained", but `OP860412 297` (stall 10802) is recorded in
+> Part 6 as a gain of the **`strong` 1.1.2 variant**, and six own sites + four recovered loci
+> already account for all 10 gains. Either the count is 11 or the attribution is wrong. Settle it
+> from `cluster5/class1b_plusFJIS_cluster5_inf112_library.tbl.compare.tsv` (`grep NEW`) and correct
+> whichever row is wrong. It does not change any decision — every rejected variant lost other hits
+> too — but the number should be right.
+
+**Kept out, with the reason in each case.** Nothing here was excluded on judgement; each was tested
+and failed the same rule (no included hit may be lost).
+
+| accession | virus | why it was kept out | where |
+|---|---|---|---|
+| `NC_034017` | *Xishuangbanna aedes flavivirus* | **cluster 106.** The `all` variant (cluster 5 + cluster 106) aligned these at PP 0.38–0.47, truncated at the 5′ end, and lost 11–17 included hits | Part 3, FJIS section |
+| `NC_034204` | *Menghai flavivirus* (MFV_xr1) | same variant. Also reads as missing the triple's pair, but its overall PP is 0.465, so that reading is not reliable — the rejection rests on the lost hits | same |
+| `ON949931` | *Kilpisjarvi flavivirus* | same variant | same |
+| `NC_005064` | *Kamiti River virus* | sub-threshold Class_1b site (stall 11245, 18.5 b, E 0.079). Tested alone as `kamiti` 2026-11-03: aligns best of any addition tried (cm 1–81, PP 0.853) but still loses `OP860412 297` and raises nothing | this Part, above |
+| `MW897328` | — (`phaiomys` subset) | sub-threshold Class_1b site (stall 10653, 19.3 b, E 0.057). Tested as `phaiomys`: 3′-truncated, PP 0.622, loses `AB981186 590` and `NC_012671 545` — two of the sequences just added — plus `OP860412 297` | this Part, above |
+| the 68 novel library hits | 51 accessions, 45 absent from the seed | the separate `Class_1b + novel hits` extension, a different question from cluster 5. `strong`/`newvirus` lose `AB021287 65`; `all` loses five annotated Class_1b sites. **Still paused** on the AB021287 `--max` check, and that check must now be re-run against the cluster-5 baseline, not the original model | Part 6 |
+
+**Three accessions not to confuse with the above:** `KC181923`, `KJ741266`, `LC536088` are *Aedes
+flavivirus*, explorer cluster 133, and were already Class_1b sites before any of this.
+
 #### Adding the two remaining sub-threshold sites to the cluster-5 seed — rejected 2026-11-03
 
 The gap-register row **sub-threshold Class_1b** left two sites: NC_005064 1079 (Kamiti River virus,
@@ -932,6 +1001,66 @@ Infernal 1.1.x model can represent the triple, so the CM's role is recruitment o
 read from a structure-aware alignment with the pseudoknot annotated — the MATER / R-scape route
 already used for the candidates — and the CM alignment is used for it only with the insert columns
 and PP in view, as above. Recorded as a standing rule in Part 8.
+
+#### Next for cluster 106 (Xishuangbanna / Menghai / Kilpisjarvi): align it alone at 80 nt — 2026-11-03
+
+**Where this leaves cluster 106.** Four routes have now been closed on it. It is not class1c (the
+class1c-guided seed gave 1.55 / 1.33 / −2.14 bits and got worse when extended). It is not Class_1b
+(the `all` variant aligned it at PP 0.38–0.47, 5′-truncated, and lost 11–17 included hits). Its own
+171-nt alignment put the only covariation 60–130 nt past the stall, in a downstream stem-loop that
+is not the element. And pooling it with cluster 5 was worse per base pair than either cluster alone
+(−0.53 vs −0.69), so the pooled `cand_FJIS_261029` describes cluster 5, not cluster 106 — which is
+why the pooled model's RNAvirus DB search says nothing about cluster 106's relatives.
+
+**The one thing not yet tried: cluster 106 alone at 80 nt.** Every conclusion about it comes from
+either the 171-nt windows (superseded — the structure ran past the element) or the pooled alignment
+(dominated by cluster 5's five sequences). The 80-nt FASTA already exists, so this is cheap:
+
+```bash
+C106=$INFERNAL/build/cand_FJIS_cluster106_261103/iter_v1_explorer80
+mkdir -p "$C106"
+# the 80-nt windows already exist from 10-29 (file still uses the old `fz` spelling)
+FA106=$INFERNAL/build/class1c/explorer_scan_261029/FJIS_fz106_explorer80.fa
+grep -c '^>' "$FA106"          # expect 3: ON949931, NC_034017, NC_034204
+
+mlocarna --stockholm --consensus-structure=alifold --probabilistic --consistency-transformation \
+  --tgtdir "$C106/mlocarna" "$FA106" > "$C106/mlocarna.log" 2>&1
+RES=$C106/mlocarna/results
+stk_oneblock "$RES/result.stk" "$RES/result-oneblock.stk"
+echo "alifold: $(alifold_line "$C106/mlocarna.log")"
+R-scape -s --cacofold --outdir "$C106/rscape" "$RES/result-oneblock.stk"
+ls "$C106/rscape"/*.cov >/dev/null 2>&1 && head -20 "$C106"/rscape/*.sorted.cov
+clog cand_FJIS_cluster106_261103 'mlocarna on the 3 explorer 80-nt windows, cluster 106 alone' '<alifold line, R-scape significant pairs and power>'
+```
+
+**Be clear about what this can and cannot settle.** Three sequences at 0.84–0.94 identity give
+R-scape essentially no power — measured at 0.00–0.10 on the 171-nt run, and 80 nt will not improve
+it. So **this alignment cannot pass the covariation gate, and is not being run to try.** It is being
+run for one thing only: a consensus secondary structure in **cluster 106's own coordinates**, so the
+open question the triple section leaves can be asked properly —
+
+> does cluster 106 have a base triple at a position the Class_1b model cannot align?
+
+Menghai's apparent deletion at cm 29 / 43 was read off an alignment with overall PP 0.465, which is
+not evidence (Part 8, pitfalls). With P1 / P2 / P3 annotated in its own frame, the triple is looked
+for where the architecture says it should be — an unpaired C or U 5′ of P1, pairing into the base of
+P2 — rather than at Class_1b's column numbers. A triple found there would make cluster 106 a class 1
+xrRNA of its own; none found, with the architecture otherwise intact, is a real negative.
+
+**What actually unblocks it is sequences, and only one route is left.** The library has three and
+the RNAvirus DB search was run with the pooled (cluster-5-dominated) model, so it has never been
+asked about cluster 106 specifically. Two steps, in order:
+
+1. Build a provisional cluster-106-only model from the alignment above (plain `cmbuild` — mlocarna
+   output has no `RF`, so no `--hand`), calibrate, and search the RNAvirus DB with **that** model.
+   Read the hits down to E 10 by position: a real member sits downstream of that genome's Class_1b
+   copies.
+2. If the DB is still too narrow, assemble a targeted set of complete ISF genomes from NCBI around
+   *Xishuangbanna aedes flavivirus*, *Menghai flavivirus* and *Kilpisjarvi flavivirus* and search
+   that. This is the step that was written down on 10-30 and never run.
+
+Until one of those adds sequences, cluster 106 stays **open** in the gap register, and a model for
+it is not attempted — three near-identical sequences would build a model that only finds themselves.
 
 ### FJJI: clusters 41 and 44 — 2026-11-02
 
@@ -3390,6 +3519,8 @@ the same stall position per accession". Measured effect: 56 % of no-hit rows at 
 | 2026-11-03 | window and PP view of the triple columns: the screen distinguishes shift from variant | MW897328: RF c.G.GGG vs seq C.GGCGG -- an extra G in the insert column beside cm 29, cm 29 itself C, PP *.83566 (about 0.55 at cm 29, 0.3 at the insert); cm 41-45 a second inserted G at PP 0.5-0.6. Its C-C not-a-pair verdict is a misalignment, the G is one column over: the triple screen gives no evidence either way for it. NC_005064: no insertions in the windows, PP **.*** at cm 5-9 and *.*.*** at cm 27-31 (cm 7 = C and cm 29 = G at >=0.95), cm 43 = U at PP about 0.65 -- most likely a genuine G.U wobble replacing G-C, consistent with the papers non-Watson-Crick pairs at the base of P2. The six cluster5 sequences carry no PP row (they came through --mapali, probabilities not recomputed) so their C-G-C readings are unverified for confidence; re-align without --mapali to cluster5/pp_check.stk to measure it (not yet run). Decisions unchanged: both further additions rejected on the rebuild losses, expansion stops at cluster 5. Same caveat now applies to Menghai (overall PP 0.465): its rejection rests on the 11-17 lost hits alone, not on the triple |
 | 2026-11-03 | note on reading RF | Infernals RF line marks match columns with the consensus residue, uppercase when well conserved and lowercase when not, and insert columns with a dot. So c.isalpha() is the correct test for a match column and it returns exactly clen = 81. An earlier worry that lowercase meant insert was unfounded; the column count confirms it |
 | 2026-11-03 | should the seed be shifted so the triple aligns | no. cmbuild has no base-triple state, so cm 7s interaction with the 29-43 pair is absent under every column arrangement: a shift can only improve the readout, never the models power. The current layout is right for the 138 included sites, which leave the insert columns empty, and wrong only for MW897328; adding a consensus column to absorb that insert asserts a residue there for the other 137 and raises clen 81 to 82, which is in effect what the three variant rebuilds did, and all three lost hits. A seed describes the consensus, not the hardest member. The measurement that would change the answer: count how many included library sites occupy the insert columns flanking cm 29 and cm 43 (insertcheck block, Part 3) -- a substantial fraction means the seed misdescribes the family and a column should be added via RF plus cmbuild --hand. What would genuinely improve triple detection is a different instrument, not a shift: the CM is recruitment only, the triple is read from a structure-aware alignment with the pseudoknot annotated (MATER / R-scape) |
+| 2026-11-03 | explicit membership table added to Part 3 | the six added sequences were recorded only in pieces (gap register, candidate card, reciprocal-scoring table, four run-log rows) with no single list. Part 3 now has one authoritative table: added = NC_008604.2 Culex flavivirus 10707, NC_012671.1 Quang Binh virus 10735, NC_021069.1 mosquito flavivirus 10735, NC_024299.2 Nienokoue virus 10747 (all four fifth array copies just downstream of that genomes seed xr4), AB981186.1 mosquito flavivirus 10732 and MH827524.1 Quang Binh virus 10759 (both genomes absent from the seed entirely). 88 + 6 = 94. Kept out, each tested and failed the no-loss rule: NC_034017 Xishuangbanna aedes flavivirus, NC_034204 Menghai flavivirus, ON949931 Kilpisjarvi flavivirus (cluster 106, PP 0.38-0.47, 11-17 hits lost), NC_005064 Kamiti River virus and MW897328 (sub-threshold, 11-03), and the 68 novel library hits (separate paused extension). Not to be confused: KC181923, KJ741266, LC536088 are Aedes flavivirus, cluster 133, already Class_1b |
+| 2026-11-03 | inconsistency flagged, not yet resolved | the further-addition rejections are phrased as losing OP860412 297, the hit cluster 5 gained, but OP860412 297 is recorded in Part 6 as a gain of the strong 1.1.2 variant, and six own sites plus four recovered seed loci (NC_027817 543 PaRV xr4, NC_027819 561 MECDV xr1, LR694076 476 and MH237596 478 CFAV xr3) already account for all 10 gains. Either the count is 11 or the attribution is wrong. Settle from cluster5/class1b_plusFJIS_cluster5_inf112_library.tbl.compare.tsv with grep NEW. No decision depends on it: every rejected variant lost other hits too |
 
 ### `cand_FJIS_fz106_261029`
 
