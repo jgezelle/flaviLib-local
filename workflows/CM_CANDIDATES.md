@@ -18,7 +18,7 @@ dated records of what was run on those days and are not maintained.
 
 Model md5s belong in `~/Desktop/viromelib/work/infernal/cm/MANIFEST.tsv` (not yet created).
 
-Last updated 2026-11-02 (gap register; FJIS vs Class_1b; FJJI). Reorganised into dated parts on 2026-11-02; no content removed
+Last updated 2026-11-03 (sub-threshold Class_1b additions rejected; the triple read with windows and PP; seed-shift question answered). Reorganised into dated parts on 2026-11-02; no content removed
 (superseded passages are kept and marked).
 
 ## How to read this file
@@ -31,7 +31,7 @@ The file is in parts, most current first. Every dated section says when the work
 | 1 | **Status: goal, where each workstream stands, next steps** | 2026-11-02 |
 | 2 | The 7 annotating models, their limits, Infernal versions | 2026-10-21 – 10-30 |
 | 3 | **Gap filling** — the **gap register** (every gap in one table), candidate cards, the work per gap | 2026-10-28 – 11-02 |
-| 4 | Earlier candidates: `cand_FJTB_261026`, `cand_PLLG_260915` | 2026-09-15 – 10-27 |
+| 4 | **Model statistics** (all models and candidates); earlier candidates `cand_FJTB_261026`, `cand_PLLG_260915` | 2026-09-15 – 11-02 |
 | 5 | class1c review: saturation, borderline hits (step 17) | 2026-10-28 – 10-30 |
 | 6 | class1b and class1c: overlap, merge question, class1b expansion attempt | 2026-09 – 10-30 |
 | 7 | Accounting: how many stalls have no CM, by clade | 2026-10-28 |
@@ -40,6 +40,23 @@ The file is in parts, most current first. Every dated section says when the work
 | 10 | Run log | all |
 | 11 | Open items, and the superseded NEXT list of 2026-10-28 | |
 | 12 | History: corrections, archive, retired scripts | |
+
+### Which table is authoritative
+
+There are many tables; these four are the ones to read, and the rest are dated measurements or
+superseded snapshots kept for provenance.
+
+| question | table |
+|---|---|
+| what is still uncovered, and what is being worked on | **gap register**, Part 3 |
+| what each candidate is, and which gates it has passed | **candidate cards**, Part 3 |
+| which models annotate the data | **the 7 annotating models**, Part 2 |
+| model statistics side by side (nseq, eff_nseq, clen, bps, bifs) | **model statistics**, Part 4 |
+| what was measured on a given day | the dated tables in Parts 3, 6 and 7, and the **run log**, Part 10 |
+
+Superseded by the gap register, kept as the derivation: the **progress table** and **counts of what
+is not covered** (Part 7), **known uncovered** (Part 5). The **pool queue** (Part 3) is not
+superseded — it holds the per-clade site counts and the pipeline stage of each clade.
 
 ---
 
@@ -66,8 +83,8 @@ unchanged by them.
 | 3 | merge class1b and class1c? | 10-29 – 10-30 | one model or two? | Two. class1c had the lower E-value at none of its 16 overlaps with Class_1b (1, 4 and 11 across the three class1c models tested). Overlaps are resolved per site by lower E-value. Part 6 | **closed** |
 | 4 | Class_1b expansion | 10-30 | Class_1b has 68 library hits not in its seed; add them? | Every rebuild loses at least one existing hit (AB021287). The original model was built with Infernal 1.1.2, which changed how comparisons must be made. Part 6 | **paused** — AB021287 `--max` check outstanding |
 | 5 | explorer scan with the missing models | 10-29 | how many explorer "None found" sites are already class1c / cl3? | 45 class1c, 3 cl3 (loquat, cluster 110). 163 no-CM sites remain; 6 no-CM clusters of ≥ 3 sites. Part 3 | **done** |
-| 6 | **gap filling: FJIS (G1)** | 10-30 – 11-02 | new candidate | **`cand_FJIS_261029`**: pooled cluster 5 + cluster 106, 80-nt windows, MATER edit (2 pseudoknots). Covariation gate passed (4 covarying vs 0.2 expected); separate from class1c and Class_1b site by site; saturated on library and RNAvirus DB. Part 3 | **decision pending** — Class_1b-subgroup rebuild test, targeted ISF search |
-| 7 | **gap filling: FJJI clusters 41 / 44 (G2), HPPV cluster 39 (G3), clusters 64 (G4), 117 (G5)** | 11-02 | new candidates | FJJI aligned: two separate elements; cluster 41 stalls at 10 mM only. Others not aligned | **in progress** — FJJI MATER |
+| 6 | **gap filling: FJIS clusters 5 and 106** | 10-30 – 11-02 | new candidate | **`cand_FJIS_261029`**: pooled cluster 5 + cluster 106, 80-nt windows, MATER edit (2 pseudoknots). Covariation gate passed (4 covarying vs 0.2 expected); separate from class1c and Class_1b site by site; saturated on library and RNAvirus DB. Part 3 | **decision pending** — Class_1b-subgroup rebuild test, targeted ISF search |
+| 7 | **gap filling: FJJI 41 / 44, HPPV 39, FJTB 64, PLLG 117** | 11-02 | new candidates | FJJI aligned: two separate elements; cluster 41 stalls at 10 mM only. Others not aligned | **in progress** — FJJI MATER |
 | 8 | earlier candidates `cand_FJTB_261026`, `cand_PLLG_260915` | 09-15 – 10-27 | | built; blocked on sequence diversity; RNAvirus-database searches started 10-27, results not recorded | **results pending** |
 | 9 | Mifsud-clade pools beyond the explorer clusters | 10-28 | | pool queue ranked (Part 3); pool FASTAs not built | **queued** |
 
@@ -76,16 +93,16 @@ unchanged by them.
 The full list of gaps, with state and where each is described, is the **gap register** at the top of
 Part 3.
 
-1. **G1 `cand_FJIS_261029`**: the Class_1b-subgroup rebuild test (Part 3, FJIS section); check
+1. **FJIS `cand_FJIS_261029`**: the Class_1b-subgroup rebuild test (Part 3, FJIS section); check
    whether the RNAvirus DB lacks the 4 missing seed genomes and read its weaker hits by position;
    then decide: separate class, Class_1b subgroup, or keep as candidate.
-2. **G2 FJJI**: MATER edit of cluster 41, then cluster 44, separately; R-scape, first model,
-   library search. Then G3 (HPPV cluster 39); look at G4 / G5 (check G5 against
+2. **FJJI 41 + 44**: MATER edit of cluster 41, then cluster 44, separately; R-scape, first model,
+   library search. Then HPPV 39; look at FJTB 64 and PLLG 117 (check PLLG 117 against
    `cand_PLLG_260915` first).
-3. **G6 / G7**: record the 10-27 RNAvirus-database results for `cand_FJTB_261026` and
+3. **`cand_FJTB_261026` / `cand_PLLG_260915`**: record the 10-27 RNAvirus-database results for `cand_FJTB_261026` and
    `cand_PLLG_260915`.
-4. **E4 Class_1b**: the AB021287 `--max` check, then accept or close.
-5. **Clade pools** G8–G14 with `make_pool_fastas.py`.
+4. **Class_1b + novel hits**: the AB021287 `--max` check, then accept or close.
+5. **Clade pools** (PLLG remainder, HPHV, PLPV, FJMB, FJAF, FJUN, not-in-Mifsud) with `make_pool_fastas.py`.
 
 ---
 
@@ -179,7 +196,7 @@ Not yet checked for the other provided models (1a, 2, 3, dumbbell):
 for f in "$CMSET"/*.cm; do printf '%-70s %s\n' "$(basename "$f")" "$(head -1 "$f")"; done
 ```
 
-class1c and cl4_v9 were built here with 1.1.5; class1c rebuilds exactly from its seed.
+class1c and cl4_v9 were built here with 1.1.5; class1c rebuilds exactly from its seed. 
 
 **`cm_iterate.sh` rebuilds from the hits alone**, dropping the seed. That is right for a model
 whose seed is library hits (class1c), and wrong for a provided model whose seed comes from
@@ -197,48 +214,51 @@ the extensions of existing models that were tried. Each row says where the work 
 which run-log table holds its steps. A gap nobody has worked on has no run-log rows, so this table
 is the only place it shows as pending. Update the row when its state changes.
 
-Explorer clusters ("cluster N" = frozen cluster N, Part 9 → Naming) are subsets of the clade pools below them: G1 ⊂ FJIS,
-G2 ⊂ FJJI, G3 ⊂ HPPV, G4 / G6 ⊂ FJTB, G5 / G7 ⊂ PLLG. Pool counts include their clusters' sites;
-do not add the two.
+Rows are named by what they are, not by a code (the one-letter `G`/`E` ids used on 2026-11-02 are
+dropped — `G1`–`G7` already mean the peak-caller gates elsewhere in this project). Explorer clusters
+("cluster N" = frozen cluster N, Part 9 → Naming) are subsets of the clade pools below them: FJIS
+clusters ⊂ FJIS, FJJI 41 + 44 ⊂ FJJI, HPPV 39 ⊂ HPPV, FJTB 64 and `cand_FJTB_261026` ⊂ FJTB,
+PLLG 117 and `cand_PLLG_260915` ⊂ PLLG. Pool counts include their clusters' sites; do not add the two.
 
 ### Gaps
 
-| id | gap | source | size | state | last | described in | run log |
+| gap | what it is | source | size | state | last | described in | run log |
 |---|---|---|---|---|---|---|---|
-| **G1** | FJIS insect-specific flaviviruses: explorer cluster 106 + cluster 5 → **`cand_FJIS_261029`** | explorer | 8 sites, 8 species (+ NC_012671 found by the model) | **model built; passes covariation; separate from class1c and Class_1b at the site level; saturated on the library and the RNAvirus DB.** Open: is it a Class_1b subgroup (rebuild test); targeted ISF genome search; then accept / name | 11-02 | Part 3, card + FJIS section | `cand_FJIS_261029` (and the superseded single-cluster tables) |
-| **G2** | FJJI Jingmen tick viruses and relatives: explorer cluster 41 + cluster 44 | explorer | 12 + 8 sites | **two separate candidates** (pooling fails): `cand_FJJI_cluster41_261029` (10 mM only), `cand_FJJI_cluster44_261029`. Next: MATER per cluster | 11-02 | Part 3, FJJI section | `cand_FJJI_cluster41_261029`, `…cluster44…`, `…cluster41-44_pooled…` |
-| G3 | HPPV rodent pegiviruses: explorer cluster 39 | explorer | 4 sites | queued (Sept pegivirus genus pool set aside at −3.56) | 10-29 (fetched) | Part 3 | — |
-| G4 | FJTB TBEV serocomplex: explorer cluster 64 (MT354614 10670, NC_001672 10912, NC_027709 10641) | explorer | 3 sites | not looked at. A second FJTB site besides `cand_FJTB_261026`; check its position against the class 2 pair and G6 first | — | — | — |
-| G5 | PLLG Bole tick virus 4 / Flaviviridae sp.: explorer cluster 117 (ON408075 15841, ON811709 16053, ON811731 16056) | explorer | 3 sites | not looked at. Same taxa as `cand_PLLG_260915`: check whether G7's model already hits these | — | — | — |
-| G6 | `cand_FJTB_261026` (explorer cluster 3) | Sept vsearch / explorer | 16 seqs | model built 10-27; diversity-blocked; RNAvirus DB search started 10-27, **result not recorded** | 10-27 | Part 4 | `cand_FJTB_261026` |
-| G7 | `cand_PLLG_260915` (clusterA/B/C) | PLLG clade pool | 24 of 60 PLLG | model built 09-15; refit stopped (too conserved); RNAvirus DB **result not recorded** | 10-27 | Part 4 | `cand_PLLG_260915` |
-| G8 | PLLG remainder | PLLG clade pool | 36 of 60 members; pool 66 sites / 35 acc | not started; cluster within (spread 6,756 nt) | — | Part 3 pool queue; Part 7 | — |
-| G9 | HPHV hepaciviruses | clade pool + Sept lists | pool 34 sites / 24 acc; lists: 9 unclassified accessions, 13 partial Class_1b matches, 9 dropped from the class1b merge (may overlap) | not started; reconcile the three lists in one comparison first | — | Part 3 pool queue; Part 5 "Known uncovered"; Part 6 | — |
-| G10 | PLPV pestiviruses | clade pool + Sept list | pool 15 sites / 9 acc; 8 sequences trimmed from the Sept seed | not started | — | Part 3 pool queue; Part 5 "Known uncovered" | — |
-| G11 | FJMB mosquito-borne | clade pool | 17 sites / 12 acc | not started | — | Part 3 pool queue | — |
-| G12 | FJAF aquatic | clade pool | 9 sites / 6 acc | not started | — | Part 3 pool queue | — |
-| G13 | FJUN unclassified | clade pool | 7 sites / 3 acc | not started | — | Part 3 pool queue | — |
-| G14 | not in Mifsud | clade pool (by genus) | 29 sites / 15 acc | not started | — | Part 3 pool queue | — |
-| G15 | mixed explorer clusters with a no-CM member beside Class_1b sites: cluster 21 (CFAV LR694076 10565, Kamiti River NC_005064 11245), cluster 135 (MW897328 10653) | explorer | 3 sites | not looked at; first test whether Class_1b scores them below threshold | — | — | — |
-| G16 | unannotated site downstream of the last annotated one in the same genome | 261021 tables | 56 of 173 annotated accessions | target list only | 10-28 | Part 7 | `The unmatched pool` |
+| **FJIS cluster 5** | insect-specific flaviviruses, explorer cluster 5 (+ NC_012671) | explorer | 6 sites | **closed 2026-11-02: joined Class_1b.** The published P1-deviant ISF subtype; carries the base triple; `class1b_plusFJIS_cluster5_inf112` accepted. See the Class_1b extension row | 11-03 | Part 3, FJIS section | `class1b`, `cand_FJIS_261029` |
+| **FJIS cluster 106** | NC_034017, NC_034204 (Menghai), ON949931 | explorer | 3 sites | **open.** Not Class_1b: alignment PP 0.38–0.47, 11–17 hits lost, and the base triple's pair is deleted. 3 sequences cannot support its own model — needs sequences from outside this library | 11-03 | Part 3, FJIS section | `cand_FJIS_261029` |
+| **FJJI 41 + 44** | Jingmen tick viruses and relatives, explorer clusters 41 and 44 | explorer | 12 + 8 sites | **two separate candidates** (pooling fails): `cand_FJJI_cluster41_261029` (10 mM only), `cand_FJJI_cluster44_261029`. Next: MATER per cluster | 11-02 | Part 3, FJJI section | `cand_FJJI_cluster41_261029`, `…cluster44…`, `…cluster41-44_pooled…` |
+| **HPPV 39** | rodent pegiviruses, explorer cluster 39 | explorer | 4 sites | queued (Sept pegivirus genus pool set aside at −3.56) | 10-29 (fetched) | Part 3 | — |
+| **FJTB 64** | TBEV serocomplex, explorer cluster 64 (MT354614 10670, NC_001672 10912, NC_027709 10641) | explorer | 3 sites | not looked at. A second FJTB site besides `cand_FJTB_261026`; check its position against the class 2 pair and G6 first | — | — | — |
+| **PLLG 117** | Bole tick virus 4 / Flaviviridae sp., explorer cluster 117 (ON408075 15841, ON811709 16053, ON811731 16056) | explorer | 3 sites | not looked at. Same taxa as `cand_PLLG_260915`: check whether G7's model already hits these | — | — | — |
+| **cand_FJTB_261026** | third FJTB stall, explorer cluster 3 | Sept vsearch / explorer | 16 seqs | model built 10-27; diversity-blocked; RNAvirus DB search started 10-27, **result not recorded** | 10-27 | Part 4 | `cand_FJTB_261026` |
+| **cand_PLLG_260915** | tick-associated PLLG, clusters A/B/C | PLLG clade pool | 24 of 60 PLLG | model built 09-15; refit stopped (too conserved); RNAvirus DB **result not recorded** | 10-27 | Part 4 | `cand_PLLG_260915` |
+| **PLLG remainder** | PLLG members not covered by `cand_PLLG_260915` | PLLG clade pool | 36 of 60 members; pool 66 sites / 35 acc | not started; cluster within (spread 6,756 nt) | — | Part 3 pool queue; Part 7 | — |
+| **HPHV pool** | hepaciviruses | clade pool + Sept lists | pool 34 sites / 24 acc; lists: 9 unclassified accessions, 13 partial Class_1b matches, 9 dropped from the class1b merge (may overlap) | not started; reconcile the three lists in one comparison first | — | Part 3 pool queue; Part 5 "Known uncovered"; Part 6 | — |
+| **PLPV pool** | pestiviruses | clade pool + Sept list | pool 15 sites / 9 acc; 8 sequences trimmed from the Sept seed | not started | — | Part 3 pool queue; Part 5 "Known uncovered" | — |
+| **FJMB pool** | mosquito-borne flaviviruses | clade pool | 17 sites / 12 acc | not started | — | Part 3 pool queue | — |
+| **FJAF pool** | aquatic flaviviruses | clade pool | 9 sites / 6 acc | not started | — | Part 3 pool queue | — |
+| **FJUN pool** | unclassified flavi-jingmen | clade pool | 7 sites / 3 acc | not started | — | Part 3 pool queue | — |
+| **not-in-Mifsud pool** | accessions absent from Mifsud's set | clade pool (by genus) | 29 sites / 15 acc | not started | — | Part 3 pool queue | — |
+| **sub-threshold Class_1b** | stalls where Class_1b scores just under inclusion: explorer cluster 21 (CFAV LR694076 10565, Kamiti River NC_005064 11245), cluster 135 (MW897328 10653) | explorer | 3 sites | **closed 2026-11-03 as a Class_1b question; 2 sites remain open on their own.** LR694076 10565 was 19.9 b / E 0.067 `?` and the cluster-5 expansion includes it at 23.4 b. The other two were tested as seed additions and **all three variants were rejected** — every one loses `OP860412 297`, and the two with MW897328 also lose two cluster-5 member sites. NC_005064 1079 (18.5 b, E 0.079) and MW897328 66 (19.3 b, E 0.057) are not Class_1b; they need their own model or sequences from outside this library | 11-03 | Part 3, FJIS section | `class1b` |
+| **downstream copies** | unannotated site downstream of the last annotated one in the same genome | 261021 tables | 56 of 173 annotated accessions | target list only | 10-28 | Part 7 | `The unmatched pool` |
 | — | Sept orthoflavivirus vsearch clusters 1, 3–30 | genus pool | 29 clusters | **superseded** by the explorer clusters and clade pools (recorded rule: split by clade, not genus) | — | Part 7 | — |
 
 ### Extensions of existing models (not gaps; recorded so they are not retried)
 
-| id | what | state | last | described in | run log |
+| extension | what | state | last | described in | run log |
 |---|---|---|---|---|---|
-| E1 | class1c refit on the library (step 18) | **closed**: library hits = seed | 10-29 | Part 5 | `class1c` |
-| E2 | class1c + borderline hits (step 17) | **closed**: no variant accepted | 10-30 | Part 5 | `class1c` |
-| E3 | merge class1b + class1c | **closed**: keep both, lower E wins per site | 10-30 | Part 6 | `class1c` |
-| E4 | Class_1b + its 68 novel library hits | **paused**: AB021287 `--max` check | 10-30 | Part 6 | `class1b` |
-| E5 | loquat cluster 110 | **closed**: cl3 hits all three sites | 10-29 | Part 3 | `cl3` |
+| **class1c library refit** | step 18: realign class1c's library hits and rebuild | **closed**: library hits = seed | 10-29 | Part 5 | `class1c` |
+| **class1c borderline** | step 17: add KY370101 / ON949931 / NC_025677 | **closed**: no variant accepted | 10-30 | Part 5 | `class1c` |
+| **1b/1c merge** | one model or two | **closed**: keep both, lower E wins per site | 10-30 | Part 6 | `class1c` |
+| **Class_1b + novel hits** | add the 68 library hits absent from its seed | **paused**: AB021287 `--max` check; re-run on the accepted cluster-5 baseline, not the original | 11-03 | Part 6 | `class1b` |
+| **loquat 110** | explorer cluster 110, Loquat jingmen-related virus 1 | **closed**: cl3 hits all three sites | 10-29 | Part 3 | `cl3` |
 
 ## Candidate cards — 2026-11-02
 
 One card per live candidate: what it is, where its files are, which gates it has passed.
 Gates are in Part 8 (Build procedure and gates).
 
-#### `cand_FJIS_261029` — insect-specific flavivirus element (G1)
+#### `cand_FJIS_261029` — insect-specific flavivirus element (FJIS clusters 5 + 106)
 
 | | |
 |---|---|
@@ -255,7 +275,7 @@ Gates are in Part 8 (Build procedure and gates).
 | RNAvirus DB | 5 hits at 1e-3, all library viruses: saturated; 4 seed genomes apparently absent from the DB |
 | name | `cand_` until accepted; a class 1 name (e.g. class1d) is consistent with the layout but implies the pseudoknots, which are untested |
 
-#### `cand_FJTB_261026` — third FJTB stall downstream of the class 2 pair (G6)
+#### `cand_FJTB_261026` — third FJTB stall downstream of the class 2 pair
 
 | | |
 |---|---|
@@ -265,13 +285,13 @@ Gates are in Part 8 (Build procedure and gates).
 | library search | 17 accessions from 16 |
 | open | RNAvirus DB result (10-27); step 14a (diverged class 2 copy?) |
 
-#### `cand_PLLG_260915` — clusterA, tick-associated PLLG (G7)
+#### `cand_PLLG_260915` — clusterA, tick-associated PLLG
 
 | | |
 |---|---|
 | members | 12 (clusterA) → recovers 24 of 60 PLLG members |
 | model | `cm/cand_PLLG_260915.cm` — 12 / 1.90 / 76 / 15 bp / 0 bifs; refit on 24 fell to eff_nseq 1.55 |
-| open | RNAvirus DB result (10-27); `--toponly --incE 1e-10` rerun; whether it already hits G5 |
+| open | RNAvirus DB result (10-27); `--toponly --incE 1e-10` rerun; whether it already hits PLLG 117 |
 
 #### Superseded candidates
 
@@ -385,12 +405,12 @@ reference before aligning):
 | 41 | 12 | FJJI | Jingmen tick virus ×7, Takachi, Heilongjiang tick, Alongshan, Yanggou tick | 0.55–0.86 | 10 mM only | stall 2493–2672 |
 | 44 | 8 | FJJI | Jingmen tick virus ×6, Rhipicephalus assoc. flavi-like | 0.50–0.65 | mostly both | stall 2448–2563; different segment accessions from cluster 41 — align 41 + 44 together once, to test one element across segments |
 | 3 | 8 | FJTB | TBEV serocomplex | 0.51–0.70 | 1 mM only | = `cand_FJTB_261026` |
-| 5 | 5 | FJIS | Culex flavivirus, Quang Binh, Mosquito flavivirus ×2, Nienokoue | 0.69–0.90 | 10 mM only | pooled with cluster 106 as **`cand_FJIS_261029`** (G1), 2026-11-02 |
+| 5 | 5 | FJIS | Culex flavivirus, Quang Binh, Mosquito flavivirus ×2, Nienokoue | 0.69–0.90 | 10 mM only | pooled with cluster 106 as **`cand_FJIS_261029`**, 2026-11-02 |
 | 39 | 4 | HPPV | rodent pegiviruses | 0.73–0.84 | 10 mM only | |
-| 106 | 3 | FJIS | NC_034017, NC_034204, ON949931 | 0.84–0.94 | both | sub-threshold class1c in ON949931; pooled with cluster 5 as **`cand_FJIS_261029`** (G1), 2026-11-02 |
+| 106 | 3 | FJIS | NC_034017, NC_034204, ON949931 | 0.84–0.94 | both | sub-threshold class1c in ON949931; pooled with cluster 5 as **`cand_FJIS_261029`**, 2026-11-02 |
 | 110 | 3 | FJJI-related (plant host) | *Loquat jingmen-related virus 1*, one site per segment | 0.51–0.61 | 10 mM only | **class 3** — cl3 26.0–36.8 bits on all three (2026-10-29); out of the no-hit pool |
-| 64 | 3 | FJTB | MT354614 10670, NC_001672 10912, NC_027709 10641 | 0.51–0.63 | one condition each | G4, not looked at |
-| 117 | 3 | PLLG | ON408075 15841, ON811709 16053, ON811731 16056 (Bole tick virus 4, Flaviviridae sp.) | 0.54–0.59 | mostly 1 mM | G5; check against `cand_PLLG_260915` |
+| 64 | 3 | FJTB | MT354614 10670, NC_001672 10912, NC_027709 10641 | 0.51–0.63 | one condition each | gap FJTB 64, not looked at |
+| 117 | 3 | PLLG | ON408075 15841, ON811709 16053, ON811731 16056 (Bole tick virus 4, Flaviviridae sp.) | 0.54–0.59 | mostly 1 mM | gap PLLG 117; check against `cand_PLLG_260915` |
 
 **How the cluster sequences were extracted** (full detail and commands: Methods M3 and the
 Regenerate / Aligning blocks):
@@ -599,7 +619,7 @@ copies), and if the database is too narrow, search a targeted set of complete IS
 separate sites, but Class_1b is a weak, broad model (median E 4.0e-06), so the split could reflect
 the model rather than the RNA. The decisive test is the one used for every merge here: append the
 FJIS sequences to the Class_1b seed with `cmalign --mapali`, rebuild with Infernal 1.1.2
-(`--hand`), and compare per hit with the original Class_1b (Part 6, E4 method). Class_1b subgroup
+(`--hand`), and compare per hit with the original Class_1b (Part 6, the novel-hits method). Class_1b subgroup
 if: the added sequences align to Class_1b's structure with high posterior probability across the
 model, no existing Class_1b hit is lost or drops much, and the FJIS sites become included.
 Separate family if: they align with low PP or truncate, or existing hits are lost. Block below
@@ -628,9 +648,294 @@ for SUBSET in cluster5 all; do
 done
 ```
 
+#### The element is the published P1-deviant ISF subtype — and part of it is already in the Class_1b seed (2026-11-02)
+
+**Literature.** [Ochsenreiter *et al.* / Villordo-type survey, PMC7527734](https://pmc.ncbi.nlm.nih.gov/articles/PMC7527734/)
+describes a subset of putative ISF xrRNA sequences that "deviated from the covariance model at the
+base of P1", found in the **more-downstream copies** (xr3, xr4, …), and names four:
+
+| published name | accession here | where it turns up in this work |
+|---|---|---|
+| PaRV_xr4 (Parramatta River virus 92-B115745) | NC_027817 | **new hit at feature 544** (stall 10757, SF 0.873) in the `cluster5` rebuild |
+| CFAV_xr3 (cell fusing agent virus Galveston) | NC_001564 (seed); LR694076 / MH237596 in the library | **already a Class_1b seed sequence** (below); library sites 10565 / 10555 |
+| MECDV_xr1 (Mercadeo virus ER-M10) | NC_027819 | new hit at feature 561 in the `cluster5` rebuild |
+| MFV_xr1 (Menghai flavivirus MHAedFV1) | NC_034204 | **cluster 106** member (stall 10523) |
+
+Their question was left open: "whether they possibly form a subtype within subclass 1b". The
+rebuild (above) is evidence for that reading — adding these sequences to the Class_1b seed loses no
+existing hit and gains their sites. Only a 2-bp P1 could be proposed for PaRV_xr4 in that work;
+the MATER edit of the pooled 80-nt alignment gives P1 as 4 bp (columns 7–10 / 60–63), one of which
+(9–61) covaries.
+
+**Three of their four are in cluster 5; the fourth, Menghai flavivirus, is in cluster 106** — the
+part that broke the Class_1b rebuild (PP 0.45–0.49, 5′-truncated, 11 hits lost). So cluster 106 may
+be the diverged end of the same subtype rather than a separate family. Test it on its own: add only
+NC_034204 to the Class_1b seed and judge by the same rule.
+
+**CFAV xr3 is already a Class_1b seed sequence.** The seed contains all three CFAV copies —
+`CFAV_NC_001564-2_10173-10247_xr1`, `…_10260-10335_xr2`, `…_10555-10632_xr3`. So the original
+Class_1b model already hits the library's CFAV xr3 sites, and the expansion only strengthens them:
+
+| CFAV site (genomic) | Class_2 | Class_1b | `class1b_plusFJIS_cluster5` |
+|---|---|---|---|
+| LR694076 10184 / MH237596 10172 (xr1) | 13.5 / 12.7 bits, E 2.2e-03 / 3.6e-03, **cm 17–63** | 33.8 / 35.8 bits, E 3.1e-07 / 1.2e-07, cm 1–81 | 34.1 / 36.2 bits |
+| LR694076 10270 / MH237596 10258 (xr2) | 12.4 / 10.9 bits, E 4.3e-03 / 1.1e-02, cm 18–62 | 32.8 / 30.8 bits, cm 1–81 | 33.2 / 31.2 bits |
+| LR694076 10565 / MH237596 10555 (xr3) | no hit | **19.9 bits, E 2.2e-04, cm 1–81** | 23.4 bits, E 5.6e-05 |
+
+- **CFAV is not a Class_2 exception here.** Class_2 reaches xr1 and xr2 only partially (cm 17–63 of
+  93) and ~4 orders of magnitude weaker in E than Class_1b, which matches the whole model full
+  length. That is the same weak partial cross-family pattern seen throughout (the FJIS model
+  reached Class_1b sites at 8–23 bits), so **on its own it is not evidence that CFAV bridges
+  class 1b and class 2.** Whether CFAV is special needs the comparison below: does Class_2 reach
+  other Class_1b sites equally?
+- **A published class-2 attribution for CFAV would be a labelling difference, not a conflict**: the
+  provided `CL_Class_1b` seed claims all three CFAV copies by name.
+
+**No annotation discrepancy — resolved 2026-11-03.** A first reading claimed the original Class_1b
+hit LR694076 stall 10565 above threshold while the annotation called it unannotated. That was an
+error: the E 2.2e-04 came from a `cmsearch` of a **2-sequence file**, which is not comparable with a
+full-library search. The annotation tblout (`06_infernal/260807_trueRef`) does contain the rows, as
+`?` below inclusion, with identical bit scores:
+
+| site | annotation tblout | `class1b_plusFJIS_cluster5` |
+|---|---|---|
+| LR694076 476–553 (stall 10565) | 19.9 bits, E 0.067, `?` | 23.4 bits, `!` |
+| MH237596 478–555 (stall 10555) | 19.9 bits, E 0.067, `?` | 23.4 bits, `!` |
+| NC_027817 543–636 (PaRV xr4) | 22.3 bits, E 0.021, `?` | 28.3 bits, `!` |
+| NC_027819 561–637 (MECDV xr1) | 22.3 bits, E 0.021, `?` | 27.7 bits, `!` |
+
+So the annotation is correct, those stalls are genuinely below inclusion, and **the Part 7 counts are
+not inflated.** What the tblout does show is sharper: **the original Class_1b leaves four of its own
+seed sequences' loci just under the line.** NC_027817 has three Class_1b rows included at 30.7–38.1
+bits and then its xr4 at `?`; MECDV's only seed copy, xr1, is also `?`. The expansion raises exactly
+these above inclusion. That is what it fixes — a recovery failure on its own P1-deviant members, not
+a new family.
+
+#### The base triple, located from the paper's own exception sequences (2026-11-03)
+
+All class 1 xrRNAs need a base triple for the functional fold: U…A-U in MBFV, isosteric C…G-C in
+TABV. [PMC7527734](https://pmc.ncbi.nlm.nih.gov/articles/PMC7527734/) reports >97 % conservation for
+the G and >97 % and >90 % for the two Cs, and names the only two sequences with the alternative
+U…A-U: **CXFV xr1 and xr4**. Both are in the Class_1b seed
+(`CXFV_NC_008604-2_10246-10326_xr1`, `…_10598-10675_xr4`), so the triple's columns can be read off
+directly as the positions where those two depart from the consensus. They differ at exactly three
+well-conserved columns:
+
+| cm column | seed consensus | CXFV xr1 / xr4 | `SS_cons` |
+|---:|---|---|---|
+| **7** | C 0.97 | U | unpaired, 5′ region |
+| **29** | G 0.97 | A | **paired to 43** |
+| **43** | C 0.86 | U | **paired to 29** |
+
+**The triple is cm 7 … 29-43.** Two of the three conservation figures match the paper exactly
+(>97 % G at 29, >97 % C at 7); their >90 % for the second C reads 0.86 here, consistent with a
+different sequence set or gap handling.
+
+A first attempt guessed 30–42 from a "≥90 % conserved G or C" filter plus `SS_cons`. That was wrong:
+cm 43, the real partner, sits at 0.86 and the filter excluded it. Conservation level alone cannot
+locate a triple — the paper's exception sequences could.
+
+**Membership test on the candidates.** `cmbuild` cannot represent a base triple, so it is invisible
+to every model here and has to be read from the alignment:
+
+| sequences | cm 7 | cm 29 | cm 43 | |
+|---|---|---|---|---|
+| all six cluster-5 | C | G | C | **C…G-C intact** |
+| NC_034204 (Menghai, cluster 106) | – | – | – | absent |
+
+cm 29 and 43 lie **inside** Menghai's aligned span (cm 17–78), so those are genuine deletions of the
+triple's pair; cm 7 is outside its span, so missing data rather than demonstrated absence, though
+`cmalign` placing its 5′ end at column 17 rather than aligning to columns 1–16 is itself
+informative. This shows Menghai is not a **Class_1b** member; it could still be a class 1 xrRNA with
+a triple at positions this model cannot align, which would need its own structure work.
+
+This is structural evidence independent of every score, and it is the firmest ground under both
+decisions: cluster 5 joins Class_1b, cluster 106 does not.
+
+```bash
+# (step 1, the annotation tblout check, was run on the cluster 2026-11-03 -- see above)
+# 2. is CFAV special, or does Class_2 reach many Class_1b sites?
+CL2=$CMSET/CL_Class_2_xrRNA_final.cm
+cmsearch --toponly --incE 0.01 --cpu 4 -o /dev/null --tblout "$PLUS/cfav/class2_library.tbl" "$CL2" "$FA"
+python3 $FLAVISCRIPTS/cm_round_stats.py overlap "$PLUS/cfav/class2_library.tbl" \
+  "$CLASS1B_SATURATION/search.tbl" class2 class1b > "$PLUS/cfav/class2_vs_class1b_overlap.tsv"
+tail -1 "$PLUS/cfav/class2_vs_class1b_overlap.tsv"
+awk -F'\t' 'NR==1 || ($5=="!" && $9=="!")' "$PLUS/cfav/class2_vs_class1b_overlap.tsv" | column -t
+```
+
+Read 2 as: if Class_2 partially reaches many Class_1b sites, CFAV is unremarkable and the
+"bridge" idea has no support here. If CFAV's xr1/xr2 are among the few sites Class_2 reaches at
+all, the idea is worth recording as a hypothesis — with the caveat that a partial match over
+cm 17–63 is weak evidence either way, and the published structures, not these models, would
+settle it.
+
+#### Adding the two remaining sub-threshold sites to the cluster-5 seed — rejected 2026-11-03
+
+The gap-register row **sub-threshold Class_1b** left two sites: NC_005064 1079 (Kamiti River virus,
+= stall 11245) at 18.5 bits / E 0.079 `?`, and MW897328 66 (stall 10653) at 19.3 bits / E 0.057 `?`.
+Both start at their stall, so both have Class_1b geometry. Tested by the same rule as cluster 5 —
+`cmalign --mapali` onto the accepted cluster-5 seed, `cmbuild --hand`, `cmcalibrate`, library
+`cmsearch --toponly --incE 0.01` under Infernal **1.1.2**, compared per hit against the cluster-5
+baseline.
+
+Build directory: `build/class1b/iter_v3_plusFJIS/plus_subthreshold/{kamiti,phaiomys,both}/`,
+models `class1b_plusSub_<subset>_inf112.{stk,cm,_library.tbl,_library.tbl.compare.tsv}`.
+
+| subset | added | nseq / eff_nseq | clen / W | alignment of the added sequence | lost | gained | lower / worst Δ |
+|---|---:|---|---|---|---|---|---|
+| `kamiti` | NC_005064 | 95 / 51.72 | 81 / 254 | cm 1–81, not truncated, 7.06 b, **avg PP 0.853** | **OP860412 297** | none | 41 / −0.70 |
+| `phaiomys` | MW897328 | 95 / 50.87 | 81 / 251 | cm 1–80, **3′-truncated**, 8.57 b, **avg PP 0.622** | **AB981186 590, NC_012671 545, OP860412 297** | MW897328 itself (23.5 b) | 85 / −1.10 |
+| `both` | both | 96 / 52.03 | 81 / 251 | as above | the same three | MW897328 itself (23.4 b) | 83 / −0.90 |
+
+Reading:
+
+- **All three are rejected.** Every variant loses `OP860412 297` — the same hit the cluster-5
+  expansion gained — and the two containing MW897328 also lose `AB981186 590` and `NC_012671 545`,
+  both of them **cluster-5 member sites**. So adding MW897328 undoes part of the expansion that was
+  just accepted.
+- **`kamiti` is the near miss.** One hit lost, nothing gained, and its own sequence aligns full
+  length at PP 0.853 — the best-aligning addition tried on this model. It still fails the rule
+  (no loss is tolerated), and it buys nothing: NC_005064 1079 is not raised to inclusion by its own
+  addition.
+- **The losses are small in magnitude** (worst Δ −0.70 to −1.10 bits) but they cross the inclusion
+  line, which is what the rule is about. 41–85 hits score lower in every variant.
+- Together with step 17 and the three earlier rebuild variants, this is the fourth independent
+  demonstration that **the expansion is at capacity at cluster 5**. `OP860412 297` is the marginal
+  hit in every direction: it is gained by cluster 5 and lost by every further addition.
+- The two sites stay open as sites. Neither is Class_1b; both would need either a looser model of
+  their own or sequences from outside this library.
+
+#### Reading the triple with alignment windows and posterior probability — 2026-11-03
+
+The flat cm 7 / 29 / 43 readout answers "which residue sits in that column", which is not the same
+question as "does this sequence have the triple". It cannot distinguish three different situations,
+and all three occur here. The fix is to print the ±2-column **window** around each of the three
+positions together with the sequence's `#=GR … PP` row, so insertions and alignment confidence are
+visible:
+
+```bash
+# windows and posterior probability around the triple columns
+python3 - "$PLUS/cluster5/plus_subthreshold/both/class1b_plusSub_both_inf112.stk" <<'PY'
+import sys, collections
+rf=''; seqs=collections.OrderedDict(); pp=collections.OrderedDict()
+for line in open(sys.argv[1]):
+    if line.startswith('#=GC RF'): rf += line.split()[2]; continue
+    if line.startswith('#=GR'):
+        f=line.split()
+        if f[2]=='PP': pp[f[1]] = pp.get(f[1],'') + f[3]
+        continue
+    if line.startswith('#') or line.startswith('//') or not line.strip(): continue
+    f=line.split()
+    if len(f)==2: seqs[f[0]] = seqs.get(f[0],'') + f[1]
+cons=[i for i,c in enumerate(rf) if c.isalpha()]       # uppercase AND lowercase RF = match columns
+for n in seqs:
+    print(n)
+    for k in (7,29,43):
+        lo, hi = cons[max(k-3,0)], cons[min(k+1,len(cons))-1]
+        print(f"  cm {k-2}-{k+2}  RF {rf[lo:hi+1]}  seq {seqs[n][lo:hi+1]}"
+              + (f"  PP {pp[n][lo:hi+1]}" if n in pp else "  PP (none)"))
+PY
+```
+
+Note on `cons`: Infernal's `RF` line marks match columns with the consensus residue — **uppercase
+when well conserved, lowercase when not** — and insert columns with `.`. So `c.isalpha()` is the
+correct test and it returns exactly `clen` = 81 columns. An earlier worry that lowercase meant
+insert was unfounded; the column count confirms it.
+
+What the three cases look like:
+
+| sequence | windows | PP at cm 7 / 29 / 43 | verdict |
+|---|---|---|---|
+| the six cluster-5 | no insertions; dots line up with RF dots | **no PP row** | C…G-C, confidence unmeasured |
+| NC_005064 (Kamiti) | no insertions | ≈0.97 / ≈0.97 / **≈0.65** | **genuine non-canonical pair** |
+| MW897328 | **inserted G beside cm 29 and beside cm 43** | ≈0.55 at cm 29, 0.3 at the insert; 0.5–0.6 at cm 43 | **misalignment; no conclusion** |
+
+- **MW897328 — the flat readout was wrong.** At cm 27–31 the `RF` pattern is `c.G.GGG` and its
+  sequence reads `C.GGCGG`: it carries an extra **G in the insert column next to cm 29**, with a C
+  in cm 29 itself. `PP *.83566` means ≈0.55 at cm 29 and 0.3 at the insert — a coin flip. cm 41–45
+  has a second inserted G at PP 0.5–0.6. Its G is present, one column over. The earlier "C-C, not a
+  pair" verdict is an artefact of exactly the one-base shift that was predicted, and the triple
+  screen gives **no evidence either way** for this sequence.
+- **NC_005064 — a real variant.** Its windows contain no insertions, and PP is `**.***` at cm 5–9
+  and `*.*.***` at cm 27–31, so cm 7 = C and cm 29 = G are placed at ≥0.95. cm 43 = U sits at
+  ≈0.65. Nothing nearby could be the "real" C, so the most likely reading is a genuine **G·U
+  wobble** replacing G-C — a real pair, consistent with the paper's note on non-Watson-Crick pairs
+  at the base of P2 in its departing sequences.
+- **The six cluster-5 sequences carry no PP row** in this file, because they entered through the
+  `--mapali` baseline and their probabilities were not recomputed. Their C-G-C readings are
+  therefore unverified for confidence. One alignment measures it:
+
+```bash
+cmalign --cpu 4 -o "$PLUS/cluster5/pp_check.stk" "$BASE.cm" \
+  "$PLUS/cluster5/class1b_plusFJIS_cluster5_inf112_added.fa" > "$PLUS/cluster5/pp_check.log"
+# then run the window script above on pp_check.stk
+```
+  Their windows show no insertions, so high PP is expected, but it should be measured rather than
+  assumed. **Not yet run.**
+
+**Consequences for the decisions: none, but the grounds change.** Both further additions remain
+rejected and the expansion stops at cluster 5 — on the rebuild losses above, which are unaffected.
+What changes is what the triple screen is allowed to claim: for MW897328 it claims nothing, and the
+same caveat applies to **Menghai**, whose overall PP is 0.465, so its apparent deletions at cm 29
+and 43 could also be alignment failure. Menghai's rejection rests on the 11–17 lost hits alone, not
+on the triple. Earlier text in this file that leans on Menghai's missing triple is overstated.
+
+#### Should the seed be shifted so the triple aligns? — no (2026-11-03)
+
+The answer is no, for three reasons, and there is a measurement that would change it.
+
+1. **A shift cannot make the model see the triple at all.** `cmbuild` has no base-triple state.
+   cm 7's interaction with the 29-43 pair is absent from the model under *every* column
+   arrangement. Moving or adding columns changes which residues `cmalign` places where; it does not
+   add the constraint. So a shift could only improve the *readout*, never the model's power.
+2. **The current layout is right for the family and wrong only for MW897328.** The 138 included
+   sites align with the insert columns empty; MW897328 has a residue there. Adding a consensus
+   column to absorb that insert asserts that every member should have a residue at that position,
+   which is false for the other 137, and raises `clen` from 81 to 82. That is in effect what the
+   three variant rebuilds did, and all three lost hits — `OP860412 297` in every one. The
+   experiment has already been run.
+3. **A seed describes the consensus, not the hardest member.** A single sequence with an insertion
+   *is* an insertion. The way to read its triple is the insert column, which is what the window
+   script does. The seed changes only if the insert is the majority state.
+
+**The measurement that would change the answer.** Count how many included library sites actually
+occupy the insert columns flanking cm 29 and cm 43. A handful means sequence-level variation; a
+substantial fraction means the seed is misdescribing the family there and a column should be added
+(edit `RF` in the seed `.sto`, rebuild with `cmbuild --hand`, re-run the whole comparison).
+
+```bash
+C5=$PLUS/cluster5/class1b_plusFJIS_cluster5_inf112
+python3 $FLAVISCRIPTS/cm_round_stats.py fetch "${C5}_library.tbl" 81 0.70 "$PLUS/cluster5/insertcheck"
+esl-sfetch -Cf "$FA" "$PLUS/cluster5/insertcheck.fetchlist" > "$PLUS/cluster5/insertcheck.fa"
+cmalign --cpu 4 -o "$PLUS/cluster5/insertcheck.stk" "$C5.cm" \
+  "$PLUS/cluster5/insertcheck.fa" > "$PLUS/cluster5/insertcheck.log"
+
+python3 - "$PLUS/cluster5/insertcheck.stk" <<'PY'
+import sys, collections
+rf=''; seqs=collections.OrderedDict()
+for line in open(sys.argv[1]):
+    if line.startswith('#=GC RF'): rf += line.split()[2]; continue
+    if line.startswith('#') or line.startswith('//') or not line.strip(): continue
+    f=line.split()
+    if len(f)==2: seqs[f[0]] = seqs.get(f[0],'') + f[1]
+cons=[i for i,c in enumerate(rf) if c.isalpha()]
+for k in (7,29,43):
+    lo = cons[k-2]+1 if k > 1 else 0        # first alignment column after cm k-1
+    ins = [i for i in range(lo, cons[k-1]) if not rf[i].isalpha()]
+    occ = sum(1 for n in seqs if any(seqs[n][i] not in '-.~' for i in ins))
+    print(f"cm {k}: {len(ins)} insert column(s) before it, occupied in {occ}/{len(seqs)} sequences")
+PY
+```
+
+**What would genuinely improve triple detection is not a shift but a different instrument.** No
+Infernal 1.1.x model can represent the triple, so the CM's role is recruitment only. The triple is
+read from a structure-aware alignment with the pseudoknot annotated — the MATER / R-scape route
+already used for the candidates — and the CM alignment is used for it only with the insert columns
+and PP in view, as above. Recorded as a standing rule in Part 8.
+
 ### FJJI: clusters 41 and 44 — 2026-11-02
 
-Jingmen tick viruses and relatives (G2). The Jingmenvirus group has no CM coverage at all. Same
+Jingmen tick viruses and relatives. The Jingmenvirus group has no CM coverage at all. Same
 route as FJIS: the explorer's 80-nt windows (`explorer_cm_scan.py seqs`), mlocarna single and pooled,
 `stk_oneblock`, R-scape.
 
@@ -834,18 +1139,26 @@ flanks, plus 200 random decoys): the class1c model rebuilt from its seed reports
 
 ---
 
-# Part 4. Earlier candidates (2026-09-15 – 10-27)
+# Part 4. Model statistics, and the earlier candidates (2026-09-15 – 11-02)
 
-## Candidates
+## Model statistics
 
-| name | clade | nseq | eff_nseq | clen | bps | bifs | status |
+Every model and candidate in one place. Status is maintained in the gap register and the candidate
+cards (Part 3); this table is for comparing the numbers.
+
+| model | clade | nseq | eff_nseq | clen | bps | bifs | note |
 |---|---|---:|---:|---:|---:|---:|---|
+| Class_1a | — | 75 | 9.31 | 74 | 19 | 2 | provided |
+| Class_1b | — | 88 | 48.62 | 81 | 19 | 2 | provided, Infernal 1.1.2 (Part 2) |
+| Class_2 | — | 38 | 3.58 | 93 | 22 | 1 | provided; curated, lowest eff_nseq of the accepted set |
+| class1c | PLPV + HPHV | 46 | 9.54 | 84 | 15 | 1 | built here 2026-09-17 |
+| `class1b_plusFJIS_cluster5_inf112` | + ISF | 94 | 50.24 | 81 | 19 | 2 | **candidate Class_1b version**, 2026-11-02; passes the rule |
+| `class1b_plusFJIS_all_inf112` | + ISF | 97 | 63.32 | 81 | 19 | 2 | rejected: 11 hits lost |
+| `cand_FJIS_261029` | FJIS | 8 | 4.44 | 82 | 13 | 1 | superseded by the two outcomes above / cluster 106 |
 | `cand_FJTB_261026` | FJTB | 16 | 1.63 | 80 | **23** | **2** | built, searched; +1 accession only |
 | `cand_PLLG_260915` | PLLG | 12 | 1.90 | 76 | 15 | 0 | built, searched; 24 of 60 |
 | `cand_PLLG_260915_cmalign` | PLLG | 24 | 1.55 | 75 | 15 | 0 | built; stopped, too conserved |
-
-For context: Class_1a 75/9.31/74/19bp/2bifs · Class_1b 88/48.62/81/19/2 · Class_2 38/3.58/93/22/1 ·
-class1c 46/9.54/84/15/1 · hepaci_hits_v2 55/19.93/78/18/1.
+| `hepaci_hits_v2` | HPHV | 55 | 19.93 | 78 | 18 | 1 | intermediate on the way to class1c |
 
 `bifs` is the count of bifurcations — branch points, needed for a multi-way junction. Every
 established class has at least one. `cand_FJTB_261026` has two and 23 base pairs, more than any
@@ -1173,6 +1486,35 @@ mlocarna/Infernal signal").
 # Part 5. class1c review (2026-10-28 – 10-30)
 
 ## class1c
+
+### How class1c was found, and how that differs from the current route
+
+Recorded 2026-11-02, because the two routes give different kinds of candidate and the counts are
+not comparable. class1c came out of a **genus** route in September; everything since 2026-10-28 uses
+a **clade / cluster** route.
+
+| | class1c (Sept 2026) | current candidates (from 2026-10-28) |
+|---|---|---|
+| pool | `extract_genus_fastas.py` on the August annotated xlsx: rows with `any_hit == False` and `n_reps_passing` in (3,4), split **by genus** (`Hepacivirus.fasta`, `Pestivirus.fasta`, …) | the no-hit pool joined to **Mifsud clade codes**, then the flavi150 explorer's **LocARNA similarity clusters** within a clade |
+| windows | the `downstream_seq` column (starts at the stall, capped at 80 nt) | `explorer_cm_scan.py seqs` (the same `downstream_seq`) or `fetch --ref` (cut from the reference, any width) |
+| grouping evidence | genus label only | sequence/structure similarity, plus distinct-species and stall-position-spread ranking |
+| alignment | mlocarna per genus → hand-edited Stockholm | mlocarna per cluster and pooled, `stk_oneblock`, MATER edit, R-scape |
+| how it grew | `cmbuild` from 22 hand-edited Pestivirus sequences → library `cmsearch` → `esl-sfetch` + `cmalign` of the 46 `!` hits → MATER/CaCoFold → `class1c` | build, then `cm_iterate.sh` novelty check against the library and the RNAvirus database; grow by `cmalign --mapali` so the edited seed is kept |
+| result | a **mixed-genus** class: 22 Pestivirus + Hepacivirus hits the search pulled in | candidates are within one clade by construction; cross-clade membership appears as model-vs-model tests |
+
+Consequences that keep coming up:
+
+- **The genus split mixed unrelated viruses** — the recorded rule is to split by clade code, since a
+  genus split puts insect-specific and tick-borne flaviviruses in one alignment. The 29 unexamined
+  orthoflavivirus vsearch clusters come from that route and are superseded.
+- **class1c's seed is library hits**, which is why it is saturated on the library: the search →
+  `cmalign` → rebuild round was already done one model earlier (`pesti_short1b`). A candidate whose
+  seed is a cluster alignment is not saturated for the same reason.
+- **The Sept "still unclassified" genus lists are stale** (Part 5, Known uncovered): they were
+  derived against a different model set, and KY370100 / KY370101 / NC_025677 all carry Class_1b
+  hits in the 261021 annotation.
+- **Counts are in different units.** Genus-route counts are per sequence or per accession; the
+  cluster route counts distinct stall sites. The gap register (Part 3) keeps the unit on every row.
 
 ### class1c lineage and where every file is
 
@@ -1735,6 +2077,9 @@ methods.
 
 ### Known uncovered
 
+**Superseded by the gap register (Part 3)**; kept as the Sept/Oct derivation, and the lists
+themselves are stale (see "How class1c was found" above).
+
 | set | n | where |
 |---|---:|---|
 | Hepacivirus unclassified after class1b **and** class1c | 9 | BK013349, MG599987, MG599989, MN535729, MN691105, MZ393517, NC_028377, NC_038432, OX394189 (9, not 8; source lists OX394189) |
@@ -2031,6 +2376,8 @@ Paths: `build/class1b/iter_v1_saturation/r0/` (original model's search, novelty 
 ## Accounting: stalls with no CM home
 
 ### Counts of what is not covered
+
+**Superseded by the gap register (Part 3)**; kept as the 2026-10-28 derivation.
 
 The progress table below says what has been done. This one says how much is left, with counts.
 **`unit` is not decoration** — accession-level and site-level counts answer different questions and
@@ -2435,6 +2782,9 @@ Each of these broke a command once.
 | `permission denied` on a script | downloaded files lose the executable bit | `chmod +x`, or `bash script.sh` |
 | `duplicate seq name` from R-scape / Easel | LocARNA 2.0.1 writes `result.stk` as two blocks with no blank line between (`#=GF SQ 6` for 3 sequences) | join with `stk_oneblock` first |
 | alifold line logged without energies | mlocarna wraps the alignment at ~120 characters; RNAalifold space-pads one-digit energies | the `alifold_line` function below (padding fixed 2026-11-02) |
+| an E-value looks far better than expected | E scales with the size of the searched database, so it is not comparable between searches of different targets (bitten twice: the RNAvirus DB looked saturated, and a 2-sequence search looked like an annotation bug) | compare **bit scores** across searches; compare E only when the target file is the same |
+| a residue is "missing" from a conserved column | `cmalign` may have placed it in the adjacent **insert** column; the flat per-column readout cannot tell a shift from a substitution (bitten on MW897328 at cm 29 and cm 43) | print the ±2-column window plus the `#=GR … PP` row, as in Part 3's triple block; treat a column with PP ≲ 0.6 and an occupied neighbouring insert as unreadable, not as absent |
+| a structural feature looks absent in an alignment | `cmbuild` cannot represent a base triple or any other non-nested interaction, so the CM neither scores it nor aligns to it; and a sequence with low overall PP (Menghai, 0.465) may simply be misaligned | use the CM for recruitment only; read triples and pseudoknots from a structure-aware alignment (MATER / R-scape with the pseudoknot annotated) |
 | `cmsearch --tblout /dev/stdout` output mixed with the alignment report | cmsearch also prints its main report to stdout | add `-o /dev/null`, or write the tblout to a file (fixed in Parts 4–6 on 2026-11-02) |
 | `command not found: alifold_line` (or `clog`, `stk_oneblock`) | functions last only for the terminal session | paste the definitions below into each new terminal |
 | a `<…>` placeholder copied into a command | placeholders are not paths | replace before running |
@@ -3026,6 +3376,20 @@ the same stall position per accession". Measured effect: 56 % of no-hit rows at 
 | 2026-10-30 | newvirus variant (1.1.2): strong novel hits from accessions with no seed sequence | 34 added: 122/24.43/81/19/2, matched 128 lost 1 (AB021287 65) gained 3 (OM030319 57, MN587651 70, OP860412 297) lower 65 worst -7.2; MH282908 -5.5/-3.1 although none of its hits was added; MH307700 -4.0. Same as strong |
 | 2026-10-30 | AB021287 in the strong search | no row at all, not even below threshold, although AB021287 is an added sequence; suspected filter artefact. `--max` check outstanding |
 | 2026-11-02 | status | not accepted; paused on the AB021287 `--max` check (Part 6) |
+| 2026-11-02 | CFAV, Class_2 and the Class_1b seed | the Class_1b seed already contains all three CFAV copies by name (CFAV_NC_001564-2 xr1 10173-10247, xr2 10260-10335, xr3 10555-10632). Original Class_1b on the library CFAV features: xr1 33.8 / 35.8 b (3.1e-07 / 1.2e-07), xr2 32.8 / 30.8 b, xr3 19.9 b 2.2e-04, all cm 1-81; plusFJIS_cluster5 raises xr3 to 23.4 b 5.6e-05. Class_2 reaches only xr1 and xr2, partially (cm 17-63 of 93), 10.9-13.5 b, E 2.2e-03 to 1.1e-02 -- 4 orders weaker than Class_1b. So CFAV is not a Class_2 exception here; a published class-2 attribution would be a labelling difference |
+| 2026-11-02 | annotation discrepancy at LR694076 10565 | original Class_1b hits feature 476-553 (= stall 10565) at 19.9 b, E 2.2e-04, inclusion !, yet the 261021 annotation calls that stall no-hit (explorer None found; gap G15). Recorded annotation threshold is looser than that. Check the 260807_trueRef Class_1b tblout: if other no-hit sites are like this, part of the no-CM pool is an annotation artefact. Bears on every Part 7 count |
+| 2026-11-02 | base triple located empirically from the papers own exception sequences | the Class_1b seed contains CXFV_NC_008604-2_10246-10326_xr1 and _10598-10675_xr4, the two sequences the paper reports as carrying U...A-U instead of C...G-C. They differ from the seed consensus at exactly three well-conserved columns: cm 7 (C 0.97 -> U, unpaired 5 prime region), cm 29 (G 0.97 -> A), cm 43 (C 0.86 -> U); SS_cons pairs 29 with 43. So the triple is cm 7 ... 29-43. Matches their >97 pct G and >97 pct C; their >90 pct for the second C vs 0.86 here. Supersedes the earlier guess of 30-42, which was wrong: cm 43 fell below the 0.90 G/C filter |
+| 2026-11-02 | what the cluster5 expansion actually adds, mapped to the seeds xrN copies | recovered seed loci the original model missed: NC_027817 10756 = PaRV xr4 (10757-10848), NC_027819 10810 = MECDV xr1 (10811-10887), LR694076 10565 / MH237596 10555 = the CFAV xr3 copy (seed has it from isolate NC_001564). New fifth array copies, each just downstream of that genomes seed xr4: NC_008604 10708 (xr4 ends 10675), NC_021069 10737 (10704), NC_012671 10736 (10703, QBV), NC_024299 10746 (10716, NIEV). Genomes absent from the seed entirely: AB981186, MH827524. So the expansion extends the ISF tandem array by one copy at a consistent position (10708-10746) and repairs recovery of existing members |
+| 2026-11-02 | correction: there is no annotation discrepancy at LR694076 10565 | the 260807_trueRef Class_1b tblout does contain those rows, as ? below inclusion: LR694076 476-553 and MH237596 478-555 at 19.9 bits E 0.067, NC_027817 543-636 and NC_027819 561-637 at 22.3 bits E 0.021. My earlier E 2.2e-04 came from a cmsearch of a 2-sequence file, so it is not comparable with a full-library search; bit scores are identical. The annotation is correct, those stalls are genuinely below inclusion, G15 is a real gap and the Part 7 counts are not inflated. Strike the earlier rows claiming an artefact |
+| 2026-11-02 | what the expansion fixes, stated precisely | in the full-library search the original Class_1b scores four of its own seed sequences loci just below inclusion: PaRV xr4 (NC_027817 543, 22.3 b E 0.021), MECDV xr1 (NC_027819 561, 22.3 b E 0.021, its only seed copy), CFAV xr3 in two isolates (LR694076 476 and MH237596 478, 19.9 b E 0.067). NC_027817 has three other Class_1b rows included at 30.7-38.1 b. The cluster5 expansion raises these to 23.4-28.3 b and includes them, and adds four previously uncatalogued fifth array copies. So the expansion closes a recovery failure on its own P1-deviant members rather than defining a new family |
+| 2026-11-03 | base triple located from the papers own exception sequences | the seed contains CXFV_NC_008604-2_10246-10326_xr1 and _10598-10675_xr4, the two sequences PMC7527734 reports with U...A-U instead of C...G-C. They depart from the seed consensus at exactly three well-conserved columns: cm 7 (C 0.97 -> U, unpaired 5 prime region), cm 29 (G 0.97 -> A), cm 43 (C 0.86 -> U); SS_cons pairs 29 with 43. **The triple is cm 7 ... 29-43.** Two of three conservation figures match the paper exactly; their >90 pct for the second C reads 0.86 here. Supersedes the earlier 30-42 guess, which failed because cm 43 fell below the 0.90 G/C filter -- conservation level alone cannot locate a triple |
+| 2026-11-03 | base triple in the candidates | at cm 7 / 29 / 43 all six cluster5 sequences read C / G / C (intact C...G-C); NC_034204 reads - / - / -. cm 29 and 43 are inside Menghais aligned span (cm 17-78) so those are genuine deletions of the triples pair; cm 7 is outside its span (missing data, though cmalign starting it at column 17 is itself informative). cmbuild cannot represent a triple, so this is structural evidence independent of all scores. Menghai is not a Class_1b member; it could still be a class 1 xrRNA with a triple this model cannot align |
+| 2026-11-03 | remaining sub-threshold Class_1b sites | with the cluster5 expansion, NC_005064 1079-1154 (= stall 11245, Kamiti River virus) is 18.5 b E 0.079 ? and MW897328 66-154 (stall 10653 at position 67) is 19.3 b E 0.057 ?: both still below inclusion, both starting at their stall. Their genomes other sites are included (NC_005064 191 and 787 at 37.6-38.7 b; MW897328 641 at 34.6 b). Candidates for a further expansion round via cm_add_borderline.sh on the cluster5 model |
+| 2026-11-03 | rule | compare bit scores between searches, never E-values, unless the target file is identical: E scales with database size. Recorded in Part 8 after it caused two wrong readings |
+| 2026-11-03 | adding the two remaining sub-threshold sites to the cluster5 seed | all three variants rejected. kamiti (NC_005064): 95 seq / eff 51.72, clen 81 / W 254, added sequence aligns cm 1-81 untruncated at 7.06 b avg PP 0.853, loses OP860412 297, gains nothing, 41 lower worst -0.70. phaiomys (MW897328): 95 / 50.87, W 251, added sequence 3 prime truncated cm 1-80 at 8.57 b avg PP 0.622, loses AB981186 590 and NC_012671 545 (both cluster5 member sites) and OP860412 297, gains only itself at 23.5 b, 85 lower worst -1.10. both: 96 / 52.03, same three lost. Every variant loses OP860412 297, the hit cluster5 gained, so this is the fourth independent demonstration that the expansion is at capacity at cluster 5. kamiti is the near miss (one loss, best-aligning addition tried) but buys nothing: its own site is not raised to inclusion. Paths build/class1b/iter_v3_plusFJIS/plus_subthreshold/{kamiti,phaiomys,both}/ |
+| 2026-11-03 | window and PP view of the triple columns: the screen distinguishes shift from variant | MW897328: RF c.G.GGG vs seq C.GGCGG -- an extra G in the insert column beside cm 29, cm 29 itself C, PP *.83566 (about 0.55 at cm 29, 0.3 at the insert); cm 41-45 a second inserted G at PP 0.5-0.6. Its C-C not-a-pair verdict is a misalignment, the G is one column over: the triple screen gives no evidence either way for it. NC_005064: no insertions in the windows, PP **.*** at cm 5-9 and *.*.*** at cm 27-31 (cm 7 = C and cm 29 = G at >=0.95), cm 43 = U at PP about 0.65 -- most likely a genuine G.U wobble replacing G-C, consistent with the papers non-Watson-Crick pairs at the base of P2. The six cluster5 sequences carry no PP row (they came through --mapali, probabilities not recomputed) so their C-G-C readings are unverified for confidence; re-align without --mapali to cluster5/pp_check.stk to measure it (not yet run). Decisions unchanged: both further additions rejected on the rebuild losses, expansion stops at cluster 5. Same caveat now applies to Menghai (overall PP 0.465): its rejection rests on the 11-17 lost hits alone, not on the triple |
+| 2026-11-03 | note on reading RF | Infernals RF line marks match columns with the consensus residue, uppercase when well conserved and lowercase when not, and insert columns with a dot. So c.isalpha() is the correct test for a match column and it returns exactly clen = 81. An earlier worry that lowercase meant insert was unfounded; the column count confirms it |
+| 2026-11-03 | should the seed be shifted so the triple aligns | no. cmbuild has no base-triple state, so cm 7s interaction with the 29-43 pair is absent under every column arrangement: a shift can only improve the readout, never the models power. The current layout is right for the 138 included sites, which leave the insert columns empty, and wrong only for MW897328; adding a consensus column to absorb that insert asserts a residue there for the other 137 and raises clen 81 to 82, which is in effect what the three variant rebuilds did, and all three lost hits. A seed describes the consensus, not the hardest member. The measurement that would change the answer: count how many included library sites occupy the insert columns flanking cm 29 and cm 43 (insertcheck block, Part 3) -- a substantial fraction means the seed misdescribes the family and a column should be added via RF plus cmbuild --hand. What would genuinely improve triple detection is a different instrument, not a shift: the CM is recruitment only, the triple is read from a structure-aware alignment with the pseudoknot annotated (MATER / R-scape) |
 
 ### `cand_FJIS_fz106_261029`
 
@@ -3077,6 +3441,8 @@ the same stall position per accession". Measured effect: 56 % of no-hit rows at 
 | 2026-11-02 | per-site split with Class_1b in the library (cm_round_stats.py overlap, rows with an included hit) | clean partition: FJIS included and lower E at all 5 of its own sites (AB981186, MH827524, NC_012671, NC_021069, NC_024299 629-709; Class_1b there 10.7-20.4 b, not included); Class_1b included and lower E at all 14 of its sites (FJIS there 8.5-23.0 b, not included). No site included by both. NIEV NC_024299: Class_1b 92-185 and 230-315, FJIS 629-709 = three-copy array. File build/cand_FJIS_261029/iter_v2_explorer80/cm/fjis_vs_class1b_library_overlap.tsv |
 | 2026-11-02 | RNAvirus DB search re-read at looser cutoffs | 3 hits at 1e-10, 5 at 1e-5, 5 at 1e-3: NC_021069, NC_012671, NC_008604, NC_034204, NC_034017, all library viruses. AB981186, MH827524, NC_024299, ON949931 (52-79 b in the library) absent: DB most likely lacks those genomes. No novel sequence |
 | 2026-11-02 | open question | Class_1b subgroup or separate family? Class_1b is a weak broad model, so the clean split may reflect the model. Test: append FJIS hits to the Class_1b seed (cmalign --mapali, 1.1.2 --hand), compare per hit (build/class1b/iter_v3_plusFJIS/) |
+| 2026-11-02 | published identity of the element (PMC7527734) | the cluster-5 element is the P1-deviant putative ISF xrRNA subset of that survey, found in downstream copies (xr3, xr4): PaRV_xr4 = NC_027817 (new hit at 544), CFAV_xr3 = NC_001564 (already a Class_1b seed sequence), MECDV_xr1 = NC_027819 (new hit at 561), MFV_xr1 = NC_034204 (cluster 106). Their open question was whether these form a subtype within subclass 1b; the cluster5 rebuild supports that. Only a 2-bp P1 was proposed there for PaRV_xr4; the MATER edit gives P1 4 bp (7-10/60-63) with 9-61 covarying |
+| 2026-11-02 | cluster 106 reframed | 3 of the 4 published P1-deviant sequences are in cluster 5; the fourth (Menghai flavivirus NC_034204) is in cluster 106, the part that broke the Class_1b rebuild. So cluster 106 may be the diverged end of the same subtype, not a separate family. Test: add NC_034204 alone to the Class_1b seed |
 
 ### `cand_FJJI_cluster41_261029`
 
