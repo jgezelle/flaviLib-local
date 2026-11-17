@@ -62,29 +62,102 @@ def load_nodes(path):
         return None
 
     nodes = find(data)
-    if not nodes:
-        sys.exit('DATA parsed but no node list with an `fz` field')
-    return nodes
+    if nodes:
+        return nodes, 'fz'
+
+    # The field is not called 'fz' in this explorer. Look for any list of dicts that carries a
+    # plausible cluster field, then fall back to printing the structure so it can be named.
+    CLUSTER_KEYS = ('fz', 'frozen', 'frozen_cluster', 'fzcluster', 'fz_cluster', 'cluster',
+                    'clust', 'cl', 'comp', 'component', 'group', 'grp', 'fz20261028')
+
+    def lists_of_dicts(o, path='DATA', out=None):
+        out = out if out is not None else []
+        if isinstance(o, list) and o and isinstance(o[0], dict):
+            out.append((path, o))
+        if isinstance(o, dict):
+            for k, v in o.items():
+                lists_of_dicts(v, f'{path}.{k}', out)
+        elif isinstance(o, list):
+            for i, v in enumerate(o[:3]):
+                lists_of_dicts(v, f'{path}[{i}]', out)
+        return out
+
+    cands = lists_of_dicts(data)
+    for path, lst in cands:
+        for ck in CLUSTER_KEYS:
+            if ck in lst[0]:
+                print(f'note: cluster field is "{ck}", not "fz" (node list at {path})\n')
+                return lst, ck
+
+    print('Could not identify the node list. Structure of DATA:\n')
+    if isinstance(data, dict):
+        for k, v in data.items():
+            kind = type(v).__name__
+            extra = ''
+            if isinstance(v, list):
+                extra = f', {len(v)} items'
+                if v and isinstance(v[0], dict):
+                    extra += f'; first item keys: {sorted(v[0])}'
+                elif v:
+                    extra += f'; first item: {str(v[0])[:80]}'
+            elif isinstance(v, dict):
+                extra = f'; keys: {sorted(v)[:20]}'
+            print(f'  DATA.{k}: {kind}{extra}')
+    else:
+        print(f'  DATA is a {type(data).__name__}')
+    print('\nEvery list-of-dicts found, with its first item\'s keys:')
+    for path, lst in cands[:20]:
+        print(f'  {path}  ({len(lst)} items)  keys: {sorted(lst[0])}')
+    print('\nTell me which list holds the sites and which key is the frozen cluster,')
+    print('or pass them: --nodes <path> --cluster-key <key> --class-key <key>')
+    sys.exit(2)
 
 
 def main():
-    nodes = load_nodes(sys.argv[1])
-    print(f'{len(nodes)} nodes\n')
+    argv = sys.argv[1:]
+    ck_override = cls_override = None
+    if '--cluster-key' in argv:
+        ck_override = argv[argv.index('--cluster-key') + 1]
+    if '--class-key' in argv:
+        cls_override = argv[argv.index('--class-key') + 1]
+    path = [a for a in argv if not a.startswith('--') and
+            not (argv.index(a) and argv[argv.index(a) - 1].startswith('--'))][0]
+
+    nodes, ck = load_nodes(path)
+    if ck_override:
+        ck = ck_override
+    # which key holds the class label
+    CLS_KEYS = ('cls', 'class', 'klass', 'cm', 'model', 'label', 'ann', 'annotation')
+    clsk = cls_override or next((k for k in CLS_KEYS if k in nodes[0]), None)
+    if clsk is None:
+        print(f'no class-label key found. A node looks like: {sorted(nodes[0])}')
+        print('pass --class-key <key>')
+        sys.exit(2)
+    print(f'{len(nodes)} nodes; cluster key "{ck}", class key "{clsk}"\n')
+
+    # which value means Class_1b in this explorer
+    vals = collections.Counter(str(n.get(clsk)) for n in nodes)
+    oneb = next((v for v in vals if v.lower() in ('1b', 'class_1b', 'class1b')), None)
+    if oneb is None:
+        print(f'class labels present: {dict(vals)}')
+        print('none of them looks like Class_1b; pass the right --class-key, or tell me the label.')
+        sys.exit(2)
+    print(f'treating "{oneb}" as Class_1b ({vals[oneb]} nodes); all labels: {dict(vals)}\n')
 
     by_fz = collections.defaultdict(collections.Counter)
     for n in nodes:
-        by_fz[n['fz']][n['cls']] += 1
-    total_1b = sum(c['1b'] for c in by_fz.values())
+        by_fz[n[ck]][str(n.get(clsk))] += 1
+    total_1b = sum(c[oneb] for c in by_fz.values())
 
     print('== Class_1b nodes per frozen cluster (4-model annotation), descending')
     print('fz\tnodes\t1b\tcum_1b\tcum_%\tother')
     cum = 0
-    for fz, c in sorted(by_fz.items(), key=lambda kv: -kv[1]['1b']):
-        if c['1b'] == 0:
+    for fz, c in sorted(by_fz.items(), key=lambda kv: -kv[1][oneb]):
+        if c[oneb] == 0:
             break
-        cum += c['1b']
-        other = {k: v for k, v in c.items() if k != '1b'}
-        print(f"{fz}\t{sum(c.values())}\t{c['1b']}\t{cum}\t{100*cum/total_1b:.0f}\t{other}")
+        cum += c[oneb]
+        other = {k: v for k, v in c.items() if k != oneb}
+        print(f"{fz}\t{sum(c.values())}\t{c[oneb]}\t{cum}\t{100*cum/total_1b:.0f}\t{other}")
     print(f'total 1b nodes: {total_1b}')
     print('MAIN Class_1b clusters = those down to ~80 % cumulative. A B1/B2 site in one of')
     print('them is `core`; in any other cluster it is `transition:<cluster>`.\n')
@@ -97,7 +170,7 @@ def main():
         if acc in SITES:
             seen.add(acc)
             stall = n['id'].split('|')[-1]
-            print(f"{acc}\t{stall}\t{n['fz']}\t{n['cls']}\t{n.get('sf')}\t{SITES[acc]}")
+            print(f"{acc}\t{stall}\t{n[ck]}\t{n.get(clsk)}\t{n.get('sf')}\t{SITES[acc]}")
     missing = sorted(set(SITES) - seen)
     if missing:
         print('\nno explorer node at all (stall failed the >=3-replicate gate, or not in the 416):')

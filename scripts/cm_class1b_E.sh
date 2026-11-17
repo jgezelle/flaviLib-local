@@ -58,8 +58,17 @@ e2() {
     local MODEL=class1b_c5plus_${SUBSET}_inf112
 
     # the novel-hit fetchlists from the 10-30 work; confirm the names once
-    local FL; FL=$(ls "$AH"/*"$SUBSET"*.fetchlist 2>/dev/null | head -1)
-    [ -n "$FL" ] || { echo "no $SUBSET fetchlist under $AH -- ls it and set FL by hand"; continue; }
+    local FL; FL=$(ls "$AH"/*"$SUBSET"*.fetchlist "$AH"/**/*"$SUBSET"*.fetchlist 2>/dev/null | head -1)
+    if [ -z "$FL" ]; then
+      echo "no fetchlist matching '*$SUBSET*.fetchlist' under $AH"
+      echo "  what is there:"
+      find "$AH" -maxdepth 2 \( -name '*.fetchlist' -o -name '*fetch*' -o -name 'hits.novel*' \) \
+        2>/dev/null | sed 's|^|    |' | head -20
+      echo "  the 10-30 subsets were: strong = the 38 novel hits at E<=1e-5;"
+      echo "  newvirus = those 34 of them from accessions with no sequence in the seed."
+      echo "  If no list survives, rebuild it from $SAT/r0/hits.novel.tsv, then set FL by hand."
+      continue
+    fi
     echo "== $SUBSET  from $FL  ($(wc -l < "$FL") rows)"
 
     esl-sfetch -Cf "$FA" "$FL" > "$OUT/${MODEL}_added.fa" || continue
@@ -129,8 +138,11 @@ e2b() {
   echo "== per hit vs the CLUSTER-5 baseline"
   python3 "$FLAVISCRIPTS/cm_round_stats.py" compare "${C5}_library.tbl" "$OUT/${MODEL}_library.tbl"
   grep -E 'NEW|LOST' "$OUT/${MODEL}_library.tbl.compare.tsv"
-  echo "== did the 3 cluster-106 sites themselves come in?"
-  grep -E 'NC_034017|NC_034204|ON949931' "$OUT/${MODEL}_library.tbl" || echo "  none of the three"
+  echo "== did the 3 cluster-106 sites come in AT THEIR STALLS?"
+  echo "   (an accession can 'come in' at another locus 80 nt away -- these genomes carry several"
+  echo "    elements, so this checks by position, which a grep by accession does not)"
+  hits_at_stall "$OUT/${MODEL}_library.tbl" \
+    NC_034017.1:10511 NC_034204.1:10523 ON949931.1:10608
   echo "== the marginal hit, every variant so far has lost it"
   grep OP860412 "$OUT/${MODEL}_library.tbl.compare.tsv" || echo "  OP860412 not in the compare"
 
@@ -188,12 +200,20 @@ for line in open(sys.argv[1]):
     if len(f)==2: seqs[f[0]] = seqs.get(f[0],'') + f[1]
 cons=[i for i,c in enumerate(rf) if c.isalpha()]       # uppercase AND lowercase RF = match column
 assert len(cons)==81, f"clen {len(cons)}, expected 81"
+print("PP key: '*' = >0.95, '9' = 0.85-0.95, digits below that are lower; '.' = gap")
+print("the triple column is the MIDDLE one of each 5-wide window\n")
 for n in seqs:
     print(n)
     for k in (7,29,43):
-        lo, hi = cons[max(k-3,0)], cons[min(k+1,len(cons))-1]
-        print(f"  cm {k-2}-{k+2}  RF {rf[lo:hi+1]}  seq {seqs[n][lo:hi+1]}"
-              + (f"  PP {pp[n][lo:hi+1]}" if n in pp else "  PP (none)"))
+        a = max(k-3, 0)                      # 0-indexed consensus col for cm k-2
+        b = min(k+1, len(cons)-1)            # 0-indexed consensus col for cm k+2
+        lo, hi = cons[a], cons[b]
+        # the triple column itself, and its own PP
+        t = cons[k-1]
+        tpp = pp[n][t] if n in pp else '?'
+        print(f"  cm {a+1}-{b+1}  RF {rf[lo:hi+1]}  seq {seqs[n][lo:hi+1]}"
+              + (f"  PP {pp[n][lo:hi+1]}" if n in pp else "  PP (none)")
+              + f"   | cm {k} = {seqs[n][t]} PP {tpp}")
 PY
   echo "   expect: no insertions, PP >= 0.95 at cm 7/29/43. An occupied insert column"
   echo "   next to cm 29 or 43 with PP <~ 0.6 means that readout is unreadable, not absent."
@@ -201,7 +221,16 @@ PY
   echo
   echo "== insertcheck: do included library sites occupy the insert columns beside cm 29 / 43?"
   python3 "$FLAVISCRIPTS/cm_round_stats.py" fetch "${C5}_library.tbl" 81 0.70 "$OUT/insertcheck" || return 1
-  esl-sfetch -Cf "$FA" "$OUT/insertcheck.fetchlist" > "$OUT/insertcheck.fa" || return 1
+  # the fetch subcommand's output suffix is not fixed, so find what it wrote rather than assume
+  local FL2; FL2=$(ls -t "$OUT"/insertcheck* 2>/dev/null | grep -vE '\.(fa|stk|log)$' | head -1)
+  if [ -z "$FL2" ]; then
+    echo "cm_round_stats.py fetch wrote nothing matching $OUT/insertcheck*"
+    echo "  what is in $OUT:"; ls -la "$OUT" | sed 's|^|    |'
+    echo "  run the fetch by hand and pass the list to esl-sfetch -Cf, then re-run e4."
+    return 1
+  fi
+  echo "using fetch list: $FL2  ($(wc -l < "$FL2") rows)"
+  esl-sfetch -Cf "$FA" "$FL2" > "$OUT/insertcheck.fa" || return 1
   conda run -n "$MENV" cmalign --cpu $CPU -o "$OUT/insertcheck.stk" "$C5.cm" "$OUT/insertcheck.fa" \
     > "$OUT/insertcheck.log" || return 1
   python3 - "$OUT/insertcheck.stk" <<'PY'
