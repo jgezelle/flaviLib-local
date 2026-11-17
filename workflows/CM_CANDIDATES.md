@@ -1,7 +1,6 @@
 # CM expansion: candidates, accounting, and procedure
 
-**The single current document for CM discovery.** Start at Part 1 (Status). Every conclusion lives here; the files below are
-dated records of what was run on those days and are not maintained.
+**The single current document for CM discovery.** Start at Part 1 (Status). Conclusions found here; below files = dated records of what was run on the dates in the file name.
 
 - `flaviLib/workflows/260914-260917_cm_expansion.md` (856 lines) — hepaci/pesti/pegi triage →
   class1c, and the class1b expansion at §142–328. Formerly named `class1b_expansion.md`, which
@@ -18,7 +17,7 @@ dated records of what was run on those days and are not maintained.
 
 Model md5s belong in `~/Desktop/viromelib/work/infernal/cm/MANIFEST.tsv` (not yet created).
 
-Last updated 2026-11-03 (sub-threshold Class_1b additions rejected; the triple read with windows and PP; seed-shift question answered; explicit Class_1b membership table; cluster 106 plan). Reorganised into dated parts on 2026-11-02; no content removed
+Last updated 2026-11-17 (**cluster 106's three diagnostic features, and a concerted triple substitution between the clusters**: P1 shortened to 2 bp, three unpaired purines (AAA) between P2 and P3 present in 3/3 cluster-106 and 0/5 cluster-5 sequences, and the triple reading **C•(G-C) in cluster 5 (5/5) against U•(A-U) in cluster 106 (3/3)** at the same pooled columns — all three positions substituted together, each cluster invariant. That makes the triple real, independently reproduces the recorded Class_1b C…G-C from cluster 5, and locates the covariation **between** the clusters, which is why the pooled alignment yielded 4 covarying pairs where neither cluster alone can yield any: the pooled alignment is the one to cite for the structure, not a superseded step. With E2b this gives a distinct class 1 element, sibling to Class_1b, still gated on E7 for sequences. **cluster 106 has a conserved U•A-U base triple** — U6 against pk_A's innermost A5-U48 pair, all three positions invariant; the new alignment swallows that U into pk_A as a 4th pair, which the pooled alignment correctly left unpaired. Class_1b's triple is C…G-C, so this is the same interaction with the identity substituted, which **supports** class 1 membership and makes `class1d` defensible on architecture — correcting the opposite conclusion reached earlier the same day from the wrong expectation. `cmbuild` sees neither the triple nor the pseudoknots: 13 nested bp either way. **cluster 106 aligned alone**: same architecture as the pooled alignment element for element — P1 2 bp, 7-bp inner hairpin, 4-bp hairpin 2, pk_A `GGAU:AUCC`, pk_B `UCAC:GGUG` — and cluster 106 fits that structure at least as well as cluster 5 (98 % vs 97 % canonical, and 100 % vs 80 % on pk_B). But **16 of its 21 pairs are identical in all three sequences**, so covariation has no power on P1 or either pseudoknot: GATE 1 is inapplicable, not failed, and only E7 can settle a class claim. No conserved C 5′ of P1, so `class1d` should not be presumed as the name. **E1: AB021287's loss is a filter artefact** — NO HIT by default but 30.0/30.2 b under `--max` in `strong`/`newvirus`, higher than the original model's 29.7 b, so the CM never lost it and **library-internal Class_1b expansion is reopened**; E2 is the live step and E6 deployment waits on it. Cluster 5 stays in: nothing in E2b bears on it. **E2b complete: cluster 106 rejected on every criterion** — PP 0.397/0.465/0.424 5′-truncated with negative alignment scores, identical between 1.1.5 and 1.1.2; 19 hits lost including eight of cluster 5's own ten gains, eff_nseq 50.24→71.32 on three sequences, 111 hits lower; and by a position check the three sites are **not recruited at their stalls** at all, the model instead finding other loci — ON949931 even loses a 30.2 b Class_1b hit 333 nt away. Cluster 106 is a different element sharing an architecture, not a subtype; → Track B, and E7 for a named class. `flavi_env.sh` gains `hits_at_stall`, since the first check used accession membership. Side finding: `cmalign` to a fixed model is version-stable where `cmbuild` is not. `cm_set_261021` mixes builder versions — `class1c.cm` is 1.1.5, the three provided `CL_*` are 1.1.2 — so the env is derived per model from its header, never configured once. The conda env is now part of the method: `flavi_env.sh` activates it, exits on a missing tool and pins `cmalign` to 1.1.2. Cluster 106 reopened: the covariation that defines the pooled structure comes from comparing cluster 5 with cluster 106, cluster 106 is 91 % canonical on it vs cluster 5's 83 %, and every rejection of 106 used the superseded 88-seq model — new step E2b tests it alone on the cluster-5 baseline, and the file's two readings of the Menghai triple contradict each other; `class1b_groups.tsv` extended to nine columns with `decided`/`model`/`change`/`rationale`; `flavi_env.sh` holds every path for all scripts; naming scheme revised in Part 9 — stage prefix `aln_`/`cand_`/`conf_`/`class<N>`, `c<N>` for frozen clusters, the alignment round out of the name and into `iter_v<n>_<window>`, with `cm_rename_builds.sh` to apply it; classification status added to Part 1: finished classes / Class_1b extensions and transitions from 1b / unknown; the Class_1b expansion route decided as E1–E7; `class1b_groups.tsv` specified in Part 9; the two tracks and where the manual MATER step sits, Part 8; `cm_class1b_E.sh` and `cm_candidate.sh` written, the latter superseding `build_candidate_cm.sh`; next-priority list replaced; Part 1 workstream rows brought to 11-03 state). Previous: 2026-11-03 (sub-threshold Class_1b additions rejected; the triple read with windows and PP; seed-shift question answered; explicit Class_1b membership table; cluster 106 plan). Reorganised into dated parts on 2026-11-02; no content removed
 (superseded passages are kept and marked).
 
 ## How to read this file
@@ -28,7 +27,7 @@ The file is in parts, most current first. Every dated section says when the work
 
 | part | what | dates |
 |---|---|---|
-| 1 | **Status: goal, where each workstream stands, next steps** | 2026-11-02 |
+| 1 | **Status: goal, classification status, where Class_1b expansion goes, where each workstream stands, next steps** | 2026-11-16 |
 | 2 | The 7 annotating models, their limits, Infernal versions | 2026-10-21 – 10-30 |
 | 3 | **Gap filling** — the **gap register** (every gap in one table), candidate cards, the work per gap | 2026-10-28 – 11-02 |
 | 4 | **Model statistics** (all models and candidates); earlier candidates `cand_FJTB_261026`, `cand_PLLG_260915` | 2026-09-15 – 11-02 |
@@ -43,11 +42,12 @@ The file is in parts, most current first. Every dated section says when the work
 
 ### Which table is authoritative
 
-There are many tables; these four are the ones to read, and the rest are dated measurements or
+There are many tables; these five are the ones to read, and the rest are dated measurements or
 superseded snapshots kept for provenance.
 
 | question | table |
 |---|---|
+| which site groups are finished, Class_1b extensions / transitions, or unknown; what is next | **classification status** and **where Class_1b expansion goes**, Part 1 |
 | what is still uncovered, and what is being worked on | **gap register**, Part 3 |
 | what each candidate is, and which gates it has passed | **candidate cards**, Part 3 |
 | which models annotate the data | **the 7 annotating models**, Part 2 |
@@ -60,7 +60,7 @@ superseded — it holds the per-clade site counts and the pipeline stage of each
 
 ---
 
-# Part 1. Status — 2026-11-02
+# Part 1. Status — 2026-11-16 (workstream table 2026-11-03)
 
 ## Goal
 
@@ -72,7 +72,580 @@ gates in Part 8.
 Along the way two existing models were checked for whether they could be **extended** to cover
 sites they narrowly miss: class1c and Class_1b. That matters for gap filling because a site an
 extended model can claim is not a gap. Neither extension has been accepted, so the gap list is
-unchanged by them.
+unchanged by them. *(Superseded 2026-11-02: the Class_1b extension by FJIS cluster 5 was accepted
+as `class1b_plusFJIS_cluster5_inf112`. It is not deployed — not in `cm_set_261021` — so every
+"no CM" count in this file is still against the 7 models.)*
+
+## Classification status — 2026-11-16
+
+Every site group in this file is in one of three states. This section is the summary; the gap
+register (Part 3) holds the per-gap detail and the run log holds the steps.
+
+- **A. Finished.** Annotated by a model in `cm_set_261021`, or assigned to one with no open question.
+- **B. Class_1b extension.** Added to, or tested against, the Class_1b seed. Split into **core**
+  (member sites cluster with the main Class_1b clusters) and **transition from 1b** (member sites
+  fall in a separate explorer frozen cluster). A transition group keeps its own label **even after
+  the Class_1b model includes it** (rule B3), so absorbing it into the model does not erase the
+  distinction.
+- **C. Unknown.** No model and no assignment. Ordered by priority in "Next priority" below.
+
+### A. Finished classes
+
+| class | model | state in flaviLib | site groups assigned to it in this work |
+|---|---|---|---|
+| Class_1a | `CL_Class_1a_xrRNA_final.cm`, provided | annotating. 13 of 15 dumbbell genomes also carry 1a | — |
+| Class_1b | `CL_Class_1b_xrRNA_final.cm`, provided, Infernal 1.1.2 | annotating; weak, broad model (median E 4.0e-06). Successor version `class1b_plusFJIS_cluster5_inf112` accepted 11-02, **not deployed** (section B) | explorer cluster 133 (*Aedes flavivirus*) was already Class_1b |
+| Class_2 | `CL_Class_2_xrRNA_final.cm`, provided | annotating | none added. CFAV xr1/xr2 are not class 2 here (partial, cm 17–63 of 93, ~4 orders weaker in E than Class_1b) |
+| class3 (cl3) | NAR 2025 alignment | annotating; call at `--call-bits 20` | **cluster 110**, *Loquat jingmen-related virus 1*, one site per segment (closed 10-29) |
+| class1c | `class1c.cm`, built 09-17 | annotating. Saturated on the library; borderline variants rejected (10-30); kept separate from Class_1b, overlaps resolved by lower E (Class_1b won 16 of 16) | cluster 137 (19 pangolin pestiviruses); 45 explorer "None found" nodes = its seed sites |
+| cl4_v9 | built from viromelib | 0 hits in all 439 flaviLib accessions | — |
+| Flavivirus_DB (dumbbell) | RF00525 | annotating | — |
+
+### B. Class_1b extensions
+
+**Main Class_1b clusters: not yet determined.** Known 1b-dominated frozen clusters: **cluster 131**
+(48 Class_1b + 10 class1c + 11 none) and **cluster 133** (*Aedes flavivirus*); cluster 130 is mixed
+(8 class1c + 7 Class_1b + 1 none). The explorer holds 106 Class_1b nodes, so these account for
+about half. Block B4 tabulates the rest and the frozen cluster of every site below. Until it is run,
+the "label" column is provisional except where the cluster is known to be a no-hit cluster.
+
+#### B1. Included in `class1b_plusFJIS_cluster5_inf112` (accepted 11-02; 94 seqs, 10 gained, 0 lost)
+
+| group | sites (genomic stall) | frozen cluster | label | evidence |
+|---|---|---|---|---|
+| FJIS cluster 5: fifth ISF array copies | NC_008604 10707, NC_021069 10735, NC_024299 10747, AB981186 10732, MH827524 10759; + NC_012671 10735 (no explorer node: 2 of 4 reps, SF 0.311) | **5** (no-hit cluster) | **transition from 1b** — the P1-deviant ISF subtype (PMC7527734) | joins Class_1b with 0 losses; triple C…G-C read at cm 7/29/43 (PP not measured, B4 / Part 3 `pp_check`); 4 covarying pairs in the pooled `cand_FJIS_261029` alignment |
+| P1-deviant loci of the seed's own sequences, previously `?` | NC_027817 543 (PaRV xr4, stall 10757); NC_027819 561 (MECDV xr1); LR694076 10565 and MH237596 10555 (CFAV xr3) | LR694076: **21**; others: B4 | **transition from 1b** where the cluster is not a main 1b cluster; otherwise core | 19.9–22.3 b `?` under the original model → 23.4–28.3 b `!` |
+
+**Count conflict, unresolved:** 6 own sites + 4 recovered loci = 10 gains, yet the rejections of
+further additions are stated as losing `OP860412 297`, "the hit cluster 5 gained". Part 6 records
+`OP860412 297` (stall 10802) as a gain of the `strong` 1.1.2 variant. Settle with the `grep` in B4
+before deployment; if `OP860412 297` is a cluster-5 gain, add it to B1 with its frozen cluster.
+
+#### B2. Tested against Class_1b, not included — transition candidates, open
+
+These were rejected as additions to the **model** (each loses an included hit), not as Class_1b
+relatives. They stay in the record as transition candidates and as gaps.
+
+| group | sites | frozen cluster | why not in the model | next |
+|---|---|---|---|---|
+| FJIS cluster 106 | NC_034017 10511, NC_034204 10523 (MFV_xr1, the fourth published P1-deviant sequence), ON949931 10608 | **106** | `all` variant: PP 0.38–0.47, 5′-truncated, 11–17 hits lost. Not class1c either (1.55 / 1.33 / −2.14 bits guided) | **priority 2**: align alone at 80 nt; provisional model → RNAvirus DB, targeted NCBI ISF set |
+| Kamiti River virus | NC_005064 11245 (feature 1079, 18.5 b `?`) | **21** | `kamiti`: loses `OP860412 297`, raises nothing. Aligns full length at PP 0.853; G·U at cm 43, a genuine triple variant | **E7**: sequences from outside this library, or a looser model of its own |
+| MW897328 | 10653 (feature 66, 19.3 b `?`) | **135** | `phaiomys`: 3′-truncated, PP 0.622, loses AB981186 590, NC_012671 545, OP860412 297 | **E7**, same; triple unreadable here (insert shift at cm 29 and 43) |
+| gains of the paused `Class_1b + novel hits` extension | OM030319 57 (stall 11865, SF 0.844), MN587651 70 (9782), MN587661 72 (9940, `all` only), OP860412 297 (10802) | B4 | `strong` / `newvirus` lose AB021287 65; `all` loses 5 Class_1b sites | AB021287 `--max` check, then rebuild on the cluster-5 seed (E1 / E2). MN587651 / MN587661 are rodent hepaciviruses with a class1c pair downstream: 1b-like element upstream of 1c |
+| 13 hepaciviral partial Class_1b matches (Sept) | list in the Sept doc (`class1b_v3` survivors) | B4 | match cm 1–~74 only; fail past ~74 | **1b → 1c transition candidates**; reconcile inside the HPHV pool (priority 8) |
+
+#### B3. Rule for transition labels (decided 2026-11-16, not yet written)
+
+A site included by any Class_1b version is **core** if its frozen cluster is a main Class_1b
+cluster (B4), and **transition:`<cluster>`** otherwise — and it keeps that label after inclusion,
+so absorbing a group into the model does not erase the distinction. The annotation keeps the
+`CL_Class_1b….cm_hit` columns as they are and adds one column, `class1b_group`, joined on
+accession + stall from a **hand-kept** lookup, `cm/class1b_groups.tsv`. B2 groups get a row with
+`group = transition_candidate:<cluster>` so they are not lost when they leave the gap list.
+
+**Nine columns — including `decided`, `model`, `change` and `rationale`, the provenance of each
+addition and why it was made — the reason the file is hand-kept rather than derived, and the rows
+to write: Part 9 → `class1b_groups.tsv`.** Written at E6, with four `frozen_cluster` values coming out of E5.
+
+#### B4. Commands that settle sections B1–B3
+
+```bash
+bash $FLAVISCRIPTS/cm_class1b_E.sh e5     # main 1b clusters + the cluster of every B1/B2 site
+bash $FLAVISCRIPTS/cm_class1b_E.sh e3     # the OP860412 297 count conflict
+```
+
+`e5` calls `explorer_class1b_clusters.py`, which parses the explorer's `const DATA = {...}`
+as JSON (position-wise, so a reformatted file still works) and prints Class_1b nodes per frozen
+cluster with a **cumulative share**, then every explorer node in the B1/B2 genomes, then the
+B1/B2 accessions with no node at all.
+
+Read it as: the clusters down to ~80 % cumulative are the **main Class_1b clusters**. Record them
+here, then fill the B1/B2 `frozen cluster` and `label` columns and the `<E5>` rows of
+`class1b_groups.tsv` (Part 9). The script prints the `clog` line to run.
+
+### Cluster 106's own alignment, read against the pooled one — 2026-11-17
+
+Two hand-refined alignments now exist and can be compared directly:
+
+- pooled, 8 seqs, 98 cols — `conf_FJIS_c5+c106_261029/iter_v2_explorer80/mlocarna/results/result-oneblock_edit261102-MATER-wiggle-refined_shortenP1forBT.stk`
+- cluster 106 alone, 3 seqs, 85 cols — `aln_FJIS_c106_261117/iter_v1_explorer80/mlocarna/results/cluster106_edit261117.stk`
+
+**The architecture is the same in both, element for element.**
+
+| element | pooled (cols) | c106 alone (cols) | cluster-106 sequence |
+|---|---|---|---|
+| P1, outer | 9:62, 10:61 (col 8 is a gap in all three c106 seqs) | 8:55, 9:54 | **G-C, C-G** — the same two pairs in both |
+| inner hairpin | 11:29 … 17:23, 7 bp | 10:27 … 16:21, 7 bp | the only variable element |
+| hairpin 2 | 36:52 … 39:49, 4 bp | 31:46 … 34:43, 4 bp | A-U, C-G, G-C, U-A/G-C |
+| **pk_A** | 4:56, 5:55, 6:54, 3 bp | 3:50 … 6:47, **4 bp** | **GGAU : AUCC**, 4 Watson–Crick |
+| **pk_B** | 43:71 … 46:68, 4 bp | 37:61 … 40:58, 4 bp | **UCAC : GGUG** |
+
+The pooled P1 looks like 3 bp but its 5′-most pair is cluster 5's alone (G-U); cluster 106 has two
+P1 pairs in **both** alignments, and they are the same two. So the de novo pass did not change the
+reading — it reproduced it in cluster 106's own coordinates, with pk_A one pair longer.
+
+**Canonical fractions, cluster-106 sequences, pooled alignment:** nested 36/37 = 97 %, pk_A 9/9 =
+100 %, pk_B **12/12 = 100 %** — against cluster 5's nested 58/58 = 100 %, pk_A 15/15 = 100 %, pk_B
+**12/15 = 80 %**. Overall 57/58 = 98 % for cluster 106 against 85/88 = 97 % for cluster 5. **Cluster
+106 satisfies this structure at least as well as cluster 5 does, and better on pk_B.**
+
+#### The finding that governs everything else: these three sequences cannot support a structure
+
+Across all 21 pairs of the cluster-106-alone alignment, **16 are identical in all three sequences**.
+Only five vary at all, and two of those vary only because ON949931 gaps them:
+
+| pair | element | the variation |
+|---|---|---|
+| 13:24 | inner | G-C / G-C / U-A |
+| 14:23 | inner | G-C / **A-C non-canonical** / G-U |
+| 15:22 | inner | C-G / U-A / gap |
+| 16:21 | inner | C-G / U-A / gap |
+| 34:43 | hairpin 2 | U-A / U-A / G-C |
+
+**P1, pk_A, pk_B and three of hairpin 2's four pairs are invariant.** An invariant column pair
+cannot covary, so R-scape has no power on any of them however the alignment is drawn — expected
+covarying pairs ≈ 0. The two pseudoknots, which are the most interesting features here, are exactly
+the ones that are 100 % sequence-conserved.
+
+So GATE 1 is not merely unlikely to pass on cluster 106, it is **not applicable**: the covariation
+gate is a statement about sequence diversity, and there is none. This is a **data limit, not a
+modelling failure, and no further alignment work changes it.** E7 — a targeted set of complete ISF
+genomes — is therefore not the preferable route to a class1d claim, it is the only one. The
+provisional model's purpose is to be that search's query.
+
+#### Two consequences for the scripts
+
+1. **Neither file carries `#=GC RF`.** `cm_candidate.sh build` will therefore use plain `cmbuild`
+   and infer match columns by occupancy, so `clen` is set by the data rather than by the hand
+   annotation. For the cluster-106-alone model that is acceptable — it has its own coordinates
+   anyway — but it must be recorded, because the resulting `clen` is not 85.
+2. **The subset route does not preserve cm numbering on these files.** That claim, made earlier
+   today, assumed RF was present; it is not. `subset` now says so and offers `--keep-columns`,
+   which synthesises an RF line over every column the source alignment occupies so `--hand` keeps
+   the full column set. The cost is model size: columns gapped in the retained sequences become
+   consensus columns carrying prior-only emissions.
+
+#### Cluster 106's diagnostic features, in standard nomenclature — 2026-11-17
+
+Element names mapped onto the two alignments (`c106` = the 85-column cluster-106-alone file,
+`pool` = the 98-column pooled file):
+
+| element | c106 cols | pool cols | cluster 106 | cluster 5 |
+|---|---|---|---|---|
+| **P1** | 8:55, 9:54 — **2 bp** | 9:62, 10:61 (+8:63) | **2 bp**: G-C, C-G. Col 8:63 cannot pair — col 63 is gapped in all three | **3 bp**: G-U, C-G, A-U |
+| **P2** | 10:27 … 16:21, 7 bp | 11:29 … 17:23, 7 bp | the only variable element: 13:24, 14:23, 15:22, 16:21 | invariant, 100 % canonical |
+| **three purines** | **28–30 = AAA** | **33–35 = AAA** | **AAA, 3/3 sequences** | **absent — 0/5** (NC_024299 has a lone G at pool col 35) |
+| **P3** | 31:46 … 34:43, 4 bp | 36:52 … 39:49, 4 bp | A-U, C-G, G-C, U-A/G-C | A-U … , pk_B region 12/15 = 80 % |
+| **PK1** | 3:50, 4:49, 5:48 — **3 bp** after the fix | 4:56, 5:55, 6:54, 3 bp | `GGA : UCC` | `GGG : CCC` |
+| **PK2** | 37:61 … 40:58, 4 bp | 43:71 … 46:68, 4 bp | `UCAC : GGUG`, 12/12 | 12/15 = 80 % |
+| **base triple** | U6 • (A5-U48) | U7 • (A6-U54) | **U•(A-U)**, 3/3 | **C•(G-C)**, 5/5 |
+
+So cluster 106 differs from cluster 5 at **three** diagnostic points, each conserved within its
+cluster: P1 shortened from 3 bp to 2, three unpaired purines inserted between P2 and P3, and the
+triple substituted.
+
+#### The triple substitution is the strongest evidence in this file
+
+The pooled alignment puts both clusters at the same columns, and the triple reads:
+
+| | pool col 6 | pool col 7 | pool col 54 | triple |
+|---|---|---|---|---|
+| cluster 5 | **G** (5/5) | **C** (5/5) | **C** (5/5) | **C • (G-C)** |
+| cluster 106 | **A** (3/3) | **U** (3/3) | **U** (3/3) | **U • (A-U)** |
+
+**All three positions change together, and each cluster is invariant at all three.** That is a
+concerted three-position substitution preserving the interaction — pyrimidine • (purine–pyrimidine)
+in both cases. Two independent consequences:
+
+1. **The triple is real.** A coincidence would not substitute all three partners coherently while
+   staying fixed inside each cluster. And cluster 5's reading, `C•(G-C)`, **independently reproduces
+   the Class_1b triple this file records as C…G-C at cm 7/29/43** — which is a cross-check on the
+   Class_1b annotation as well, from sequences aligned without reference to it.
+2. **It is where the covariation lives.** Within cluster 106 alone, 16 of 21 pairs are invariant and
+   R-scape has no power (above). Between the clusters there is variation, and it is concerted — which
+   is exactly why the pooled alignment yielded 4 covarying pairs against 0.2 expected while neither
+   cluster alone can yield any. **The pooled alignment is not a historical artefact to be superseded
+   by the cluster-106-alone one; it is the only alignment in which this element's structure has
+   statistical support at all.** Keep both, and cite the pooled one for the structure.
+
+#### What this settles, and what it does not
+
+Taken with E2b, the picture is consistent and the two findings are not in tension:
+
+- **Shared architecture**: P1, P2, P3, PK1, PK2 and a base triple at PK1's innermost pair, in both
+  clusters, with between-cluster covariation supporting it.
+- **Every diagnostic feature substituted** in cluster 106: P1 3→2 bp, an AAA insertion, and the
+  triple C•(G-C)→U•(A-U).
+- **Primary sequence too diverged for the Class_1b CM**: E2b, 19 hits lost, no recruitment at the
+  stalls, PP 0.40–0.47.
+
+Structural homology and CM-absorbability are different things, and this is the case that separates
+them: two homologous elements can be too far apart in primary sequence for one covariance model.
+That is the "siblings, not one family" relationship this file already uses for class1c.
+
+So **cluster 106 is a distinct class 1 element, sibling to Class_1b** — and `class1d` is the right
+name *if* the class 1 assignment holds, for which the triple is now the evidence rather than the
+obstacle. What is still missing is only what it was before: **sequences.** A model from 3 sequences
+at 0.84–0.94 identity generalises to nothing, so E7 remains the gate on naming it, and the three
+features above are the diagnostics to search with.
+
+#### The base triple: U•A-U, present and conserved
+
+**Cluster 106 has a predicted base triple, and it is the U at position 6 — currently mis-annotated
+as part of pk_A.** Freeing it gives:
+
+| | cluster 106 alone (85 cols) | pooled (98 cols) |
+|---|---|---|
+| triple base | **U6** — annotated as pk_A's 4th pair, `6:47` | **U7** — already an unpaired dot |
+| the WC pair it contacts | **A5–U48**, pk_A's innermost pair | **A6–U54**, pk_A's innermost pair |
+| triple | **U • (A-U) = U-A-U** | the same interaction, one column later |
+| pk_A | should be **3 bp** (3:50, 4:49, 5:48) | **already 3 bp** (4:56, 5:55, 6:54) |
+
+All three triple positions — U6, A5, U48 — are **invariant across all three sequences**. The pooled
+alignment annotated this correctly a fortnight ago; the new cluster-106-alone file over-extends pk_A
+by one pair and swallows the triple U into it. Corrected `SS_cons`, 85 columns, 13 nested bp
+unchanged:
+
+```
+..AAA..(((((((((....)))))))...((((..BBBB..)))).aaa...))..bbbb........................
+```
+
+(`A` at 6 → `.`, `a` at 47 → `.`. Saved as `cluster106_edit261117_triple.stk` with the triple
+recorded in `#=GF CC` lines.)
+
+**This reverses the naming argument made earlier today.** That argument looked for a conserved C
+immediately 5′ of P1, found an A, and concluded `class1d` should not be presumed. The expectation
+was wrong: the triple is not 5′ of P1, it sits against the innermost pseudoknot pair, and it **is**
+present — as U•A-U rather than Class_1b's C…G-C.
+
+| | triple | where |
+|---|---|---|
+| Class_1b | **C…G-C** | cm 7 / 29 / 43 |
+| cluster 106 | **U…A-U** | col 6 / 5 / 48 (c106-alone numbering) |
+
+Same interaction class, substituted identity — a pyrimidine contacting a Watson–Crick pair adjacent
+to the pseudoknot, with both bases of the pair swapped and the triple base swapped with them. That
+is what a related-but-distinct class 1 element should look like, and it is a **positive** argument
+for class 1 membership. So `class1d` is defensible on architecture: two pseudoknots, a short P1, and
+a conserved base triple at the pseudoknot. What it still lacks is not structure but **sequences** —
+see the covariation limit above, and E7.
+
+**Neither the triple nor the pseudoknots reach the model.** `cmbuild` reads only the primary nested
+`SS_cons`; `A`/`a` and `B`/`b` are not WUSS characters and are ignored, and Infernal has no base
+triple state at all (Part 2). Both alignments therefore give a **13-bp** model — which is exactly the
+`13 bp` recorded for the pooled model's `cmbuild` output, a useful check that nothing else is being
+read. So the triple is annotation for the analyst, for R-scape `--cacofold`, and for any 3D work; it
+cannot be scored, and a CM search can neither confirm nor refute it.
+
+One further consequence: the triple positions being invariant means **covariation can never support
+the triple either**, from these three sequences. It is a prediction from structure plus conservation,
+and should be labelled as such wherever it is cited.
+
+### Where the three live questions stand — 2026-11-17
+
+**1. Does Class_1b stay expanded with cluster 5? Yes.** Nothing in the E2b result bears on cluster 5.
+Cluster 5 joined at **zero losses**; cluster 106 then cost 19, eight of which are cluster 5's own
+gains. That is a measurement of cluster 106 — a model stretched to cover it stops covering what it
+had — not a retraction of cluster 5. `class1b_plusFJIS_cluster5_inf112` remains the accepted
+baseline and every comparison is made against it.
+
+But **do not deploy it yet.** E1 reopened the 68-novel-hit extension (below), so the Class_1b model
+that gets deployed may be cluster 5 **plus** `strong` or `newvirus`. Deployment means a new
+`cm_set`, cluster steps 10–13 and a full re-annotation; doing that twice in a week is the thing the
+E-ordering exists to avoid. E2 first, then E6.
+
+**2. Is cluster 106 class1d? No — "not Class_1b" is necessary, not sufficient.** E2b settles that
+Class_1b cannot align or recruit it. A name needs three things, and cluster 106 has none of them yet:
+
+| requirement | status |
+|---|---|
+| a covariation-supported structure **in its own coordinates** | not done. The existing structure is the *pooled* consensus, which describes cluster 5 (5 of 8 sequences); cluster 106's 91 % canonical fraction is measured against that, which is evidence of relatedness, not of its own fold. **Track B, priority 2** |
+| separation from the existing models **per site, by position** | partly: E2b shows Class_1b does not recruit it at its stalls, and the guided class1c test gave 1.55 / 1.33 / −2.14 bits. Needs the formal `overlap` check once a model exists |
+| **recruits members beyond its seed** | impossible at present: 3 sequences at 0.84–0.94 identity build a model that finds only themselves. **E7 is the blocker** |
+
+And if it does become a class, `class1d` is the right name **only if it is a class 1 xrRNA**, which
+turns on a base triple 5′ of P1. That cannot be read from the Class_1b CM alignment — PP 0.397–0.465
+makes the Menghai cm 29/43 deletion unreadable in both directions — so the triple question is itself
+a Track B question, answered in cluster 106's own coordinates with the pseudoknot annotated.
+
+Until all three hold, the label stays `transition_candidate:106`.
+
+**3. How is it expanded? Two routes, and the cheap one reuses the alignment you already made.**
+
+The pooled refined alignment (`conf_FJIS_c5+c106_261029`) already contains cluster 106 fitted to
+that structure by hand. So the first option is not a new alignment at all — it is **the same
+alignment with the cluster-5 rows dropped**, rebuilt from the same columns:
+
+```bash
+source $FLAVISCRIPTS/flavi_env.sh
+ITER=iter_v2_explorer80 bash $FLAVISCRIPTS/cm_candidate.sh subset aln_FJIS_c106sub_261117 \
+  $INFERNAL/build/conf_FJIS_c5+c106_261029/iter_v2_explorer80/mlocarna/results/<refined>.stk \
+  keep NC_034017 NC_034204 ON949931
+```
+
+`esl-alimanip --seq-k`, then `cmbuild --hand`. **Columns are not trimmed**: with `#=GC RF` present,
+`--hand` keeps every RF column as a consensus column even where the three retained sequences gap
+it, so `clen` and the cm numbering stay identical to the pooled model. That is what keeps cm 7 / 29
+/ 43 — the triple columns — comparable between the two models, and it is the reason not to let
+cmbuild re-infer match columns by occupancy here.
+
+**What each route answers is different, and this is the thing to be clear about:**
+
+| | subset of the pooled alignment | de novo alignment of the 3 alone |
+|---|---|---|
+| question answered | **does cluster 106 fit the structure cluster 5 defines?** | **what is cluster 106's own consensus structure?** |
+| structure | inherited — and the pooled consensus was set by cluster 5, 5 of the 8 sequences | derived from cluster 106 only |
+| cm coordinates | identical to the pooled model, so cm 7/29/43 line up | its own, not comparable |
+| manual work | none; your MATER edit and pseudoknots are reused | a second MATER pass |
+| what it can support | a reciprocal test, a library/DB search, an E7 query | **a class1d claim** |
+
+The subset route is therefore first — it is free, it reuses the hand work, and it yields the
+reciprocal test immediately: build the complementary cluster-5 subset the same way (`drop` the three
+cluster-106 names), then score each seed with the other's model and compare **bit scores** in both
+directions. One family scores well both ways; siblings moderately; unrelated not at all. Given E2b,
+the expectation is "siblings", and measuring it is worth more than asserting it.
+
+What the subset route **cannot** do is establish cluster 106's own fold, because the structure it
+uses is cluster 5's. So the class1d question still needs the de novo pass, and so does the triple
+5′ of P1 — a triple read off a structure imposed by other sequences is the same error as reading it
+off the Class_1b CM alignment at PP 0.465. Run the de novo pass when the subset result says the
+element is worth naming:
+
+```bash
+source $FLAVISCRIPTS/flavi_env.sh      # $FA106 etc. live here, not in your shell
+bash $FLAVISCRIPTS/cm_candidate.sh align aln_FJIS_c106_261117 $FA106
+# -> mlocarna, stk_oneblock, GATE 1, R-scape, then STOP at MATER
+#    GATE 1 will not pass on 3 sequences at 0.84-0.94 identity. That is expected and is not a
+#    failure: this run is for a consensus structure in cluster 106's own coordinates and for the
+#    triple 5' of P1, not for the gate.
+# ---- MATER: pseudoknots -> hand-edit SS_cons -> wiggle-refine -> R-scape ----
+bash $FLAVISCRIPTS/cm_candidate.sh build aln_FJIS_c106_261117 <refined>.stk
+# -> cmbuild, cmcalibrate, GATE 2, then cm_iterate.sh: library first, then the RNAvirus DB
+```
+
+In both routes the library `cmsearch` comes *after* the model exists, and will almost certainly
+return the seed and nothing else — that is the saturation signal, and it is what says the blocker is
+sequences rather than modelling. The RNAvirus
+DB is demonstrably too narrow for this clade (4 of the 8 FJIS seed genomes score 52–79 b in the
+library and are absent from the DB). **So the provisional model's real purpose is to be the query
+for E7**: a targeted set of complete ISF genomes from NCBI, around *Xishuangbanna aedes flavivirus*,
+*Menghai flavivirus*, *Kilpisjarvi flavivirus* and the ISF genomes carrying tandem arrays. No model
+is accepted from 3 sequences, so E7 is not optional for this one.
+
+### Is cluster 106 really not Class_1b? — open question restated 2026-11-16
+
+Short answer: **not established.** The positive evidence comes from your own pooled alignment and
+has not been weighed against the negative evidence, which all comes from one superseded baseline.
+
+**What the pooled MATER alignment says — FOR cluster 106 belonging:**
+
+| finding | value | where |
+|---|---|---|
+| R-scape on the wiggle-refined pooled alignment | 22 bp, **4 covarying vs 0.2 ± 0.5 expected**, FP 0, PPV 100, avgid 53.08 | Part 3, `cand_FJIS_261029` |
+| what those 4 pairs rest on | **covariation between cluster 5 and cluster 106 sequences** — recorded in this file as "the evidence that the two clusters share one structure" | same |
+| cluster 106's fit to that shared structure | **91 % canonical over all 22 bp** (82 % pre-wiggle) | MATER table, Part 3 |
+| cluster 5's fit to the same structure | 83 % canonical (79 % pre-wiggle) | same |
+| FJIS model vs the 88 Class_1b seeds | 13 hits, best are ISF class-1b copies at 24.3 b (NC_027819 xr1) — "moderate both ways, closer to Class_1b than to class1c" | Part 3 |
+
+So in the one alignment built to test it, **cluster 106 satisfies the consensus structure better
+than cluster 5 does**, and cluster 106 is half of the comparison that produces the covariation
+making that structure credible at all. Cluster 5 was then merged into Class_1b and cluster 106 was
+not.
+
+**What the CM tests say — AGAINST:**
+
+| finding | value | confound |
+|---|---|---|
+| Class_1b scores on the 8 FJIS seeds | 4 of 5 cluster-5 sites at 10.7–19.1 b; **cluster 106: none** | none. This one is clean and is the strongest negative |
+| `all` variant (cluster 5 + 106 → seed) | PP 0.38–0.47, 5′-truncated, 11–17 included hits lost | **against the original 88-seq model, and pooled with cluster 5.** Cluster-5-only lost 0, so the losses are attributable to 106 — but not to 106 *on the current baseline* |
+| Menghai triple | cm 29 and 43 read as deleted inside its aligned span (cm 17–78) | **this file contradicts itself here** — see below |
+| its own 171-nt alignment | covariation 60–130 nt past the stall | superseded: the window ran past the element |
+| pooling, per base pair | −0.53 vs −0.69 for 106 alone | argues the clusters are separate *candidates*, not that 106 is outside Class_1b |
+
+**The internal contradiction to resolve.** The triple section calls Menghai's cm 29/43 deletion
+"structural evidence independent of every score, and … the firmest ground under both decisions:
+cluster 5 joins Class_1b, cluster 106 does not." The cluster 106 section says the same reading "was
+read off an alignment with overall PP 0.465, which is not evidence" (and the pitfalls table agrees:
+a deletion at PP < 0.7 is unreadable). Both cannot stand. The second is the more careful statement,
+which means **the firmest ground under the cluster-106 decision is, by this file's own standard, not
+evidence.** E4's `pp_check` measures the PP at those columns; E2b produces a new alignment to read
+them from.
+
+**Why E2b is not a repeat of a test already done.** Three things changed on 11-02: the seed gained
+6 sequences including the P1-deviant ISF subtype (the architecture nearest cluster 106), `clen`
+stayed 81 but the emission profile did not, and the comparison baseline became
+`${C5}_library.tbl`. A sequence that aligned 5′-truncated at PP 0.45 to the old model can align
+differently to a model whose seed now contains its closest relatives. The test costs one `cmalign`
+and one `cmsearch`.
+
+**E2b RESULT — 2026-11-16, CONFIRMED under Infernal 1.1.2.** Run twice: first with base's unpinned
+`cmalign` (1.1.5 line), then with `cmalign` pinned to `$CONDA112` by `cm_env_require` reading the
+model's header. **Both runs returned identical figures to three decimal places.** The three
+cluster-106 sequences aligned to the accepted cluster-5 baseline (`--mapali`) as:
+
+| sequence | cm span | truncated | bits | avg PP |
+|---|---|---|---|---|
+| NC_034017.1 stall 10511 | 27–81 | 5′ | **−10.59** | **0.397** |
+| NC_034204.1 stall 10523 | 17–78 | 5′ | **−12.38** | **0.465** |
+| ON949931.1 stall 10608 | 17–61 | 5′ **and** 3′ | **−14.40** | **0.424** |
+
+The expanded seed changed nothing: the old model gave PP 0.38–0.47 and 5′ truncation, and Menghai's
+0.465 is the same figure to three places. Alignment scores are **negative**, so these sequences fit
+the model worse than the null. Adding the P1-deviant ISF subtype to the seed — the architecture
+nearest cluster 106 — did not bring them any closer.
+
+By the decision table below this is the third row: **PP well under 0.7 and still truncated, so
+Class_1b cannot reach cluster 106 on the best baseline available.** The loss count is not needed;
+the alignment already fails. The conclusion now rests on an unconfounded test instead of on the
+Menghai triple, which resolves the contradiction above in the same direction — and note PP 0.397–0.465
+means the triple reading is *still* unreadable, so it should not be cited as evidence either way.
+
+**Side finding: `cmalign` is version-stable for this model where `cmbuild` is not.** The 1.1.5 and
+1.1.2 runs agree exactly — same spans, truncation flags, bit scores and PP — whereas the same seed
+through `cmbuild` gives 88/48.62/81/19/2 under 1.1.2 against 88/87.08/78/18/2 under 1.1.5 (Part 2).
+So the version sensitivity recorded on 2026-10-30 is in model **construction**, not in alignment to
+a fixed model. Scope it narrowly: one model, one `--mapali`, three sequences. It is not a licence to
+drop the pinning, which costs nothing and is what makes the figure reproducible.
+
+**E2b COMPLETE — 2026-11-17: rejected on every criterion, and worse than the `all` variant.**
+`cmstat` on the rebuilt model, and the per-hit comparison against `${C5}_library.tbl`:
+
+| | nseq | eff_nseq | clen | bps | bifs |
+|---|---|---|---|---|---|
+| cluster-5 baseline | 94 | 50.24 | 81 | 19 | 2 |
+| `class1b_c5plus_c106_inf112` | 97 | **71.32** | 81 | 19 | 2 |
+
+`matched 120, lost 19, gained 1, lower_bits 111, worst_delta −15.60.` The structure survives (clen,
+bps and bifs unchanged) but **three sequences raised eff_nseq by 21.08** and pulled 111 hits down.
+The `all` variant lost 11–17; this loses 19.
+
+**What is lost is the cluster-5 merge itself, plus core Class_1b.** Eight of the ten sites cluster 5
+gained are among the 19 — NC_027819 561, NC_024299 628, NC_021069 597, MH827524 595, AB981186 590,
+NC_012671 545, LR694076 476, MH237596 478 — together with OP860412 297 yet again, and with
+KC181923 859, KJ741266 810, LC536088 839, MN635449 73, AB021287 65, MT276199 198, NC_020902 424,
+MH307700 124, ON391060 22. One gain: MH282908 223 at 36.2 b.
+
+**And the three cluster-106 sites are still not recruited at their stalls.** They appear in the
+tblout by accession — which is all the first version of this check reported — but these genomes
+carry several elements, so accession membership answers the wrong question. Converting each stall to
+subsequence coordinates (`genomic_stall − subseq_start + 1`, the convention verified to ±1 against
+four cluster-5 sites whose genomic stalls this file records):
+
+| site | stall, rel. | reported hits, rel. | covers the stall? |
+|---|---|---|---|
+| NC_034204 10523 | 170 | **32–87, 30.8 b, E 6.5e-4, `!`** | **no** — ends 83 nt short |
+| NC_034017 10511 | 177 | **30–102, 27.4 b, E 3.2e-3, `!`**; 142–259, 12.0 b, E 3.8, `?` | only the weak `?` one |
+| ON949931 10608 | 419 | 86–166, 19.8 b, `?`; 640–731, 14.6 b, `?` | **no** — neither |
+
+So forcing cluster 106 into Class_1b does not make the model find the cluster-106 element. It makes
+the model find **other loci** in those genomes, while dropping 19 hits it already had.
+
+**ON949931 86 is the sharpest version of this.** That locus was an *included* Class_1b hit at
+**30.2 b** in the cluster-5 baseline and is now LOST, reappearing at 19.8 b below threshold. It sits
+333 nt from the cluster-106 stall at rel 419. So a cluster-106 genome already carries a genuine
+Class_1b element elsewhere in its 3′UTR, and the price of admitting its cluster-106 element is
+losing that one.
+
+**Reading.** A merely divergent Class_1b copy is absorbed at modest cost — cluster 5 was absorbed at
+zero. Cluster 106 instead broadens the emission profile (eff_nseq 50.24 → 71.32 on three sequences),
+drags 111 hits down, drops 19, and still is not recruited where it matters. That is the signature of
+a **different element sharing an architecture**, not of a subtype. It also strengthens the class-1d
+possibility rather than settling it: the covariation and canonical-pair evidence from the pooled
+MATER alignment stands, and only E7 can supply the sequences a named class needs.
+
+**Consequence: cluster 106 goes to Track B**, and `aln_FJIS_c106_<yymmdd>` is priority 2 proper.
+E7 remains the only route to a named class.
+
+**Decision table — the outcome reached is the third row:**
+
+| E2b outcome | reading | then |
+|---|---|---|
+| **0 hits lost**, cluster 106 aligns full length at PP ≥ 0.7 | it is Class_1b, and the old rejection was an artefact of the old seed | merge; label `transition:106` (B3), since it is its own frozen cluster. The "separate element" question closes |
+| **0–2 lost, PP ≥ 0.7** | borderline; the no-loss rule as applied on 11-03 rejects it | keep as `transition_candidate:106`, but record that it now aligns. Do not force it in — the 11-03 precedent rejected Kamiti for exactly one lost hit |
+| ✓ **hits lost and PP still < 0.7** | Class_1b's model cannot reach it, on the best baseline available | **this is what happened** — Track B: cluster 106 alone at 80 nt, then E7. The negative is real, not inherited |
+
+**Is it class1d?** Not decidable now, and E2b does not decide it either. By this file's own standard
+a class must (a) have a covariation-supported structure of its own, (b) be separate from the
+existing models per site by position, and (c) **recruit members beyond its seed.** Cluster 106 has
+3 near-identical sequences (0.84–0.94) that would build a model finding only themselves, which is
+the stated reason no model is attempted. So:
+
+- E2b decides **merge or not merge**.
+- Only E7 — a targeted NCBI ISF set — can decide **class1d or permanent transition candidate**,
+  because only sequences can satisfy (a) and (c).
+- Until then the correct label is `transition_candidate:106`, not `class1d`, and not "Class_1b".
+
+Naming note: if it does become its own class, `class1d` is the right name under the Part 9 scheme
+only if it is a class 1 xrRNA — which is exactly what the triple 5′ of P1 would establish. If the
+architecture turns out not to be class 1, it needs a name outside the `class1<x>` series.
+
+### C. Unknown — no model, no assignment
+
+| gap | size | state | next step |
+|---|---|---|---|
+| FJIS cluster 106 | 3 sites | also listed in B2 | priority 2 |
+| FJJI cluster 41 | 12 sites, 10 mM only | aligned at 80 nt; 1 covarying pair; two hairpins | priority 3: MATER, R-scape, first model, library search |
+| FJJI cluster 44 | 8 sites | aligned; one long hairpin; 0 pairs in structure | priority 3, after 41 |
+| FJTB cluster 64 | 3 sites | not looked at | priority 4: position against the class 2 pair and `cand_FJTB_261026` |
+| PLLG cluster 117 | 3 sites | not looked at | priority 4: does `cand_PLLG_260915` already hit them |
+| HPPV cluster 39 | 4 sites | fetched, not aligned | priority 5 |
+| `cand_FJTB_261026` (cluster 3) | 16 seqs | model built; diversity-blocked; class-2-copy hypothesis against inverted Mg dependence | priority 6: record 10-27 RNAvirus DB result; `cmstat` on the model in `cm/`; step 14a |
+| `cand_PLLG_260915` | 24 of 60 PLLG | model built; too conserved to refit | priority 6: record DB result; `--toponly --incE 1e-10` rerun |
+| KY370101 12807 | 1 site, SF 0.924 | sub-threshold class1c (14.9 b); class1c question closed | stays open as a site; inside the PLPV pool |
+| clade pools | PLLG remainder 66 sites, HPHV 34, not-in-Mifsud 29, FJMB 17, PLPV 15, FJAF 9, FJUN 7 | not started | priority 8 |
+| downstream copies | 56 of 173 annotated accessions | target list only | after the pools; anchored by the neighbouring element |
+
+### Next priority — 2026-11-16 (replaces "Next steps, in order" below)
+
+1. **B4**: main Class_1b clusters, frozen cluster of every B1/B2 site, `OP860412 297` conflict.
+   Cheap, and it fixes the B tables.
+2. **cluster 106 → Track B.** E2b is **run, negative and confirmed under 1.1.2** (PP 0.397–0.465,
+   5′-truncated, negative bits — see "Is cluster 106 really not Class_1b?" below). So: align
+   cluster 106 alone at 80 nt
+   (`cm_candidate.sh align aln_FJIS_c106_<yymmdd> $FA106`) for a consensus structure in its own
+   coordinates and a triple 5′ of P1, then a provisional model → RNAvirus DB → targeted NCBI ISF
+   set. No model is accepted from 3 sequences.
+3. **FJJI 41, then 44**: MATER edit, R-scape, first model, library search. Cluster 41: check the
+   1 mM table to separate Mg dependence from coverage.
+4. **FJTB 64 and PLLG 117**: position checks against the existing candidates before any alignment.
+5. **HPPV 39**: align (Aligning block, Part 3).
+6. **`cand_FJTB_261026` / `cand_PLLG_260915`**: record the 10-27 RNAvirus DB results; step 14a.
+7. **Class_1b: finish, deploy, then widen** — the steps of "Where Class_1b expansion goes" below,
+   in that order. **E1 is done and cleared, so E2 is the live step**, and E6 (deployment) now waits
+   on it: the model that gets deployed may be cluster 5 plus `strong` or `newvirus`.
+8. **Clade pools** with `make_pool_fastas.py`; reconcile the hepaci lists and the 13 partial 1b
+   matches inside HPHV.
+
+### Where Class_1b expansion goes — decided 2026-11-16
+
+**Library-internal expansion is at capacity at cluster 5**, demonstrated four independent times
+(step 17; the three 1.1.2 rebuild variants; `kamiti`; `phaiomys`/`both`): `OP860412 297` is the
+marginal hit in every direction, gained by cluster 5 and lost by every further addition. One
+library-level question is unfinished (E1 below); everything past it needs sequences from outside
+the 439-member library.
+
+**The ordering argument.** Deployment is the expensive step — new `cm_set`, cluster steps 10–13,
+re-annotation, recount — so settle every library-level question first and deploy once. E1–E4 are
+commands already written in this file; only E7 is new work.
+
+**Everything below is `scripts/cm_class1b_E.sh e1`…`e5`** (one subcommand per step;
+syntax-checked, never run — read each step's output before the next).
+
+| # | step | why here | where the commands are |
+|---|---|---|---|
+| **E1** ✓ | **AB021287 `--max`** against the existing `strong` / `newvirus` models | **RUN 2026-11-17: it IS a filter artefact.** Original model 29.7 b both modes; `strong` and `newvirus` give NO HIT by default but **30.0 b** and **30.2 b** under `--max`, E 8e-7 / 7.5e-7, both `!`. The CM scores it *higher* than the original does — the HMM filter drops it. So the only ground for rejecting both variants falls away and **library-internal expansion is reopened**. → E2 | Part 6, end of "Class_1b expansion attempt" |
+| **E2** ◀ **now live** | E1 cleared, so: **rebuild `strong` and `newvirus` on the cluster-5 seed** and judge per hit against the cluster-5 baseline | the 10-30 runs used the **original** model as baseline, so they must be redone whichever way E1 reads. At stake: 3 stall-anchored gains (OM030319 11865, MN587651 9782, OP860412 10802) against MH307700 −4.0 and MH282908 −5.5 | Part 6 method + the `plusFJIS` block in Part 3, with `$SEED1B` replaced by the cluster-5 `.stk` |
+| **E2b** ✓ | **cluster 106 alone, added to the cluster-5 baseline** — `cmalign --mapali $C5.stk` of the 3 cluster-106 sequences, rebuild, compare per hit against `${C5}_library.tbl` | **the test that decides whether 106 is Class_1b, and it has never been run.** Every rejection of 106 used the **original 88-sequence** model, and `all` added it *pooled with cluster 5*. The baseline changed on 11-02: the seed now contains the P1-deviant ISF subtype, which is the closest thing in the model to cluster 106, so the alignment it gets may not be the PP 0.38–0.47 it got before. Cheap; files all exist. **RUN 2026-11-16: negative** — PP 0.397–0.465, still 5′-truncated, negative bits; identical to the old model's reading. Cluster 106 goes to Track B. **Re-run under 1.1.2 gave identical figures to 3 d.p., so CONFIRMED and citable.** `cmcalibrate` onward not needed for the verdict | `cm_class1b_E.sh e2b` |
+| **E3** | **`OP860412 297` count conflict** | no decision depends on it, but the membership table must be right before deployment, and E2 reuses the number | Part 3, B4 block (`grep -E 'NEW\|LOST'`) |
+| **E4** | **`pp_check`** (PP of the six added sequences' triple columns) and **`insertcheck`** (how many included sites occupy the insert columns beside cm 29 / 43) | written down, never run. `insertcheck` can change the seed's column layout, so it belongs **before** deployment, not after | Part 3, the triple and seed-shift sections |
+| **E5** | **B4**: main Class_1b clusters, frozen cluster of every B1 / B2 site | fills the `class1b_groups.tsv` rows that deployment needs | Part 1, B4 |
+| **E6** | **deploy once**: MANIFEST, `cm_set_<yymmdd>`, `class1b_groups.tsv` (Part 9), cluster steps 10–13, recount the no-CM pool against 8 models | until this runs, the 10 sites the accepted model claims are still counted as gaps, so the gap list is wrong by 10 | Part 9 → `class1b_groups.tsv`; cluster steps per the 261021 run log |
+| **E7** | **a targeted set of complete ISF genomes from NCBI** — around *Xishuangbanna aedes flavivirus*, *Menghai flavivirus*, *Kilpisjarvi flavivirus*, and the ISF genomes carrying tandem arrays | the only route left, and it serves three stuck questions at once: cluster 106 (3 near-identical sequences can neither support a model nor pass the covariation gate), NC_005064 and MW897328 (both need "a looser model of their own or sequences from outside this library"), and any further Class_1b addition. **The RNAvirus DB is demonstrably too narrow here**: 4 of the 8 FJIS seed genomes score 52–79 bits in the library and do not appear in it at all | written 2026-10-30 under the FJIS RNAvirus-DB section; never run |
+
+**The pattern this follows.** Every rebuild from inside this library now fails, and class4 acquired
+its diversity from a wider target, not from refining its seed (Part 8, the iteration recipe). So
+E7 is a data-collection step, not another rebuild attempt, and it is where the remaining Class_1b
+work actually is.
 
 ## Where each workstream stands
 
@@ -81,14 +654,14 @@ unchanged by them.
 | 1 | class1c: another cmalign round + library search | 10-28 – 10-29 | would realigning class1c's library hits and searching again add anything? | No. Its 46 included library hits are its own 46 seed sequences; the realignment round was already done one model earlier (`pesti_short1b`). Part 5 | **closed** — only an RNAvirus-database search could add sequences |
 | 2 | class1c: borderline hits (step 17) | 10-29 – 10-30 | add KY370101, ON949931 or NC_025677 to class1c? | No variant accepted: gains do not reach E 1e-10, and the broadened models reach Class_1b sites, where Class_1b wins every time. Part 5 | **closed** |
 | 3 | merge class1b and class1c? | 10-29 – 10-30 | one model or two? | Two. class1c had the lower E-value at none of its 16 overlaps with Class_1b (1, 4 and 11 across the three class1c models tested). Overlaps are resolved per site by lower E-value. Part 6 | **closed** |
-| 4 | Class_1b expansion | 10-30 | Class_1b has 68 library hits not in its seed; add them? | Every rebuild loses at least one existing hit (AB021287). The original model was built with Infernal 1.1.2, which changed how comparisons must be made. Part 6 | **paused** — AB021287 `--max` check outstanding |
+| 4 | Class_1b expansion | 10-30 | Class_1b has 68 library hits not in its seed; add them? | Every rebuild loses at least one existing hit (AB021287). The original model was built with Infernal 1.1.2, which changed how comparisons must be made. Part 6 | **paused** — AB021287 `--max` check outstanding; re-run on the cluster-5 baseline (11-03) |
 | 5 | explorer scan with the missing models | 10-29 | how many explorer "None found" sites are already class1c / cl3? | 45 class1c, 3 cl3 (loquat, cluster 110). 163 no-CM sites remain; 6 no-CM clusters of ≥ 3 sites. Part 3 | **done** |
-| 6 | **gap filling: FJIS clusters 5 and 106** | 10-30 – 11-02 | new candidate | **`cand_FJIS_261029`**: pooled cluster 5 + cluster 106, 80-nt windows, MATER edit (2 pseudoknots). Covariation gate passed (4 covarying vs 0.2 expected); separate from class1c and Class_1b site by site; saturated on library and RNAvirus DB. Part 3 | **decision pending** — Class_1b-subgroup rebuild test, targeted ISF search |
+| 6 | **gap filling: FJIS clusters 5 and 106** | 10-30 – 11-02 | new candidate | **`cand_FJIS_261029`**: pooled cluster 5 + cluster 106, 80-nt windows, MATER edit (2 pseudoknots). Covariation gate passed (4 covarying vs 0.2 expected); separate from class1c and Class_1b site by site; saturated on library and RNAvirus DB. Part 3. **11-02/03: split.** Cluster 5 (+ NC_012671) joined Class_1b as `class1b_plusFJIS_cluster5_inf112` (0 lost, 10 gained; the P1-deviant ISF subtype); further additions (Kamiti, MW897328) rejected; cluster 106 does not fit Class_1b | **cluster 5 closed** (transition from 1b, Part 1 B1; not deployed); **cluster 106 open** (Part 1 B2, priority 2) |
 | 7 | **gap filling: FJJI 41 / 44, HPPV 39, FJTB 64, PLLG 117** | 11-02 | new candidates | FJJI aligned: two separate elements; cluster 41 stalls at 10 mM only. Others not aligned | **in progress** — FJJI MATER |
 | 8 | earlier candidates `cand_FJTB_261026`, `cand_PLLG_260915` | 09-15 – 10-27 | | built; blocked on sequence diversity; RNAvirus-database searches started 10-27, results not recorded | **results pending** |
 | 9 | Mifsud-clade pools beyond the explorer clusters | 10-28 | | pool queue ranked (Part 3); pool FASTAs not built | **queued** |
 
-## Next steps, in order
+## Next steps, in order — 2026-11-02, superseded by "Next priority" (2026-11-16) above
 
 The full list of gaps, with state and where each is described, is the **gap register** at the top of
 Part 3.
@@ -160,6 +733,24 @@ Two of the seven were built in this project. The candidates below are **not** in
 
 ### Infernal versions of the annotating models — found 2026-10-30
 
+**RULE, stated here because it was already documented on 2026-10-30 and still got violated on
+2026-11-16: the Infernal version of a model is a property of the model, read from its header, not
+a property of the shell.** Every Class_1b-line model descends from a provided 1.1.2 build, so every
+`cmalign`, `cmbuild`, `cmcalibrate` and `cmstat` in that line runs under 1.1.2 — not because 1.1.2
+was chosen, but because the ancestor was built that way and a rebuild under another version is a
+different model. `cmsearch` is the exception the earlier work relied on deliberately: searching a
+1.1.2 model with 1.1.5 is fine and is what the comparisons used.
+
+This is now enforced rather than written down. `flavi_env.sh` provides `cm_version <model.cm>`,
+which reads the builder version out of the header line, and `cm_env_for` / `cm_env_require`, which
+map it to the conda env that matches and **exit if none does**. `cm_class1b_E.sh` derives the env
+per model instead of naming 1.1.2 anywhere, so a model built under some third version stops the run
+instead of being silently realigned. `flavi_env.sh --check` prints the builder version of every
+model in `cm_set_261021` plus the cluster-5 baseline, beside the env each one requires.
+
+The first E2b run is the worked example of the failure mode: the constraint was in this file, in
+prose, since 2026-10-30, and nothing read it.
+
 `CL_Class_1b_xrRNA_final.cm` was built with **Infernal 1.1.2** (header `INFERNAL1/a [1.1.2 | July
 2016]`, build line `cmbuild Class_1b_xrRNA_final.cm Class_1b_xrRNA_final.sto`, no options). The
 laptop has 1.1.5.
@@ -224,7 +815,7 @@ PLLG 117 and `cand_PLLG_260915` ⊂ PLLG. Pool counts include their clusters' si
 
 | gap | what it is | source | size | state | last | described in | run log |
 |---|---|---|---|---|---|---|---|
-| **FJIS cluster 5** | insect-specific flaviviruses, explorer cluster 5 (+ NC_012671) | explorer | 6 sites | **closed 2026-11-02: joined Class_1b.** The published P1-deviant ISF subtype; carries the base triple; `class1b_plusFJIS_cluster5_inf112` accepted. See the Class_1b extension row | 11-03 | Part 3, FJIS section | `class1b`, `cand_FJIS_261029` |
+| **FJIS cluster 5** | insect-specific flaviviruses, explorer cluster 5 (+ NC_012671) | explorer | 6 sites | **closed 2026-11-02: joined Class_1b.** The published P1-deviant ISF subtype; carries the base triple; `class1b_plusFJIS_cluster5_inf112` accepted. See the Class_1b extension row. Kept as **transition from 1b** (own frozen cluster; Part 1 B1, B3) | 11-16 | Part 3, FJIS section | `class1b`, `cand_FJIS_261029` |
 | **FJIS cluster 106** | NC_034017 *Xishuangbanna aedes flavivirus*, NC_034204 *Menghai flavivirus*, ON949931 *Kilpisjarvi flavivirus* | explorer | 3 sites | **open.** Not class1c (guided seed 1.55 / 1.33 / −2.14 bits), not Class_1b (PP 0.38–0.47, 5′-truncated, 11–17 hits lost). The triple's pair reads as deleted, but at overall PP 0.465 that is not evidence. **Next: align cluster 106 alone at 80 nt** for a consensus structure in its own coordinates, then a provisional model to search the RNAvirus DB and a targeted NCBI ISF set — 3 near-identical sequences cannot support a model or pass the covariation gate | 11-03 | Part 3, cluster 106 section | `cand_FJIS_cluster106_261103` |
 | **FJJI 41 + 44** | Jingmen tick viruses and relatives, explorer clusters 41 and 44 | explorer | 12 + 8 sites | **two separate candidates** (pooling fails): `cand_FJJI_cluster41_261029` (10 mM only), `cand_FJJI_cluster44_261029`. Next: MATER per cluster | 11-02 | Part 3, FJJI section | `cand_FJJI_cluster41_261029`, `…cluster44…`, `…cluster41-44_pooled…` |
 | **HPPV 39** | rodent pegiviruses, explorer cluster 39 | explorer | 4 sites | queued (Sept pegivirus genus pool set aside at −3.56) | 10-29 (fetched) | Part 3 | — |
@@ -239,7 +830,7 @@ PLLG 117 and `cand_PLLG_260915` ⊂ PLLG. Pool counts include their clusters' si
 | **FJAF pool** | aquatic flaviviruses | clade pool | 9 sites / 6 acc | not started | — | Part 3 pool queue | — |
 | **FJUN pool** | unclassified flavi-jingmen | clade pool | 7 sites / 3 acc | not started | — | Part 3 pool queue | — |
 | **not-in-Mifsud pool** | accessions absent from Mifsud's set | clade pool (by genus) | 29 sites / 15 acc | not started | — | Part 3 pool queue | — |
-| **sub-threshold Class_1b** | stalls where Class_1b scores just under inclusion: explorer cluster 21 (CFAV LR694076 10565, Kamiti River NC_005064 11245), cluster 135 (MW897328 10653) | explorer | 3 sites | **closed 2026-11-03 as a Class_1b question; 2 sites remain open on their own.** LR694076 10565 was 19.9 b / E 0.067 `?` and the cluster-5 expansion includes it at 23.4 b. The other two were tested as seed additions and **all three variants were rejected** — every one loses `OP860412 297`, and the two with MW897328 also lose two cluster-5 member sites. NC_005064 1079 (18.5 b, E 0.079) and MW897328 66 (19.3 b, E 0.057) are not Class_1b; they need their own model or sequences from outside this library | 11-03 | Part 3, FJIS section | `class1b` |
+| **sub-threshold Class_1b** | stalls where Class_1b scores just under inclusion: explorer cluster 21 (CFAV LR694076 10565, Kamiti River NC_005064 11245), cluster 135 (MW897328 10653) | explorer | 3 sites | **closed 2026-11-03 as a Class_1b question; 2 sites remain open on their own.** LR694076 10565 was 19.9 b / E 0.067 `?` and the cluster-5 expansion includes it at 23.4 b. The other two were tested as seed additions and **all three variants were rejected** — every one loses `OP860412 297`, and the two with MW897328 also lose two cluster-5 member sites. NC_005064 1079 (18.5 b, E 0.079) and MW897328 66 (19.3 b, E 0.057) are not Class_1b; they need their own model or sequences from outside this library. Both kept as **transition candidates** (clusters 21, 135; Part 1 B2) | 11-16 | Part 3, FJIS section | `class1b` |
 | **downstream copies** | unannotated site downstream of the last annotated one in the same genome | 261021 tables | 56 of 173 annotated accessions | target list only | 10-28 | Part 7 | `The unmatched pool` |
 | — | Sept orthoflavivirus vsearch clusters 1, 3–30 | genus pool | 29 clusters | **superseded** by the explorer clusters and clade pools (recorded rule: split by clade, not genus) | — | Part 7 | — |
 
@@ -2494,6 +3085,36 @@ come down to three stall-anchored gains against MH307700 −4.0 and MH282908 −
 under `--max` too, both are rejected, as the September merge was. Any accepted Class_1b rebuild
 is a new model version: new name, and cluster steps 10–13 re-run.
 
+**RUN 2026-11-17 (E1): it is a filter artefact.**
+
+| model | default | `--max` |
+|---|---|---|
+| `CL_Class_1b_xrRNA_final` | cm 1–81, 65–156, **29.7 b**, E 6.4e-07, `!` | identical |
+| `class1b_alignHits_strong_inf112` | **NO HIT** | cm 1–81, 65–156, **30.0 b**, E 8e-07, `!` |
+| `class1b_alignHits_newvirus_inf112` | **NO HIT** | cm 1–81, 65–156, **30.2 b**, E 7.5e-07, `!` |
+
+Same span in every case, and both variants score the site **higher than the original model does**.
+The CM did not lose AB021287; the HMM filter pipeline drops it before the CM sees it. So the sole
+ground on which `strong` and `newvirus` were rejected is gone, and library-internal Class_1b
+expansion is reopened. The rejection of `all` stands on its own — it lost 5 Class_1b sites.
+
+**But a filter artefact is still a practical loss, and E2 has to decide what to do about it.**
+Annotation runs `cmsearch --toponly --incE 0.01` with default filters, so a deployed `strong` or
+`newvirus` would leave AB021287 65 **unannotated** even though the model scores it at 30 b. Three
+options, to be settled when E2 reports:
+
+1. Run the Class_1b line with `--max` (or `--nohmm` / `--mid`) at annotation time. Correct, and
+   affordable on a 439-accession library, but it makes the Class_1b model's annotation command
+   different from every other model's, which has to be recorded in MANIFEST.
+2. Accept the one unannotated site, having recorded that the CM scores it. Cheapest, and defensible
+   now that the cause is known rather than suspected.
+3. Reject both variants anyway, on the ground that a model whose own filter hides a known true
+   positive is worse than one that does not.
+
+Option 3 is the conservative reading of the no-loss rule as it was applied on 11-03, and the
+difference between 1 and 2 is a documentation question, not a modelling one. The decision belongs
+with E2's per-hit comparison, where the three gains can be weighed against it.
+
 Paths: `build/class1b/iter_v1_saturation/r0/` (original model's search, novelty table),
 `iter_v2_alignHits/` (1.1.5 builds, fetch lists), `iter_v2_alignHits_inf112/{v0,strong,all,newvirus}/`
 (1.1.2 builds, `class1b_alignHits_<subset>_inf112.{stk,cm,_library.tbl,_library.tbl.compare.tsv}`).
@@ -2825,6 +3446,11 @@ interpretation and is edited by hand when a run changes a conclusion.
 | `cm_add_borderline.sh` | `a330c754f27244edeabb2e69e0d1a718` | step 17: one run-log row per variant (v0 + each `--add`) |
 | `seed_vs_hits.py` | `c5ac6aea20b4045c63c4c02f0ae5f875` | nothing; seed vs tblout comparison (saturation and lineage checks) |
 | `explorer_cm_scan.py` | `1c4b4ad1d63695100ee8694c4ee1f441` | nothing; scans the flavi150 explorer's sites with a CM; `fetch` (reference windows) and `seqs` (the explorer's own 80-nt windows) per cluster |
+| `flavi_env.sh` | `d38c8ffdee67696cb75f98d867d56f36` | nothing; **sourced by the three scripts below — every path is defined here and nowhere else**, and it **establishes** the conda env rather than reporting on it (`flavi_require`, which exits if a tool is absent and prints the Infernal version). `bash flavi_env.sh --check` verifies paths, tools and the cmalign/cmbuild/1.1.2 versions side by side. Overridable from the caller (`ROOT=`, `ITER=`, `CONDA_ENV=`). Also holds `clog`, `need`, `have`, `infernal_version`, **`cm_version` / `cm_env_for` / `cm_env_require`** (the builder version read from a model's own header, and the env that matches it), **`hits_at_stall`** (whether a hit covers the stall, converted from the sequence name's own offset — a grep by accession does not answer this), `stk_oneblock`, `alifold_line`. 2026-11-16; `--check` activates `$CONDA_ENV` before reporting (fixed same day: it had inspected the active env, giving false 'absent' for tools that are installed). `REF` and `SEED1B` were MISSING on the laptop and need their real paths |
+| `cm_class1b_E.sh` | `d0eab553b3ebc300421033e0aa30c1c7` | nothing yet; prints the `clog` line to run. Subcommands `e1`, `e2`, `e2b`, `e3`–`e5` = steps E1–E5 (`e2b` decides cluster 106) of "Where Class_1b expansion goes" (Part 1). Written 2026-11-16, **syntax-checked only, never run** |
+| `explorer_class1b_clusters.py` | `5e9ce4901a2f9fdb74008f2292098c46` | nothing; E5 — Class_1b nodes per frozen cluster with a cumulative share, plus the frozen cluster of every B1/B2 site. Called by `cm_class1b_E.sh e5`. Tested on a mock explorer only |
+| `cm_candidate.sh` | `cb01b7cb5618c093743162613b4808ed` | one row per stage, by `clog`. Track B: `align` (GATE 1, stops at MATER), `build` (GATE 2, model, library + RNAvirus DB), and `subset` (rebuild an existing refined alignment minus named sequences, reusing its hand-made structure; `--keep-columns` synthesises RF so cm numbering is preserved when the source has none; no manual step). Supersedes `build_candidate_cm.sh`. Written 2026-11-16, **GATE 1 parser tested on a real-format log; the stages never run** |
+| `cm_rename_builds.sh` | `a6afb45fb394d1045d83c82a121a3e36` | one row on `--apply`. Renames build folders to the stage-prefixed scheme (Part 9 → Naming); check-only by default, never overwrites or deletes; writes `build/RENAMES.tsv` + `RENAMED_FROM.txt`. Written 2026-11-16, **tested on a mock build tree, not run on the real one** |
 
 ```bash
 DOC=~/Desktop/viromelib/flaviLib/workflows/CM_CANDIDATES.md
@@ -3133,16 +3759,121 @@ python3 $FLAVISCRIPTS/cm_log.py "$DOC" --model class1c --step "explorer rescan w
 `annotate` calls a node at ≥ 30 bits by default (`--call-bits`); that cut was read off the class1c
 scores. For cl3 use `--call-bits 20` (gap 26.0 → < 10, 2026-10-29).
 
+## The two tracks, and where the manual alignment sits — 2026-11-16
+
+Everything in this file is one of two tracks. They differ in whether a **structure** is being
+found or **reused**, which is what decides whether the manual MATER step is involved at all.
+
+```
+TRACK A -- extending an existing model          TRACK B -- a new candidate
+(Class_1b + cluster 5; E1-E7, Part 1)           (cluster 106, FJJI 41/44, HPPV 39, the pools)
+
+  sites to add                                    cluster FASTA (explorer 80 nt, or
+       |                                          esl-sfetch from the reference)
+       v                                               |
+  cmalign --mapali SEED                                v
+       |   the seed's structure is REUSED        mlocarna --probabilistic
+       |   column for column                     --consistency-transformation
+       v                                               |
+  cmbuild --hand (RF = the model's own                 v
+       |          columns, Infernal 1.1.2)      stk_oneblock  ->  GATE 1 alifold covariance/bp
+       v                                               |
+  cmcalibrate                                          v
+       |                                        **MANUAL: MATER pseudoknots -> hand-edit
+       v                                          SS_cons -> wiggle-refine -> R-scape**
+  cmsearch, compare PER HIT with the                   |          (C. Langeberg's MATER)
+  baseline: no included hit may be lost                v
+       |                                        cmbuild (--hand only if RF present)
+       v                                        cmcalibrate  ->  GATE 2 cmstat eff_nseq
+  accept / reject                                      |
+                                                       v
+                                                cm_iterate.sh: library, then RNAvirus DB
+                                                       |
+                                                       v
+                                                reciprocal scoring + position overlap
+                                                       |
+                                                       v
+                                                candidate card (Part 3) -> accept -> class<N>
+```
+
+**There is no manual alignment anywhere in Track A, and that is the point.** `cmalign --mapali`
+appends sequences to the Class_1b seed *under the model's existing structure*, so no consensus is
+re-derived, no `SS_cons` is edited, and MATER never opens. E1–E6 are seed arithmetic and per-hit
+comparison. The only judgement in Track A is the no-loss rule.
+
+That has a consequence worth stating: **Track A cannot discover a structure, only test membership
+in one.** So when a group fails Track A — cluster 106 at PP 0.38–0.47 with 11–17 hits lost — the
+answer is not a better rebuild, it is Track B on that group in its own coordinates. Which is
+exactly what priority 2 is.
+
+**Where the manual work does bear on Track A:** reading the base triple. `cmbuild` has no
+base-triple state, so no Track A model can score or align it (Part 2, and the pitfalls table). The
+triple is read from a structure-aware alignment with the pseudoknot annotated — a MATER / R-scape
+alignment — and from a CM alignment only with the insert columns and PP in view. E4 is that check
+on the accepted baseline, and cluster 106's open question ("a triple at a position the Class_1b
+model cannot align?") can only be answered in Track B.
+
+**Scripts for each track:**
+
+| track | script | stages |
+|---|---|---|
+| A | `cm_class1b_E.sh` | `e1` … `e5`, no manual step |
+| B | `cm_candidate.sh` | `align` → **your MATER work** → `build` |
+
+### Which Nov-2 build folder is live — 2026-11-16
+
+Six candidate folders exist from 2026-11-02. Three are superseded, one was absorbed into Class_1b,
+two are live and sitting at the manual step. Working directory is `iter_v2_explorer80/` in all six
+(`iter_v1` was the superseded 171-nt run), so pass `ITER=iter_v2_explorer80` to `cm_candidate.sh`.
+
+**Folder names below are the pre-2026-11-16 ones.** Run `cm_rename_builds.sh` to move them to the
+stage-prefixed scheme (Part 9 → Naming); the new name of each is in the table there.
+
+| folder | state | what is in it | action |
+|---|---|---|---|
+| `cand_FJIS_fz106_261029` | **superseded** | single cluster, 171-nt windows; R-scape support 60–130 nt past the stall, in a downstream stem-loop that is not the element | none. Keep for provenance; run log kept |
+| `cand_FJIS_fz5_261029` | **superseded** | same, 5 seqs | none. Keep |
+| `cand_FJJI_cluster41-44_pooled_261029` | **dead end, closed** | pooled 20 seqs, −16.91 = −8.30 + −8.61, no significant pairs — weaker than either cluster alone | none. The negative result is the finding: two separate elements |
+| `cand_FJIS_261029` | **absorbed, do not delete** | the pooled 80-nt MATER seed and model that produced the cluster-5 result. Its `iter_v2_explorer80/mlocarna/results/*-MATER-wiggle-refined.stk` and `cm/` are the inputs Track A used | none as a candidate. Cluster 5 went into `class1b_plusFJIS_cluster5_inf112`; cluster 106 needs its own folder |
+| `cand_FJJI_cluster41_261029` | **LIVE — at the manual step** | 12 seqs, −25.52 = −14.00 + −11.52, two hairpins in the first ~45 nt; R-scape 1 of 11 pairs (11–20), PPV 100 | MATER on `iter_v2_explorer80/mlocarna/results/result-oneblock.stk`, then `cm_candidate.sh build` |
+| `cand_FJJI_cluster44_261029` | **LIVE — at the manual step** | 8 seqs, −29.53 = −19.54 + −9.99, one long hairpin; R-scape 0 in structure (1 FP, 20–82, non-canonical) | same, after 41 |
+
+**The folder that does not exist yet** is `cand_FJIS_cluster106_261103` — priority 2. Its 80-nt
+FASTA is already on disk from 10-29 (`build/class1c/explorer_scan_261029/FJIS_fz106_explorer80.fa`,
+old `fz` spelling), so `cm_candidate.sh align` is the only step needed to create it.
+
+So the queue is: **FJJI 41 (your MATER) → FJJI 44 (your MATER) → cluster 106 (align, then MATER)**,
+with cluster 106 under the caveat that 3 sequences at 0.84–0.94 identity cannot pass GATE 1 and the
+run is for a consensus structure in its own coordinates, not for the gate.
+
 ## Build procedure and gates
 
-`flaviLib/scripts/build_candidate_cm.sh` (md5 `264fd3ef7cf2efcdc8da6a0102975426`), two stages split
-at the manual step:
+`cm_candidate.sh` (2026-11-16) is Track B, two stages split at the manual step. It supersedes
+`build_candidate_cm.sh` (md5 `264fd3ef7cf2efcdc8da6a0102975426`), whose recorded defects it fixes:
+GATE 1 passing on an energy parse failure, the alifold regex missing mlocarna's line format and
+space-padded energies, mlocarna's exit status unchecked, R-scape's outdir not created, the tblout
+path not printed.
 
+```bash
+# stage 1 -- pooled or single cluster; stops at MATER and prints the file to open
+bash $FLAVISCRIPTS/cm_candidate.sh align cand_FJIS_cluster106_261103 \
+  $INFERNAL/build/class1c/explorer_scan_261029/FJIS_fz106_explorer80.fa
+
+# ----- MANUAL: MATER pseudoknots -> hand-edit SS_cons -> wiggle-refine -> R-scape -----
+#   then: clog <CAND> 'MATER + CaCoFold' 'PK <cols>; SS_cons edits <cols>; R-scape <n> bp, <n> covarying, avgid <x>'
+
+# stage 2 -- GATE 2, model, library then RNAvirus DB
+bash $FLAVISCRIPTS/cm_candidate.sh build cand_FJIS_cluster106_261103 \
+  $INFERNAL/build/cand_FJIS_cluster106_261103/iter_v1_explorer80/mlocarna/results/result-oneblock_edit261116-MATER-wiggle-refined.stk
 ```
---stage align  -> mlocarna --probabilistic --consistency-transformation, alifold consensus, dedup
-MANUAL         -> pseudoknots in MATER (C. Langeberg) -> hand-edit SS_cons -> wiggle-refine -> CaCoFold
---stage build  -> cmbuild (--hand if SS_cons was edited) -> cmcalibrate -> cmsearch
-```
+
+`align` refuses fewer than 3 sequences, checks mlocarna's exit status, runs `stk_oneblock` before
+R-scape (LocARNA's two-block file is rejected as `duplicate seq name`), and **fails rather than
+passes GATE 1 if the energy triple cannot be parsed** out of the log. `build` detects `#=GC RF`
+and chooses `--hand` accordingly, since a raw MATER-edited Stockholm carries none.
+
+cmbuild reads only the primary `SS_cons` line, so crossing pairs (`AAAA…aaaa`) are annotation for
+the analyst, not for the model. Feed the CaCoFold `.sto` to `build` to get `--hand`.
 
 cmbuild reads only the primary `SS_cons` line, so crossing pairs (`AAAA…aaaa`) are annotation for
 the analyst, not for the model. Feed the CaCoFold `.sto` to `--stage build` with `cmbuild --hand`.
@@ -3246,21 +3977,90 @@ which is why the `RFview` path under `~/local/lib/RFview/` is broken.
 
 # Part 9. Reference
 
-## Naming
+## Naming — scheme revised 2026-11-16
 
-`cand_<CLADE>_<yymmdd>` while a candidate; `class<N>` once accepted.
+### The problem this fixes
 
-vsearch cluster indices (`cluster_2`, `clusterA`) are not names — they depend on the input FASTA,
-the `--id` threshold and the run date. Record them as provenance.
+Three unmarked number systems collided in the old names, and the stage was invisible. In
+`cand_FJIS_261029` nothing says the members are frozen clusters 5 and 106, nothing says which
+alignment round is live, and `cand_` covered everything from "aligned, no model" to "every gate
+passed" — so `cand_FJJI_cluster41_261029` (no model at all) and `cand_FJIS_261029` (model,
+covariation gate passed, saturated, position-separate) read as the same kind of object. **A build
+that is promoted now gets renamed, so the name states the state.**
+
+### The scheme
+
+```
+<stage>_<CLADE>_<members>_<yymmdd>
+```
+
+| field | values |
+|---|---|
+| **stage** | `aln_` alignment only, no model · `cand_` model built and calibrated, gates incomplete · `conf_` **confident build** · `class<N>` accepted and deployed (no prefix, no date) |
+| **CLADE** | the four-letter Mifsud code (`FJIS`, `FJJI`, `PLLG`, …) |
+| **members** | `c<N>` = frozen cluster N; `c5+c106` = pooled; `vs<X>` = vsearch cluster X, a different numbering that is **never** written `c<N>` |
+| **date** | always last, always 6 digits `yymmdd` |
+
+**Not in the name: the alignment round.** That is the directory — `iter_v<n>_<window>`, e.g.
+`iter_v2_explorer80`. One folder, many rounds. This is the distinction that was being read as part
+of the identity.
+
+Models additionally carry `_inf<ver>` when built by a non-default Infernal
+(`class1b_plusFJIS_cluster5_inf112`), because 1.1.2 and 1.1.5 give different models from the same
+seed (Part 2).
+
+So any token is unambiguous by shape: `c5` is a cluster, `iter_v2` is a round, `261029` is a date,
+`inf112` is an Infernal version, `vsA` is a vsearch cluster.
+
+### Promotion
+
+By gates already defined in this file, so nothing new has to be judged:
+
+| from → to | requires |
+|---|---|
+| `aln_` → `cand_` | a model exists: `cmbuild` + `cmcalibrate`, `cmstat` recorded (GATE 2 reported) |
+| `cand_` → `conf_` | R-scape significant pairs with **every nested helix supported**, library **and** wider-target searches run (saturated or novel hits resolved), position overlap with the existing models checked per site |
+| `conf_` → `class<N>` | deployed: MANIFEST, new `cm_set_<yymmdd>`, annotation re-run |
+
+A `conf_` build is finished analysis awaiting deployment, not a hypothesis. `conf_FJIS_c5+c106_261029`
+is the worked example: it passed all three `conf_` conditions, and cluster 5 then went into
+Class_1b while cluster 106 did not.
+
+### Renaming, and what is not rewritten
+
+`scripts/cm_rename_builds.sh` — **check-only by default**, `--apply` to move, never overwrites and
+never deletes (an existing destination is skipped). It writes `build/RENAMES.tsv`
+(old → new → date → why) and a `RENAMED_FROM.txt` in each moved folder, then logs one run-log row
+and lists the places in this file that still carry an old folder name.
+
+**Run-log rows are records and are not rewritten** — the precedent is the 2026-11-02
+`fz41` → `cluster41` rename. The same applies to the `fz` spelling still in data file names
+(`FJIS_fz106_explorer80.fa`). Only interpretive text is updated.
+
+Superseded builds move to `build/archive_superseded/`, keeping a stage prefix and gaining a window
+token where that is what superseded them (`aln_FJIS_c106_171nt_261029`).
+
+### Current folder names
+
+| now | was | stage, and why |
+|---|---|---|
+| `aln_FJJI_c41_261029` | `cand_FJJI_cluster41_261029` | `aln_` — no model; at the manual MATER step |
+| `aln_FJJI_c44_261029` | `cand_FJJI_cluster44_261029` | `aln_` — no model; at the manual MATER step |
+| `conf_FJIS_c5+c106_261029` | `cand_FJIS_261029` | `conf_` — all three conditions met; Track A's input; **do not delete** |
+| `cand_FJTB_c3_261026` | `cand_FJTB_261026` | `cand_` — model built, diversity-blocked, RNAvirus DB result unrecorded |
+| `cand_PLLG_vsA_260915` | `cand_PLLG_260915` | `cand_` — model built; `vsA` = vsearch clusterA, not a frozen cluster |
+| `archive_superseded/aln_FJIS_c106_171nt_261029` | `cand_FJIS_fz106_261029` | superseded by the 80-nt pooled run |
+| `archive_superseded/aln_FJIS_c5_171nt_261029` | `cand_FJIS_fz5_261029` | same |
+| `archive_superseded/aln_FJJI_c41+c44_261029` | `cand_FJJI_cluster41-44_pooled_261029` | closed: pooling weaker than either cluster alone |
+| `aln_FJIS_c106_<yymmdd>` | — | **does not exist yet**; created by `cm_candidate.sh align` (priority 2) |
 
 **Cluster N** = **frozen cluster N** of the flavi150 explorer: the 2026-10-28 clustering of the 416
 pooled sites by LocARNA similarity, cut at 0.55 with the largest component recut at 0.57 (colour by
 "frozen cluster (20261028)" in the explorer). The number is an index from that one clustering, not
-a name; it goes into a candidate's first log row as provenance. Written `fz N` before 2026-11-02;
-that abbreviation remains in file names (`FJIS_fz106_explorer80.fa`), in the superseded folders
-`cand_FJIS_fz106_261029` / `cand_FJIS_fz5_261029`, and in run-log rows, which are records and are
-not rewritten. New candidate folders spell it out: `cand_FJJI_cluster41_261029`. `G<n>` / `E<n>` are gap-register ids
-(Part 3).
+a name; it goes into a candidate's first log row as provenance. vsearch cluster indices
+(`cluster_2`, `clusterA`) are likewise not names — they depend on the input FASTA, the `--id`
+threshold and the run date — which is why they take the `vs` prefix. `G<n>` / `E<n>` are
+gap-register ids (Part 3); `E1`–`E7` are the Class_1b expansion steps (Part 1).
 
 Helices are `P1`, `P2`, `P3` and pseudoknots `PK`, following the flavivirus xrRNA literature. An
 `H1`/`H2` appear in older notes and mean `P1`/`P2`.
@@ -3410,6 +4210,126 @@ columns. See "Archived and ignored scripts".
 the same stall position per accession". Measured effect: 56 % of no-hit rows at 10 mM, 49 % at
 1 mM, are tile duplicates of another row.
 
+### The conda environment is part of the method — 2026-11-16
+
+A run in `(base)` with `cmalign` present but `esl-sfetch` and `mlocarna` absent is the dangerous
+case: the scripts proceed, and the Infernal version that produced the result is unknown. Since a
+model built under 1.1.2 and realigned under 1.1.5 is not the same model (Part 2), that makes a
+result uncitable rather than merely untidy.
+
+`flavi_env.sh` now **establishes** the environment instead of reporting on it:
+
+- `flavi_require <tools…>` activates `$CONDA_ENV` (default `viromelib`) by sourcing
+  `$(conda info --base)/etc/profile.d/conda.sh`, verifies every named tool, **exits if any is
+  absent**, and prints the Infernal version in use so it goes into the log. Every stage of
+  `cm_class1b_E.sh` and `cm_candidate.sh` calls it first.
+- every `cmalign`/`cmbuild` against an existing model runs as `conda run -n $(cm_env_require <model>)`,
+  where the env is derived from the **model's own header** (`cm_version`). Nothing names 1.1.2: a
+  model built under an unconfigured version stops the run rather than being realigned silently.
+- `flavi_env.sh --check` **activates `$CONDA_ENV` before reporting**, then prints which env it
+  started in and which it is now in, flags absent tools, and prints the Infernal version of
+  `cmalign`, `cmbuild`, `cmsearch` and of `$CONDA112` side by side. **cmalign and cmbuild must
+  report the same version.** If activation fails it says so and warns that the tool list describes
+  some other env, so absent means unknown rather than missing.
+
+**`cm_set_261021` mixes builder versions — measured 2026-11-16 from the headers:**
+
+| model | built by | realign/rebuild in |
+|---|---|---|
+| `CL_Class_1a_xrRNA_final.cm` | 1.1.2 | `infernal112` |
+| `CL_Class_1b_xrRNA_final.cm` | 1.1.2 | `infernal112` |
+| `CL_Class_2_xrRNA_final.cm` | 1.1.2 | `infernal112` |
+| `class1c.cm` | **1.1.5** | `viromelib` |
+| `class1b_plusFJIS_cluster5_inf112.cm` | 1.1.2 | `infernal112` |
+
+The three provided `CL_*` models are 1.1.2; `class1c.cm` was built here under 1.1.5. So there is no
+single correct env for the deployed set, which is why the env is derived per model from its header
+rather than set once. Any future class1c extension goes through `viromelib`, and that now happens
+automatically.
+
+**Measured 2026-11-16:** `$CONDA_ENV` (`viromelib`) carries `cmalign`, `cmbuild` and `cmsearch` at
+INFERNAL 1.1.5 (Sep 2023); `$CONDA112` (`infernal112`) carries 1.1.2 (July 2016). The two are
+consistent *within* each env, which is what the gate asks — but it means **every `cmalign` against
+a 1.1.2-built model must go through `conda run -n $CONDA112`, not the active env**, and the
+Class_1b line of models is all 1.1.2. This is not a configuration detail: it invalidated the first
+E2b run.
+
+Required in `$CONDA_ENV`: `mlocarna`, `R-scape`, `esl-sfetch`, Infernal 1.1.5. Separately in
+`$CONDA112`: Infernal 1.1.2. **All of these are installed** — the 2026-11-16 `--check` that reported
+`esl-sfetch` and `mlocarna` absent was reporting on `(base)`, because that version of `--check`
+inspected the active env instead of activating `$CONDA_ENV` first. A checker that does not establish
+the environment it is checking produces exactly the kind of false negative that sent E2b out with an
+unknown Infernal version.
+
+### `class1b_groups.tsv` — the transition-label lookup (decided 2026-11-16, not yet written)
+
+**Why a file exists at all.** Once a Class_1b version includes a group, the annotation says
+`Class_1b` at those sites and the group disappears from the tables — that a site is the P1-deviant
+ISF subtype sitting in its own frozen cluster is not recoverable from a `.cm_hit` column. The
+recorded decision (Part 1, B3) is that such a group keeps its own label after inclusion, so the
+label has to be carried somewhere. Nothing derives it: frozen-cluster membership comes from the
+explorer and the accept/reject decisions come from the rebuild tests, neither of which is in the
+tblout the annotation reads. So it is **hand-kept**, maintained the way the gap register is — one
+row written when a group is accepted or rejected.
+
+Path: `~/Desktop/viromelib/work/infernal/cm/class1b_groups.tsv` (beside `MANIFEST.tsv`; the shared
+`cm/` because the label belongs to the model, not to one dataset). Tab-separated, header row.
+
+| column | content | why it is there |
+|---|---|---|
+| `accession` | with version, as in the reference FASTA (`NC_008604.2`) | |
+| `stall` | genomic stall position, integer; the site key used everywhere else in this file | |
+| `frozen_cluster` | explorer frozen cluster (2026-10-28 clustering), or empty if the site has no explorer node | |
+| `group` | `core`, `transition:<cluster>`, or `transition_candidate:<cluster>` (B3) | |
+| `decided` | the date this row's `group` was set, `YYYY-MM-DD` | a group can be promoted (B2 → B1) or demoted; without a date the table cannot be read against the run log |
+| `model` | the model version that **includes** it, or the rejected variant that tested it: `class1b_plusFJIS_cluster5_inf112`, `all`, `kamiti`, `phaiomys`, `strong`, `newvirus` | **provenance of the addition.** "Class_1b" alone is ambiguous once there is more than one version |
+| `change` | what the test actually moved: `19.9b ? -> 23.4b !`, `0 lost / 10 gained`, `11-17 lost`, `new hit, stall-anchored` | **the change made.** Membership is a consequence of a measured delta; the delta is what a later reader needs in order to re-judge it |
+| `rationale` | why that delta was accepted or rejected, in one clause: `no-loss rule`, `loses OP860412 297`, `PP 0.38-0.47, 5'-truncated`, `recovered seed locus` | **the rationale.** Stops a rejected group being re-tested blindly, and makes a promotion legible |
+| `source` | how `group` was derived when it does not follow from an explorer node: `no explorer node (2/4 reps, SF 0.311); inherited from MH827524 10759, same element` | |
+
+Nine columns, and the four added on 2026-11-16 are what make it worth keeping by hand: `decided`,
+`model`, `change` and `rationale` are the provenance of each addition, what it changed, and why.
+None of them is recoverable from a tblout, and `model` stops being optional the moment a second
+Class_1b version exists — which it now does.
+
+Joined into the annotation as **one added column, `class1b_group`**, on `accession` + `stall`; the
+`CL_Class_1b….cm_hit` columns are untouched. A row for a site the annotation does not carry is not
+an error — the `transition_candidate` rows exist precisely so a group is not lost when it leaves
+the gap list.
+
+**The `source` column is not decoration.** NC_012671 has no explorer node, because its stall failed
+the ≥3-replicate gate (10 mM: 2 reps, SF 0.311), so its group is inherited from MH827524 stalling at
+the same element in a relative — that has to be legible from the row, not reconstructed.
+
+Rows to write at E6, from B1 and B2 (four `frozen_cluster` values come out of E5):
+
+```
+accession	stall	frozen_cluster	group	decided	model	change	rationale	source
+NC_008604.2	10707	5	transition:5	2026-11-02	class1b_plusFJIS_cluster5_inf112	0 lost / 10 gained (set)	no-loss rule; P1-deviant ISF subtype in its own frozen cluster	explorer node, fz 5
+NC_021069.1	10735	5	transition:5	2026-11-02	class1b_plusFJIS_cluster5_inf112	0 lost / 10 gained (set)	no-loss rule	explorer node, fz 5
+NC_024299.2	10747	5	transition:5	2026-11-02	class1b_plusFJIS_cluster5_inf112	0 lost / 10 gained (set)	no-loss rule; 3-copy array, Class_1b holds 92-185 and 230-315	explorer node, fz 5
+AB981186.1	10732	5	transition:5	2026-11-02	class1b_plusFJIS_cluster5_inf112	0 lost / 10 gained (set)	no-loss rule; genome absent from the 88-seq seed	explorer node, fz 5
+MH827524.1	10759	5	transition:5	2026-11-02	class1b_plusFJIS_cluster5_inf112	0 lost / 10 gained (set)	no-loss rule; genome absent from the 88-seq seed	explorer node, fz 5
+NC_012671.1	10735		transition:5	2026-11-02	class1b_plusFJIS_cluster5_inf112	new hit 78.6 b, stall-anchored	no-loss rule; element present, stall weak	no explorer node (2/4 reps, SF 0.311); inherited from MH827524 10759, same element
+LR694076.1	10565	21	transition:21	2026-11-02	class1b_plusFJIS_cluster5_inf112	19.9b ? -> 23.4b !	recovered seed locus, CFAV xr3, P1-deviant	explorer node, fz 21
+MH237596.1	10555	<E5>	<E5>	2026-11-02	class1b_plusFJIS_cluster5_inf112	? -> ! (in the 23.4-28.3 b range)	recovered seed locus, CFAV xr3, 2nd isolate	<E5>
+NC_027817.1	10757	<E5>	<E5>	2026-11-02	class1b_plusFJIS_cluster5_inf112	? -> ! (in the 23.4-28.3 b range)	recovered seed locus, PaRV xr4	<E5>
+NC_027819.1	10811	<E5>	<E5>	2026-11-02	class1b_plusFJIS_cluster5_inf112	? -> ! (in the 23.4-28.3 b range)	recovered seed locus, MECDV xr1, its only seed copy	<E5>
+NC_034017.1	10511	106	transition_candidate:106	2026-11-16	all (rejected); E2b (rejected, Infernal 1.1.2)	PP 0.397, cm 27-81 5'-trunc, -10.59 b on the cluster-5 baseline	RESOLVED: Class_1b cannot align it on the best baseline; confirmed under the model's own Infernal. Track B	explorer node, fz 106
+NC_034204.1	10523	106	transition_candidate:106	2026-11-16	all (rejected); E2b (rejected, Infernal 1.1.2)	PP 0.465, cm 17-78 5'-trunc, -12.38 b	RESOLVED as above; the cm 29/43 deletion is still unreadable at this PP and is not cited either way	explorer node, fz 106; MFV_xr1, 4th published P1-deviant sequence
+ON949931.1	10608	106	transition_candidate:106	2026-11-16	all (rejected); E2b (rejected, Infernal 1.1.2)	PP 0.424, cm 17-61 5'&3'-trunc, -14.40 b	RESOLVED as above; also a sub-threshold class1c match, 13.3 b, cm 1-84	explorer node, fz 106, SF 0.900
+NC_005064.1	11245	21	transition_candidate:21	2026-11-03	kamiti (rejected)	loses OP860412 297; aligns full length at PP 0.853	no-loss rule; G.U at cm 43 is a genuine triple variant -- needs its own model or E7 sequences	explorer node, fz 21
+MW897328.1	10653	135	transition_candidate:135	2026-11-03	phaiomys (rejected)	loses AB981186 590, NC_012671 545, OP860412 297; PP 0.622, 3'-truncated	no-loss rule; two of the three losses are cluster-5 sites just added	explorer node, fz 135
+```
+
+`<E5>` placeholders are filled from E5's second table before the file is used; a placeholder left
+in is the signal the join is not ready. The three cluster-106 rows show the mechanism working: on
+2026-11-16 their `model` went from `all (rejected)` to `all (rejected); E2b (rejected, Infernal
+1.1.2)`, `change` from the old model's figures to the cluster-5 baseline's, and `rationale` from
+`NOT RESOLVED` to `RESOLVED … Track B`, with `decided` moved to that date. The row is rewritten in
+place and the run log keeps the history — which is why `decided` has to be on the row. The 68-novel-hit gains (E1/E2) and the 13 hepaci partial
+matches get rows only once their extensions are decided.
+
 ---
 
 # Part 10. Run log
@@ -3521,6 +4441,21 @@ the same stall position per accession". Measured effect: 56 % of no-hit rows at 
 | 2026-11-03 | should the seed be shifted so the triple aligns | no. cmbuild has no base-triple state, so cm 7s interaction with the 29-43 pair is absent under every column arrangement: a shift can only improve the readout, never the models power. The current layout is right for the 138 included sites, which leave the insert columns empty, and wrong only for MW897328; adding a consensus column to absorb that insert asserts a residue there for the other 137 and raises clen 81 to 82, which is in effect what the three variant rebuilds did, and all three lost hits. A seed describes the consensus, not the hardest member. The measurement that would change the answer: count how many included library sites occupy the insert columns flanking cm 29 and cm 43 (insertcheck block, Part 3) -- a substantial fraction means the seed misdescribes the family and a column should be added via RF plus cmbuild --hand. What would genuinely improve triple detection is a different instrument, not a shift: the CM is recruitment only, the triple is read from a structure-aware alignment with the pseudoknot annotated (MATER / R-scape) |
 | 2026-11-03 | explicit membership table added to Part 3 | the six added sequences were recorded only in pieces (gap register, candidate card, reciprocal-scoring table, four run-log rows) with no single list. Part 3 now has one authoritative table: added = NC_008604.2 Culex flavivirus 10707, NC_012671.1 Quang Binh virus 10735, NC_021069.1 mosquito flavivirus 10735, NC_024299.2 Nienokoue virus 10747 (all four fifth array copies just downstream of that genomes seed xr4), AB981186.1 mosquito flavivirus 10732 and MH827524.1 Quang Binh virus 10759 (both genomes absent from the seed entirely). 88 + 6 = 94. Kept out, each tested and failed the no-loss rule: NC_034017 Xishuangbanna aedes flavivirus, NC_034204 Menghai flavivirus, ON949931 Kilpisjarvi flavivirus (cluster 106, PP 0.38-0.47, 11-17 hits lost), NC_005064 Kamiti River virus and MW897328 (sub-threshold, 11-03), and the 68 novel library hits (separate paused extension). Not to be confused: KC181923, KJ741266, LC536088 are Aedes flavivirus, cluster 133, already Class_1b |
 | 2026-11-03 | inconsistency flagged, not yet resolved | the further-addition rejections are phrased as losing OP860412 297, the hit cluster 5 gained, but OP860412 297 is recorded in Part 6 as a gain of the strong 1.1.2 variant, and six own sites plus four recovered seed loci (NC_027817 543 PaRV xr4, NC_027819 561 MECDV xr1, LR694076 476 and MH237596 478 CFAV xr3) already account for all 10 gains. Either the count is 11 or the attribution is wrong. Settle from cluster5/class1b_plusFJIS_cluster5_inf112_library.tbl.compare.tsv with grep NEW. No decision depends on it: every rejected variant lost other hits too |
+| 2026-11-16 | classification status and transition rule | Part 1 now classifies every site group as finished / Class_1b extension / unknown. Class_1b extensions split into core and transition from 1b by explorer frozen cluster; transition groups keep a label after inclusion (proposed `class1b_group` column from `cm/class1b_groups.tsv`, not implemented). B1 transitions: FJIS cluster 5 (+ NC_012671); P1-deviant recovered loci pending their clusters (LR694076 in cluster 21). B2 transition candidates: cluster 106, NC_005064 (cluster 21), MW897328 (cluster 135), novel-hit gains, 13 hepaci partial matches. Main Class_1b clusters not yet determined (131, 133 known); B4 block tabulates them |
+| 2026-11-16 | decision: where Class_1b expansion goes, and the transition lookup | Library-internal expansion is at capacity at cluster 5 (four independent demonstrations; OP860412 297 is the marginal hit in every direction), with one unfinished library-level question. Order decided, E1-E7 in Part 1: E1 AB021287 --max on the existing strong/newvirus models -- the only Class_1b question the library can still answer; E2 only if E1 clears, rebuild strong/newvirus on the cluster-5 seed, since the 10-30 runs used the original model as baseline; E3 the OP860412 297 count conflict; E4 pp_check and insertcheck, before deployment because insertcheck can change the column layout; E5 B4 (main 1b clusters, frozen cluster of every B1/B2 site); E6 deploy once -- MANIFEST, new cm_set, class1b_groups.tsv, cluster steps 10-13, recount against 8 models; E7 a targeted set of complete ISF genomes from NCBI, the only route left and the one that serves cluster 106, NC_005064, MW897328 and any further 1b addition at once. Rationale for the order: deployment is the expensive step (new cm_set, cluster steps 10-13, re-annotation, recount), so settle every library-level question first and deploy once; and the RNAvirus DB is demonstrably too narrow here (4 of the 8 FJIS seed genomes score 52-79 bits in the library and are absent from it). Transition labels to be carried in a hand-kept cm/class1b_groups.tsv joined as one class1b_group column; spec and the 15 rows to write in Part 9. Hand-kept because nothing derives it -- frozen clusters come from the explorer, accept/reject from the rebuild tests, neither is in the tblout the annotation reads |
+| 2026-11-16 | cluster 106 reopened; E2b added | The 106-is-not-Class_1b conclusion does not hold up on review. FOR: the 4 covarying pairs that make the pooled structure credible come from comparing cluster 5 with cluster 106 sequences (this file: "the evidence that the two clusters share one structure"); cluster 106 is 91 % canonical over the 22 bp (82 % pre-wiggle) vs cluster 5's 83 % (79 %); FJIS vs the 88 Class_1b seeds is moderate both ways. AGAINST: Class_1b scores 0 of 3 cluster-106 sites while scoring 4 of 5 cluster-5 sites (clean); the `all` variant lost 11-17 hits at PP 0.38-0.47 (confounded: original 88-seq model, and pooled with cluster 5); the Menghai cm 29/43 deletion, which the triple section calls the firmest ground and the cluster-106 section calls not evidence at PP 0.465 -- an internal contradiction now flagged in both places. New step E2b (`cm_class1b_E.sh e2b`): add the 3 cluster-106 sequences ALONE to the cluster-5 baseline, which has never been done; decision table for its three outcomes in Part 1. Runs BEFORE Track B on 106, which is now conditional on it. class1d is not decidable either way until E7 supplies sequences, since a class must recruit beyond its seed and 3 sequences at 0.84-0.94 would find only themselves; correct label meanwhile is transition_candidate:106 |
+| 2026-11-16 | E2b run: cluster 106 is not Class_1b, on an unconfounded baseline | The 3 cluster-106 sequences aligned to the accepted cluster-5 baseline (cmalign --mapali): NC_034017 10511 cm 27-81 5'-trunc -10.59 b PP 0.397; NC_034204 10523 cm 17-78 5'-trunc -12.38 b PP 0.465; ON949931 10608 cm 17-61 5'&3'-trunc -14.40 b PP 0.424. Identical to the original 88-seq model's PP 0.38-0.47 and 5' truncation (Menghai's 0.465 to three places), and all three alignment scores are NEGATIVE, so adding the P1-deviant ISF subtype to the seed brought them no closer. Verdict: Class_1b cannot reach cluster 106; the loss count is not needed because the alignment itself fails. This resolves the Menghai-triple contradiction in the same direction while confirming that at PP 0.40-0.47 the triple reading is still unreadable and should not be cited either way. Cluster 106 -> Track B, priority 2. PROVISIONAL: the session ran in (base) with esl-sfetch and mlocarna absent, so the Infernal version behind cmalign is unknown; a 1.1.5 cmalign on a 1.1.2-built model is not the same alignment (Part 2). Confirm with flavi_env.sh --check and re-run if base's cmalign was not 1.1.2. Run stopped after cmalign (cmbuild needs conda run -n infernal112), so no cmstat and no per-hit comparison |
+| 2026-11-16 | conda env made part of the method | A run in (base) with cmalign present but esl-sfetch and mlocarna absent produced a result whose Infernal version is unknown, which makes it uncitable rather than untidy. flavi_env.sh now ESTABLISHES the env: flavi_require activates $CONDA_ENV via conda.sh, verifies each named tool, exits if any is absent, and prints the Infernal version into the log; every stage of cm_class1b_E.sh and cm_candidate.sh calls it first. Every cmalign against a 1.1.2-built model now runs as conda run -n $CONDA112 cmalign, pinned not inherited. --check prints the active env and the cmalign/cmbuild/cmsearch/1.1.2 versions side by side; cmalign and cmbuild must match. Also: REF and SEED1B were MISSING on the laptop and need their real paths; CL1C resolved correctly inside cm_set_261021. CORRECTION, same day: --check itself did not activate $CONDA_ENV, so its esl-sfetch and mlocarna 'absent' lines described (base) and were false -- both are installed in viromelib. --check now activates first and reports which env it started in and which it ended in; an activation failure is stated as such so absent reads as unknown, not missing |
+| 2026-11-16 | Infernal versions measured; first E2b run invalidated | flavi_env.sh --check from inside viromelib: cmalign, cmbuild and cmsearch all INFERNAL 1.1.5 (Sep 2023); infernal112 env INFERNAL 1.1.2 (July 2016); all 9 tools present, so the earlier esl-sfetch/mlocarna 'absent' report was indeed the checker's bug. Consequence: the E2b run earlier today used base's unpinned cmalign (1.1.5 line) against class1b_plusFJIS_cluster5_inf112, which was built under 1.1.2, so its PP 0.397/0.465/0.424 are not reproducible from the recorded method and are not citable; e2b now routes cmalign through conda run -n infernal112 and must be re-run. The verdict is not expected to change -- the 1.1.5 alignment reproduced Menghai's 0.465 to three places, which hints the versions agree here -- but that is not a measurement. Standing rule confirmed: every cmalign against a 1.1.2-built model goes through $CONDA112, never the active env, and the whole Class_1b model line is 1.1.2. Still missing on disk: REF and SEED1B (neither blocks E2b, which seeds from $C5.stk) |
+| 2026-11-16 | the 1.1.2 constraint encoded, not just documented | Correction to today's framing: the reason the cluster-5 model is 1.1.2 is that CL_Class_1b_xrRNA_final.cm itself is, and that was already recorded in Part 2 and in the 2026-10-30 run-log row (header INFERNAL1/a [1.1.2 \| July 2016]; 88/48.62/81/19/2 under 1.1.2 vs 88/87.08/78/18/2 under 1.1.5). It was treated today as an open question and the first E2b run went out unpinned anyway, so the failure was not missing documentation but a constraint that lived only in prose. Now enforced: flavi_env.sh gains cm_version (builder version read from the .cm header), cm_env_for and cm_env_require (map it to the matching conda env, exit if none matches); cm_class1b_E.sh derives the env per model and names no version anywhere, so e2/e2b/e4 cannot realign a model with the wrong Infernal and a model from a third version halts the run; --check prints the builder version of every cm_set_261021 model and the cluster-5 baseline beside the env it requires. Standing exception kept: cmsearch of a 1.1.2 model under 1.1.5 is deliberate and is what the comparisons used |
+| 2026-11-16 | E2b re-run under 1.1.2: cluster 106 is not Class_1b, confirmed | cm_env_require read class1b_plusFJIS_cluster5_inf112.cm's header as 1.1.2 and ran cmalign via conda run -n infernal112. Result IDENTICAL to the unpinned 1.1.5 run to three decimal places: NC_034017 10511 cm 27-81 5'-trunc -10.59 b PP 0.397; NC_034204 10523 cm 17-78 5'-trunc -12.38 b PP 0.465; ON949931 10608 cm 17-61 5'&3'-trunc -14.40 b PP 0.424. Verdict confirmed and citable: Class_1b cannot align cluster 106 on the best available baseline; cluster 106 -> Track B, priority 2. SIDE FINDING: cmalign against a fixed model is version-stable here while cmbuild is not (same seed: 88/48.62/81/19/2 under 1.1.2 vs 88/87.08/78/18/2 under 1.1.5), so the 2026-10-30 version sensitivity is in model construction, not in alignment to an existing model -- scoped to one model, one --mapali, 3 sequences, and not a reason to drop the pinning. Both runs stop after the alignment table because cmcalibrate follows and is slow; no cmstat and no per-hit comparison, neither needed for the verdict |
+| 2026-11-17 | E2b complete: cluster 106 rejected on every criterion | cmstat 97 / eff_nseq 71.32 / clen 81 / 19 bp / 2 bif against the baseline's 94 / 50.24 / 81 / 19 / 2 -- structure preserved but 3 sequences raised eff_nseq by 21.08. Compare vs cluster-5 baseline: matched 120, lost 19, gained 1 (MH282908 223, 36.2 b), lower_bits 111, worst_delta -15.60; the all variant lost 11-17, so this is worse. The 19 lost include EIGHT of cluster 5's own ten gains (NC_027819 561, NC_024299 628, NC_021069 597, MH827524 595, AB981186 590, NC_012671 545, LR694076 476, MH237596 478) plus OP860412 297 and core Class_1b sites KC181923 859, KJ741266 810, LC536088 839, MN635449 73, AB021287 65, MT276199 198, NC_020902 424, MH307700 124, ON391060 22 -- i.e. admitting 106 undoes the cluster-5 merge. POSITION CHECK (not accession membership, which the first version of the check wrongly used): converting stalls to subsequence coords, NC_034204's included 30.8 b hit is at rel 32-87 while its stall is rel 170 (83 nt short); NC_034017's included 27.4 b hit is at rel 30-102, stall rel 177, covered only by a 12.0 b E 3.8 '?' hit at 142-259; ON949931's stall rel 419 is covered by neither of its hits (86-166 19.8 b, 640-731 14.6 b). So the model recruits OTHER loci in those genomes, not the cluster-106 element. Sharpest case: ON949931 rel 86 was an included Class_1b hit at 30.2 b in the baseline and is now LOST at 19.8 b -- that genome carries a genuine Class_1b element 333 nt from its cluster-106 stall, and admitting the latter costs the former. Reading: a divergent Class_1b copy is absorbed at modest cost (cluster 5 at zero); this broadens the profile, drags 111 hits down and is still not recruited, which is a different element sharing an architecture, not a subtype. Strengthens but does not settle class1d; E7 still required. Script fixed: flavi_env.sh gains hits_at_stall, which converts the stall from each sequence name's own offset and reports coverage, replacing the grep by accession in e2b |
+| 2026-11-17 | E1: AB021287's loss is a filter artefact; library-internal expansion reopened | AB021287.1\|8868-9228_inferred_3UTR searched with and without --max: original model cm 1-81, 65-156, 29.7 b, E 6.4e-07, ! in BOTH modes; class1b_alignHits_strong_inf112 NO HIT by default but 30.0 b, E 8e-07, ! under --max; class1b_alignHits_newvirus_inf112 NO HIT by default but 30.2 b, E 7.5e-07, ! under --max. Same span throughout, and both variants score the site higher than the original does, so the CM never lost it -- the HMM filter drops it. The sole ground for rejecting strong and newvirus is therefore gone and E2 is live: rebuild both on the cluster-5 seed and judge the three stall-anchored gains (OM030319 11865, MN587651 9782, OP860412 10802) against MH307700 -4.0 and MH282908 -5.5. The rejection of the all variant stands on its own (5 Class_1b sites lost). OPEN DECISION for E2: a filter artefact is still a practical loss, because annotation runs default filters, so a deployed strong or newvirus leaves AB021287 65 unannotated at 30 b -- either run the Class_1b line with --max/--nohmm/--mid and record that in MANIFEST, or accept the one unannotated site now that the cause is known, or reject both variants on the ground that a model whose filter hides a known true positive is worse than one that does not. Consequence for E6: deployment waits on E2, since the model deployed may be cluster 5 plus strong or newvirus, and a new cm_set plus cluster steps 10-13 should not be run twice |
+| 2026-11-17 | subset route added for cluster 106 | The pooled refined alignment already contains cluster 106 fitted by hand to that structure, so a cluster-106 model does not require a new alignment: cm_candidate.sh subset runs esl-alimanip --seq-k to drop the cluster-5 rows and cmbuild --hand to rebuild from the same columns. Columns are NOT trimmed -- with #=GC RF present, --hand keeps every RF column as consensus even where the 3 retained sequences gap it, so clen and the cm numbering stay identical to the pooled model and cm 7/29/43 remain comparable. SCOPE: the subset answers 'does cluster 106 fit the structure cluster 5 defines', since the pooled consensus was set by cluster 5 (5 of 8 sequences); it does NOT establish cluster 106's own fold, so a class1d claim and the triple 5' of P1 still need the de novo 80-nt pass -- reading a triple off a structure imposed by other sequences is the same error as reading it off the Class_1b CM alignment at PP 0.465. Subset first because it is free and yields the reciprocal test at once: build the complementary cluster-5 subset with 'drop', then score each seed with the other's model and compare bit scores both ways; given E2b the expectation is siblings, and measuring beats asserting |
+| 2026-11-17 | cluster 106 aligned alone; architecture confirmed, covariation impossible | cluster106_edit261117.stk (3 seqs, 85 cols) compared element-for-element with the pooled result-oneblock_edit261102-MATER-wiggle-refined_shortenP1forBT.stk (8 seqs, 98 cols). SAME ARCHITECTURE: P1 outer 2 bp (G-C, C-G, the same two pairs in both -- the pooled P1's third pair is cluster 5's alone, G-U, col 8 being a gap in all three c106 seqs), 7-bp inner hairpin, 4-bp hairpin 2, pk_A GGAU:AUCC (4 bp alone vs 3 pooled), pk_B UCAC:GGUG 4 bp. Canonical fractions on the pooled structure, c106 seqs: nested 36/37 97%, pk_A 9/9 100%, pk_B 12/12 100%, overall 57/58 98%; cluster 5: 58/58, 15/15, 12/15 80%, overall 85/88 97% -- so cluster 106 fits at least as well as cluster 5 and better on pk_B. DECISIVE LIMIT: of the 21 pairs in the c106-alone alignment, 16 are IDENTICAL in all three sequences; only 13:24, 14:23 (one A-C non-canonical in NC_034204), 15:22, 16:21 (both gapped in ON949931) and 34:43 vary. P1, pk_A, pk_B and 3 of hairpin 2's 4 pairs are invariant, so R-scape has zero power on them however the alignment is drawn and expected covarying pairs ~ 0. GATE 1 is not applicable rather than failed: this is a data limit, not a modelling failure, and no further alignment work changes it -- E7 is the only route to a class claim. TRIPLE: see the correcting row below -- the reading given here, that there is no conserved C 5' of P1 and so class1d should not be presumed, tested the wrong expectation and is superseded. SCRIPT CORRECTION: neither .stk carries #=GC RF, so build will infer match columns by occupancy (clen will not be 85) and yesterday's claim that subset preserves cm numbering was wrong for these files; subset now warns and offers --keep-columns, which synthesises RF over the source's occupied columns |
+| 2026-11-17 | cluster 106 has a conserved U-A-U base triple; the earlier naming argument was wrong | Reported from the structural prediction: the triple base is U6 of cluster106_edit261117.stk, currently swallowed into pk_A as the 6:47 pair. Freeing it gives pk_A = 3 bp (3:50, 4:49, 5:48) and the triple U6 . (A5-U48) = U-A-U against pk_A's innermost pair. All three positions -- U6, A5, U48 -- are invariant across all three sequences. The POOLED alignment already had this right: its equivalent U is col 7, left unpaired, with pk_A = 3 bp (4:56, 5:55, 6:54) and the triple U7 . (A6-U54); so the new file over-extends pk_A by one pair. Corrected SS_cons (A at 6 -> ., a at 47 -> .) saved as cluster106_edit261117_triple.stk with #=GF CC provenance; 85 cols and 13 nested bp unchanged. CORRECTION: the argument made earlier today -- that there is no conserved C immediately 5' of P1 and therefore class1d should not be presumed -- tested the wrong expectation. The triple is not 5' of P1; it sits against the innermost pseudoknot pair, and it IS present, as U...A-U where Class_1b has C...G-C at cm 7/29/43. Same interaction class with the identity substituted, which is a POSITIVE argument for class 1 membership, so class1d is defensible on architecture (two pseudoknots, short P1, conserved triple at the pseudoknot). What is missing is sequences, not structure. MODEL BLINDNESS: cmbuild reads only the primary nested SS_cons, so A/a and B/b are ignored and Infernal has no base-triple state; both alignments give a 13-bp model, matching the 13 bp recorded for the pooled model's cmbuild output. The triple cannot be scored or refuted by any CM search, and since its positions are invariant, covariation cannot support it either -- cite it as a prediction from structure plus conservation |
+| 2026-11-17 | three diagnostic features for cluster 106, and a concerted triple substitution between the clusters | Features reported and verified against both alignments. (1) P1 shortened to 2 bp (G-C, C-G) where cluster 5 has 3 (G-U, C-G, A-U); in the pooled alignment the third pair cannot form for cluster 106 because pool col 63 is gapped in all three. (2) THREE UNPAIRED PURINES, AAA, between P2's 3' strand and P3: c106 cols 28-30, pool cols 33-35, occupied in 3/3 cluster-106 sequences and 0/5 cluster-5 sequences (NC_024299 has a lone G at pool col 35). (3) The base triple, at pooled cols 7/6/54: cluster 5 reads C.(G-C) in 5/5 sequences, cluster 106 reads U.(A-U) in 3/3 -- all three positions substituted together, each cluster invariant, interaction preserved as pyrimidine.(purine-pyrimidine). TWO CONSEQUENCES. First, the triple is real: a coincidence would not substitute all three partners coherently while staying fixed within each cluster, and cluster 5's C.(G-C) independently reproduces the Class_1b triple recorded in this file as C...G-C at cm 7/29/43, from sequences aligned without reference to it -- a cross-check on the Class_1b annotation too. Second, this is where the covariation lives: within cluster 106 alone 16 of 21 pairs are invariant and R-scape has no power, but between clusters the variation is concerted, which is why the POOLED alignment gave 4 covarying pairs against 0.2 expected while neither cluster alone can give any. So the pooled alignment is not superseded by the c106-alone one -- it is the only alignment in which this structure has statistical support, and it is the one to cite for the structure. SYNTHESIS with E2b: shared architecture with between-cluster covariation, every diagnostic feature substituted, and primary sequence too diverged for the Class_1b CM -- structural homology and CM-absorbability are different things, which is the siblings-not-one-family relationship this file already uses for class1c. Cluster 106 is a distinct class 1 element, sibling to Class_1b; class1d is right if the class 1 assignment holds, and the triple is now the evidence for it rather than the obstacle. Still gated on E7: 3 sequences at 0.84-0.94 identity generalise to nothing, and the three features above are the diagnostics to search with |
+| 2026-11-16 | cm_set_261021 mixes Infernal builder versions | Headers read by flavi_env.sh --check: CL_Class_1a, CL_Class_1b and CL_Class_2 are all 1.1.2 (provided); class1c.cm is 1.1.5 (built here); class1b_plusFJIS_cluster5_inf112.cm is 1.1.2. There is therefore no single correct env for the deployed set, which is the reason the env is derived per model from its header instead of being configured once. Any future class1c rebuild or extension must run in viromelib, not infernal112, and cm_env_for now selects that automatically |
 
 ### `cand_FJIS_fz106_261029`
 
@@ -3626,10 +4561,12 @@ Folder renamed 2026-11-02 from `cand_FJJI_261029`.
   (2026-10-30: provided seeds are in `cm/seeds/` — `CL_Class_1b_xrRNA_final.sto` found there. Whether
   `stockholm/` still exists was not checked.)
 - Infernal version of the other provided models (1a, 2, 3, dumbbell) — Part 2.
-- `build_candidate_cm.sh` defects: GATE 1 passes on an energy parse failure; the alifold regex misses
-  mlocarna's line format (`alifold<ws><structure> (…)`); mlocarna's exit status is unchecked; dedup
-  can produce no output while the manual-step banner still prints; R-scape is left to the manual step
-  and its outdir is not created; the tblout path is not printed.
+- ~~`build_candidate_cm.sh` defects~~ **closed 2026-11-16**: all six (GATE 1 passing on an energy
+  parse failure; the alifold regex missing mlocarna's line format and space-padded energies;
+  mlocarna's exit status unchecked; dedup producing no output while the manual-step banner prints;
+  R-scape's outdir not created; the tblout path not printed) are fixed in `cm_candidate.sh`, which
+  replaces it. `dedup_stockholm.py` is not run — it read the two-block file as twice the rows and
+  removed nothing in any run. Delete `build_candidate_cm.sh` once `cm_candidate.sh` has run once.
 - `gnuplot` missing in the `viromelib` env (R-scape skips its plots);
   `conda install -y -c conda-forge gnuplot`. `RFview` path under `~/local/lib/RFview/` is broken.
 
