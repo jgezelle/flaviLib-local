@@ -178,7 +178,12 @@ for line in open(tbl):
     sf, st = int(f[7]), int(f[8])
     lo, hi = min(sf, st), max(sf, st)
     rows.append((acc, off, lo, hi, float(f[14]), f[15], f[16], f[0]))
-print(f"{'acc':12} {'stall(gen)':>10} {'stall(rel)':>10} {'hit(rel)':>14} {'bits':>7} {'E':>9} {'inc':>3}  at stall?")
+# A stall is the explorer feature's own start coordinate; a CM hit's 5' boundary is
+# the model's, not the feature's, so the two differ by a few nt at the same locus.
+# Report the DISTANCE, since a flat "no" at 2 nt reads as "absent" and is how the
+# NC_008604 10707 question was nearly misread on 2026-11-17.
+NEAR = 10
+print(f"{'acc':12} {'stall(gen)':>10} {'stall(rel)':>10} {'hit(rel)':>14} {'bits':>7} {'E':>9} {'inc':>3} {'dist':>5}  at stall?")
 seen = set()
 for acc, stalls in want.items():
     for stall in stalls:
@@ -187,14 +192,23 @@ for acc, stalls in want.items():
             _, off, lo, hi, bits, ev, inc, nm = r
             rel = stall - off + 1
             cov = lo - 1 <= rel <= hi + 1
-            hit_any = hit_any or cov
-            print(f"{acc:12} {stall:>10} {rel:>10} {f'{lo}-{hi}':>14} {bits:>7} {ev:>9} {inc:>3}  {'YES' if cov else 'no'}")
+            dist = 0 if cov else min(abs(rel - lo), abs(rel - hi))
+            verdict = 'YES' if cov else (f'near {dist} nt' if dist <= NEAR else 'no')
+            hit_any = hit_any or cov or dist <= NEAR
+            print(f"{acc:12} {stall:>10} {rel:>10} {f'{lo}-{hi}':>14} {bits:>7} {ev:>9} {inc:>3} {dist:>5}  {verdict}")
             seen.add(acc)
         if not hit_any:
             offs = {x[1] for x in rows if x[0] == acc}
+            near = '?'
+            if offs:
+                off0 = min(offs)
+                rel0 = stall - off0 + 1
+                ds = [min(abs(rel0 - x[2]), abs(rel0 - x[3]))
+                      for x in rows if x[0] == acc and x[1] == off0]
+                near = str(min(ds)) if ds else '?'
             rel = str(stall - min(offs) + 1) if offs else '?'
-            print(f"{acc:12} {stall:>10} {rel:>10} {'--':>14} {'--':>7} {'--':>9} {'--':>3}  "
-                  "NO INCLUDED OR REPORTED HIT COVERS THE STALL")
+            print(f"{acc:12} {stall:>10} {rel:>10} {'--':>14} {'--':>7} {'--':>9} {'--':>3} {near:>5}  "
+                  f"NO HIT WITHIN {NEAR} nt OF THE STALL (nearest {near} nt)")
 for acc in want:
     if acc not in seen:
         print(f"{acc:12} no hits at all in this tblout")

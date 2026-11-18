@@ -4,6 +4,11 @@
 #   cm_candidate.sh align <CAND> <explorer80.fa> [more.fa ...]   -> GATE 1, stops at MATER
 #   ----- MANUAL: MATER pseudoknots -> hand-edit SS_cons -> wiggle-refine -> R-scape -----
 #   cm_candidate.sh build <CAND> <refined.stk>                   -> GATE 2, model, searches
+#   cm_candidate.sh build --library-only <CAND> <refined.stk>    -> stop after the library search
+#
+#   cm_candidate.sh subset <NEW> <refined.stk> keep|drop <names> -> rebuild an existing refined
+#       alignment minus some sequences, reusing its hand-made structure and cm numbering. No
+#       manual step. Use when the question is "the same model, without those sequences".
 #
 # Replaces build_candidate_cm.sh, whose recorded defects this fixes: GATE 1 passing on an
 # energy parse failure, the alifold regex missing mlocarna's line format and space-padded
@@ -15,7 +20,23 @@ source "$(dirname "${BASH_SOURCE[0]}")/flavi_env.sh"
 
 align() {
   local CAND=$1; shift
-  [ $# -ge 1 ] || { echo "give at least one seed FASTA"; return 1; }
+  if [ $# -lt 1 ]; then
+    cat <<EOF
+give at least one seed FASTA.
+
+Variables such as \$FA106 live in flavi_env.sh and are NOT in your interactive shell unless you
+source it. Either source it once per terminal:
+    source \$FLAVISCRIPTS/flavi_env.sh
+    bash \$FLAVISCRIPTS/cm_candidate.sh align $CAND \$FA106
+or pass the literal path:
+    bash \$FLAVISCRIPTS/cm_candidate.sh align $CAND \\
+      $SCAN/FJIS_fz106_explorer80.fa
+
+Known cluster FASTAs in \$SCAN:
+EOF
+    ls "$SCAN"/*explorer80.fa 2>/dev/null | sed 's|^|    |' || echo "    (none found in $SCAN)"
+    return 1
+  fi
   flavi_require mlocarna R-scape
 
   local B=$INFERNAL/build/$CAND/$ITER
@@ -77,7 +98,122 @@ Then:
 EOF
 }
 
+# ---------- subset: rebuild an existing hand-refined alignment minus some sequences ----------
+# For "the same model, without cluster 5". Reuses the pooled MATER/CaCoFold alignment instead of
+# re-deriving a consensus, so the hand work and the cm column numbering are both preserved.
+#
+#   cm_candidate.sh subset <NEWNAME> <pooled_refined.stk> <keep|drop> <name-or-prefix> [more ...]
+#
+# keep = keep only these sequences; drop = keep everything else. Names may be full Stockholm
+# sequence names or unambiguous prefixes (an accession is usually enough).
+subset() {
+  local KEEPCOLS=0
+  if [ "${1:-}" = --keep-columns ]; then KEEPCOLS=1; shift; fi
+  local NEW=$1 STK=$2 MODE=$3; shift 3
+  [ $# -ge 1 ] || { echo "name at least one sequence"; return 1; }
+  case "$MODE" in keep|drop) ;; *) echo "mode must be keep or drop"; return 1 ;; esac
+  need "$STK" || return 1
+
+  local B=$INFERNAL/build/$NEW/$ITER; mkdir -p "$B/cm"
+  local SUB=$B/${NEW}.stk
+
+  # resolve the named prefixes against the alignment's actual sequence names
+  grep -vE '^(#|//|$)' "$STK" | awk 'NF==2{print $1}' | sort -u > "$B/all_names.txt"
+  : > "$B/named.txt"
+  local n
+  for n in "$@"; do
+    if ! grep -F "$n" "$B/all_names.txt" >> "$B/named.txt"; then
+      echo "no sequence in $STK matches '$n'"; return 1
+    fi
+  done
+  sort -u "$B/named.txt" -o "$B/named.txt"
+  if [ "$MODE" = keep ]; then cp "$B/named.txt" "$B/keep.txt"
+  else comm -23 "$B/all_names.txt" "$B/named.txt" > "$B/keep.txt"; fi
+  echo "alignment has $(wc -l < "$B/all_names.txt") sequences; keeping $(wc -l < "$B/keep.txt"):"
+  sed 's|^|    |' "$B/keep.txt"
+  [ -s "$B/keep.txt" ] || { echo "nothing left to keep"; return 1; }
+
+  flavi_require esl-alimanip cmbuild cmcalibrate cmstat cmsearch
+  esl-alimanip --seq-k "$B/keep.txt" -o "$SUB" "$STK" > "$B/alimanip.log" 2>&1 \
+    || { echo "esl-alimanip FAILED, see $B/alimanip.log"; return 1; }
+
+  # Columns are NOT trimmed. With #=GC RF present, cmbuild --hand keeps every RF column as a
+  # consensus column even where the retained sequences gap it, so clen and the cm numbering stay
+  # identical to the pooled model -- which is what makes cm 7 / 29 / 43 comparable across the two.
+  local HAND=""
+  if grep -q '^#=GC RF' "$SUB"; then
+    HAND="--hand"
+    echo "RF present -> cmbuild --hand: clen and cm column numbering preserved from the source alignment"
+  elif [ $KEEPCOLS -eq 1 ]; then
+    # Synthesise RF over every column the SOURCE alignment occupies, so --hand keeps the full
+    # column set and cm numbering matches the source model. Costs model size: columns gapped in
+    # the retained sequences become consensus columns carrying prior-only emissions.
+    python3 -I - "$STK" "$SUB" <<'PYEOF'
+import sys, collections
+def read(p):
+    seqs=collections.OrderedDict(); gc=collections.OrderedDict(); order=[]
+    for line in open(p):
+        l=line.rstrip('\n')
+        if l.startswith('#=GC'):
+            k=l.split()[1]; gc[k]=gc.get(k,'')+l.split(None,2)[2]; continue
+        if l.startswith('#') or l.startswith('//') or not l.strip(): continue
+        f=l.split()
+        if len(f)==2:
+            if f[0] not in seqs: order.append(f[0])
+            seqs[f[0]]=seqs.get(f[0],'')+f[1]
+    return seqs, gc, order
+src,_,_   = read(sys.argv[1])
+sub,gc,order = read(sys.argv[2])
+L=len(next(iter(sub.values())))
+rf=''.join('x' if any(s[i] not in '-.~' for s in src.values()) else '.' for i in range(L))
+with open(sys.argv[2],'w') as o:
+    o.write('# STOCKHOLM 1.0\n')
+    w=max([len(n) for n in order]+[len('#=GC '+k) for k in list(gc)+['RF']])
+    for n in order: o.write(f'{n:<{w}}  {sub[n]}\n')
+    for k,v in gc.items(): o.write(f'{"#=GC "+k:<{w}}  {v}\n')
+    o.write(f'{"#=GC RF":<{w}}  {rf}\n//\n')
+print(f'synthesised #=GC RF over {rf.count("x")} of {L} columns (occupied in the source alignment)')
+PYEOF
+    HAND="--hand"
+    echo "-> cmbuild --hand on the synthesised RF: cm numbering matches $(basename "$STK")"
+  else
+    cat <<EOF
+WARNING: no #=GC RF in $(basename "$STK").
+  Match columns will be re-inferred by occupancy, so clen WILL move and cm coordinates will NOT be
+  comparable with the source model -- which is usually the whole point of taking a subset.
+  Either re-run with --keep-columns (synthesises RF over the source's occupied columns), or feed
+  the R-scape / CaCoFold output, which carries RF.
+  Continuing without --hand.
+EOF
+  fi
+
+  local CM=$B/cm/$NEW.cm
+  cmbuild $HAND -F -n "$NEW" "$CM" "$SUB" > "$B/cm/cmbuild.log" || return 1
+  cmcalibrate --cpu $CPU "$CM" > "$B/cm/cmcalibrate.log" || return 1
+  echo "GATE 2"; cmstat "$CM" | grep -v '^#'
+  echo "built by Infernal $(cm_version "$CM")"
+
+  echo
+  echo "== library search"
+  cmsearch --toponly --incE 0.01 --cpu $CPU -o /dev/null --tblout "$B/${NEW}_library.tbl" "$CM" "$FA" || return 1
+  echo "   included hits: $(awk '$1!~/^#/ && $17=="!"' "$B/${NEW}_library.tbl" | wc -l)"
+  echo "   seed-only here is the SATURATION signal: it says the blocker is sequences, not modelling."
+  echo "   tblout: $B/${NEW}_library.tbl"
+
+  cat <<EOF
+
+NEXT -- the reciprocal test, which is the point of building subsets (Part 8 overlap check):
+  build the complementary subset the same way, then score each seed with the other's model and
+  compare BIT SCORES in both directions. A pair of elements that are one family scores well both
+  ways; siblings score moderately; unrelated score not at all.
+  Then: hits_at_stall "$B/${NEW}_library.tbl" <ACC:stall> ...   to check by position, not accession.
+EOF
+  echo "then: clog $NEW 'subset of $(basename "$STK") ($MODE: $*)' '<cmstat; included hits; reciprocal bits>'"
+}
+
 build() {
+  LIBRARY_ONLY=0
+  if [ "${1:-}" = "--library-only" ]; then LIBRARY_ONLY=1; shift; fi
   local CAND=$1 STK=$2
   [ -s "$STK" ] || { echo "MISSING: $STK"; return 1; }
   flavi_require cmbuild cmcalibrate cmstat cmsearch
@@ -112,6 +248,21 @@ build() {
     --target "$FA" --label library --workdir "$B/search_library" --doc "$DOC" --check-only
   echo "   tblout: $B/search_library/r0/search.tbl"
 
+  if [ "${LIBRARY_ONLY:-0}" = 1 ]; then
+    echo
+    echo "== stopping after the library search (--library-only)"
+    echo "Read $B/search_library/r0/search.tbl before spending time on the wider target:"
+    echo "  * hits that are ONLY the seed sequences = saturation, and the DB search is the"
+    echo "    whole point rather than a formality -- the model has nothing to find here."
+    echo "  * hits beyond the seed = the library already contains relatives, and those should"
+    echo "    be read (and their frozen clusters checked) BEFORE the DB adds more."
+    echo "  * no hits at all, not even the seed = the model is broken; do not search further."
+    echo
+    echo "then, when ready:"
+    echo "  bash \$FLAVISCRIPTS/cm_candidate.sh build $CAND $STK   # without --library-only"
+    return 0
+  fi
+
   echo
   echo "== then the wider target (long). --toponly --incE 1e-10 are fixed by default."
   "$FLAVISCRIPTS/cm_iterate.sh" --name "$CAND" --cm "$CM" --seed "$STK" \
@@ -131,6 +282,6 @@ EOF
 }
 
 case "${1:-}" in
-  align|build) cmd=$1; shift; "$cmd" "$@" ;;
+  align|build|subset) cmd=$1; shift; "$cmd" "$@" ;;
   *) sed -n '2,8p' "$0"; exit 2 ;;
 esac
