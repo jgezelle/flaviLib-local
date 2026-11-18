@@ -17,7 +17,7 @@
 
 Model md5s belong in `~/Desktop/viromelib/work/infernal/cm/MANIFEST.tsv` (not yet created).
 
-Last updated 2026-11-17 (**cluster 106's three diagnostic features, and a concerted triple substitution between the clusters**: P1 shortened to 2 bp, three unpaired purines (AAA) between P2 and P3 present in 3/3 cluster-106 and 0/5 cluster-5 sequences, and the triple reading **C•(G-C) in cluster 5 (5/5) against U•(A-U) in cluster 106 (3/3)** at the same pooled columns — all three positions substituted together, each cluster invariant. That makes the triple real, independently reproduces the recorded Class_1b C…G-C from cluster 5, and locates the covariation **between** the clusters, which is why the pooled alignment yielded 4 covarying pairs where neither cluster alone can yield any: the pooled alignment is the one to cite for the structure, not a superseded step. With E2b this gives a distinct class 1 element, sibling to Class_1b, still gated on E7 for sequences. **cluster 106 has a conserved U•A-U base triple** — U6 against pk_A's innermost A5-U48 pair, all three positions invariant; the new alignment swallows that U into pk_A as a 4th pair, which the pooled alignment correctly left unpaired. Class_1b's triple is C…G-C, so this is the same interaction with the identity substituted, which **supports** class 1 membership and makes `class1d` defensible on architecture — correcting the opposite conclusion reached earlier the same day from the wrong expectation. `cmbuild` sees neither the triple nor the pseudoknots: 13 nested bp either way. **cluster 106 aligned alone**: same architecture as the pooled alignment element for element — P1 2 bp, 7-bp inner hairpin, 4-bp hairpin 2, pk_A `GGAU:AUCC`, pk_B `UCAC:GGUG` — and cluster 106 fits that structure at least as well as cluster 5 (98 % vs 97 % canonical, and 100 % vs 80 % on pk_B). But **16 of its 21 pairs are identical in all three sequences**, so covariation has no power on P1 or either pseudoknot: GATE 1 is inapplicable, not failed, and only E7 can settle a class claim. No conserved C 5′ of P1, so `class1d` should not be presumed as the name. **E1: AB021287's loss is a filter artefact** — NO HIT by default but 30.0/30.2 b under `--max` in `strong`/`newvirus`, higher than the original model's 29.7 b, so the CM never lost it and **library-internal Class_1b expansion is reopened**; E2 is the live step and E6 deployment waits on it. Cluster 5 stays in: nothing in E2b bears on it. **E2b complete: cluster 106 rejected on every criterion** — PP 0.397/0.465/0.424 5′-truncated with negative alignment scores, identical between 1.1.5 and 1.1.2; 19 hits lost including eight of cluster 5's own ten gains, eff_nseq 50.24→71.32 on three sequences, 111 hits lower; and by a position check the three sites are **not recruited at their stalls** at all, the model instead finding other loci — ON949931 even loses a 30.2 b Class_1b hit 333 nt away. Cluster 106 is a different element sharing an architecture, not a subtype; → Track B, and E7 for a named class. `flavi_env.sh` gains `hits_at_stall`, since the first check used accession membership. Side finding: `cmalign` to a fixed model is version-stable where `cmbuild` is not. `cm_set_261021` mixes builder versions — `class1c.cm` is 1.1.5, the three provided `CL_*` are 1.1.2 — so the env is derived per model from its header, never configured once. The conda env is now part of the method: `flavi_env.sh` activates it, exits on a missing tool and pins `cmalign` to 1.1.2. Cluster 106 reopened: the covariation that defines the pooled structure comes from comparing cluster 5 with cluster 106, cluster 106 is 91 % canonical on it vs cluster 5's 83 %, and every rejection of 106 used the superseded 88-seq model — new step E2b tests it alone on the cluster-5 baseline, and the file's two readings of the Menghai triple contradict each other; `class1b_groups.tsv` extended to nine columns with `decided`/`model`/`change`/`rationale`; `flavi_env.sh` holds every path for all scripts; naming scheme revised in Part 9 — stage prefix `aln_`/`cand_`/`conf_`/`class<N>`, `c<N>` for frozen clusters, the alignment round out of the name and into `iter_v<n>_<window>`, with `cm_rename_builds.sh` to apply it; classification status added to Part 1: finished classes / Class_1b extensions and transitions from 1b / unknown; the Class_1b expansion route decided as E1–E7; `class1b_groups.tsv` specified in Part 9; the two tracks and where the manual MATER step sits, Part 8; `cm_class1b_E.sh` and `cm_candidate.sh` written, the latter superseding `build_candidate_cm.sh`; next-priority list replaced; Part 1 workstream rows brought to 11-03 state). Previous: 2026-11-03 (sub-threshold Class_1b additions rejected; the triple read with windows and PP; seed-shift question answered; explicit Class_1b membership table; cluster 106 plan). Reorganised into dated parts on 2026-11-02; no content removed
+Last updated 2026-11-17 (**E1–E5 are all complete and E6 is the live step, with its commands now written** — grounded in Part 9's steps 10 and 11b, and resting on two facts from there: `$CMS` in `scripts/env_261021_flaviLib.sh` is the single definition of the annotating set, and a model's filename *is* its annotation column. **The successor replaces Class_1b rather than joining as an 8th model**, so the set stays at 7 and the earlier "against 8 models" notes are corrected; the open sub-decision is whether to keep the old filename (stable column, dishonest file) or use the real one (honest provenance, a column rename to chase downstream). `cm/class1b_groups.tsv` is written — 19 rows, no placeholders — and its key result is that **no site included in the deployed model is `core`**: all eleven model members are `transition:*`, the satellite copies rather than main-cluster elements. Four rows carry an unresolved group and must not be joined yet. The 10-29 explorer snapshot is confirmed intact and backed up. **the explorer has been regenerated and `explorer_cm_scan.py extract` no longer runs on it** — its nodes have lost `fz` and gained `e1c, ev, fam, q, xr`, with cluster assignments now in `DATA.sets[].cl`. Only `extract` is affected: `seqs`, `fetch` and `annotate` read `data.json`, so **nothing is blocked**. The hazard is that `extract` writes `data.json` and truncates the node files *before* it crashes, which would destroy the 10-29 snapshot — back those three files up first. **Do not revert the explorer**: the generator changed, so reverting defers the problem and discards the new fields; keep both, dated. `explorer_cm_scan_fz.patch` fixes `extract` and adds the backup. E5's labels stand — its node table is the 10-29 snapshot and cross-checks exactly against the documented counts. Also an interface audit of the new scripts against the four existing ones: one real bug found (`cm_round_stats.py fetch` writes its `OUT` argument exactly, which is why `insertcheck` failed). **E5 result: main Class_1b clusters are 131 and 133**, holding 62 of the 73 clustered Class_1b nodes; every B1/B2 label now assigned per stall, and **no B1 site is `core`**. A **satellite-cluster pattern** emerged: every cluster-5 genome carries 3–4 ordinary Class_1b elements in main cluster 131 plus the fifth copy in cluster 5, and clusters 21 and 135 repeat it — so the clustering independently separates the P1-deviant copy without reference to any CM. **class 2 is a class 1 subclass**, which answers the axis question: the `class1<x>` series is right and `class1d` is defensible in substance, held up only by class 2 not being in the series and by E7. **the base triple carries no class information** — every subclass has one, and class 2's is also C-G-C, which retracts both of the day's attempts to read cluster 106's naming off it. What survives is that the cluster 5 ↔ cluster 106 substitution is concerted and homologous; what changes is that **U•(A-U) is a novel identity**, not a within-class swap, making cluster 106 the outlier on the one feature where Class_1b and class 2 agree. A distinct element is therefore more defensible and the name `class1d` less: **do not use it** — the label stays `transition_candidate:106` until the feature matrix and E7 resolve whether the class 1 / class 2 axis is the right one at all. **E5 unblocked**: `fz` is *derived* by `explorer_cm_scan.py extract`, not a raw field — `DATA.nodes` has none, and per-site clusters live in `DATA.sets` as `cl` arrays parallel to the nodes. Part 3 already said so and a validated parser already existed; `e5` now uses it. **Open hypothesis raised**: class 2's long PK1 and purine between P2 and P3 make it resemble class1c and may make it a subclass rather than a class — and since cluster 106 has three purines there where cluster 5 has none, the P2–P3 insert is a cross-class axis that could cut across the class 1 / class 2 split; a feature matrix over the models' own seeds would settle it. **E4 complete, both parts pass**: `pp_check` reads C/G/C at cm 7/29/43 at PP 0.85–>0.95 in all six added cluster-5 sequences, and `insertcheck` finds **zero insert columns beside any of the three, occupied in 0/139 sites** — the seed layout stands, nothing needs re-comparing, and this was the last step that could have moved the model's columns. E5 is blocked on the explorer's field names (`DATA.sets` holds clustering definitions, not sites; run `--dump`) but **does not block the model** — only the `core`/`transition` labels. **E3 resolved**: 10 gains, `OP860412 297` among them, and NC_008604 10707 is **not** a gain — its copy was already an included hit, so the correct accounting is 5 own + 4 recovered + OP860412. **E4 `pp_check`: every one of the six cluster-5 additions carries the Class_1b C…G-C triple** at cm 7/29/43 with PP 0.85 to >0.95 and no insertions — so cluster 5 belongs inside Class_1b and should not be split off, against cluster 106's U…A-U; the `transition:5` label stays. `insertcheck` and E5 both hit script bugs, now fixed. **E2: `strong` and `newvirus` both rejected — Class_1b is saturated.** Each loses the same 9 hits, the 9 weakest at 23.4–27.8 b, **7 of them cluster 5's own gains**; and since the 68 novel hits were already found by the baseline, the trade is +2 sites against −9 for no annotation gain. `eff_nseq` 50.24→25.6 on similar additions and →71.32 on divergent ones, so the model is at its relative-entropy ceiling either way: library-internal expansion is closed, shown three ways on one baseline. **The model to deploy is cluster 5 alone**, and seven of its ten sites are marginal and will not survive a later revision. **cluster 106's three diagnostic features, and a concerted triple substitution between the clusters**: P1 shortened to 2 bp, three unpaired purines (AAA) between P2 and P3 present in 3/3 cluster-106 and 0/5 cluster-5 sequences, and the triple reading **C•(G-C) in cluster 5 (5/5) against U•(A-U) in cluster 106 (3/3)** at the same pooled columns — all three positions substituted together, each cluster invariant. That makes the triple real, independently reproduces the recorded Class_1b C…G-C from cluster 5, and locates the covariation **between** the clusters, which is why the pooled alignment yielded 4 covarying pairs where neither cluster alone can yield any: the pooled alignment is the one to cite for the structure, not a superseded step. With E2b this gives a distinct class 1 element, sibling to Class_1b, still gated on E7 for sequences. **cluster 106 has a conserved U•A-U base triple** — U6 against pk_A's innermost A5-U48 pair, all three positions invariant; the new alignment swallows that U into pk_A as a 4th pair, which the pooled alignment correctly left unpaired. Class_1b's triple is C…G-C, so this is the same interaction with the identity substituted, which **supports** class 1 membership and makes `class1d` defensible on architecture — correcting the opposite conclusion reached earlier the same day from the wrong expectation. `cmbuild` sees neither the triple nor the pseudoknots: 13 nested bp either way. **cluster 106 aligned alone**: same architecture as the pooled alignment element for element — P1 2 bp, 7-bp inner hairpin, 4-bp hairpin 2, pk_A `GGAU:AUCC`, pk_B `UCAC:GGUG` — and cluster 106 fits that structure at least as well as cluster 5 (98 % vs 97 % canonical, and 100 % vs 80 % on pk_B). But **16 of its 21 pairs are identical in all three sequences**, so covariation has no power on P1 or either pseudoknot: GATE 1 is inapplicable, not failed, and only E7 can settle a class claim. No conserved C 5′ of P1, so `class1d` should not be presumed as the name. **E1: AB021287's loss is a filter artefact** — NO HIT by default but 30.0/30.2 b under `--max` in `strong`/`newvirus`, higher than the original model's 29.7 b, so the CM never lost it and **library-internal Class_1b expansion is reopened**; E2 is the live step and E6 deployment waits on it. Cluster 5 stays in: nothing in E2b bears on it. **E2b complete: cluster 106 rejected on every criterion** — PP 0.397/0.465/0.424 5′-truncated with negative alignment scores, identical between 1.1.5 and 1.1.2; 19 hits lost including eight of cluster 5's own ten gains, eff_nseq 50.24→71.32 on three sequences, 111 hits lower; and by a position check the three sites are **not recruited at their stalls** at all, the model instead finding other loci — ON949931 even loses a 30.2 b Class_1b hit 333 nt away. Cluster 106 is a different element sharing an architecture, not a subtype; → Track B, and E7 for a named class. `flavi_env.sh` gains `hits_at_stall`, since the first check used accession membership. Side finding: `cmalign` to a fixed model is version-stable where `cmbuild` is not. `cm_set_261021` mixes builder versions — `class1c.cm` is 1.1.5, the three provided `CL_*` are 1.1.2 — so the env is derived per model from its header, never configured once. The conda env is now part of the method: `flavi_env.sh` activates it, exits on a missing tool and pins `cmalign` to 1.1.2. Cluster 106 reopened: the covariation that defines the pooled structure comes from comparing cluster 5 with cluster 106, cluster 106 is 91 % canonical on it vs cluster 5's 83 %, and every rejection of 106 used the superseded 88-seq model — new step E2b tests it alone on the cluster-5 baseline, and the file's two readings of the Menghai triple contradict each other; `class1b_groups.tsv` extended to nine columns with `decided`/`model`/`change`/`rationale`; `flavi_env.sh` holds every path for all scripts; naming scheme revised in Part 9 — stage prefix `aln_`/`cand_`/`conf_`/`class<N>`, `c<N>` for frozen clusters, the alignment round out of the name and into `iter_v<n>_<window>`, with `cm_rename_builds.sh` to apply it; classification status added to Part 1: finished classes / Class_1b extensions and transitions from 1b / unknown; the Class_1b expansion route decided as E1–E7; `class1b_groups.tsv` specified in Part 9; the two tracks and where the manual MATER step sits, Part 8; `cm_class1b_E.sh` and `cm_candidate.sh` written, the latter superseding `build_candidate_cm.sh`; next-priority list replaced; Part 1 workstream rows brought to 11-03 state). Previous: 2026-11-03 (sub-threshold Class_1b additions rejected; the triple read with windows and PP; seed-shift question answered; explicit Class_1b membership table; cluster 106 plan). Reorganised into dated parts on 2026-11-02; no content removed
 (superseded passages are kept and marked).
 
 ## How to read this file
@@ -27,7 +27,7 @@ The file is in parts, most current first. Every dated section says when the work
 
 | part | what | dates |
 |---|---|---|
-| 1 | **Status: goal, classification status, where Class_1b expansion goes, where each workstream stands, next steps** | 2026-11-16 |
+| 1 | **Status: goal, classification status, where Class_1b expansion goes, where each workstream stands, next steps** | 2026-11-17 |
 | 2 | The 7 annotating models, their limits, Infernal versions | 2026-10-21 – 10-30 |
 | 3 | **Gap filling** — the **gap register** (every gap in one table), candidate cards, the work per gap | 2026-10-28 – 11-02 |
 | 4 | **Model statistics** (all models and candidates); earlier candidates `cand_FJTB_261026`, `cand_PLLG_260915` | 2026-09-15 – 11-02 |
@@ -60,7 +60,7 @@ superseded — it holds the per-clade site counts and the pipeline stage of each
 
 ---
 
-# Part 1. Status — 2026-11-16 (workstream table 2026-11-03)
+# Part 1. Status — 2026-11-17 (workstream table rows 4 and 6 current; the rest 2026-11-02)
 
 ## Goal
 
@@ -116,10 +116,25 @@ the "label" column is provisional except where the cluster is known to be a no-h
 | FJIS cluster 5: fifth ISF array copies | NC_008604 10707, NC_021069 10735, NC_024299 10747, AB981186 10732, MH827524 10759; + NC_012671 10735 (no explorer node: 2 of 4 reps, SF 0.311) | **5** (no-hit cluster) | **transition from 1b** — the P1-deviant ISF subtype (PMC7527734) | joins Class_1b with 0 losses; triple C…G-C read at cm 7/29/43 (PP not measured, B4 / Part 3 `pp_check`); 4 covarying pairs in the pooled `cand_FJIS_261029` alignment |
 | P1-deviant loci of the seed's own sequences, previously `?` | NC_027817 543 (PaRV xr4, stall 10757); NC_027819 561 (MECDV xr1); LR694076 10565 and MH237596 10555 (CFAV xr3) | LR694076: **21**; others: B4 | **transition from 1b** where the cluster is not a main 1b cluster; otherwise core | 19.9–22.3 b `?` under the original model → 23.4–28.3 b `!` |
 
-**Count conflict, unresolved:** 6 own sites + 4 recovered loci = 10 gains, yet the rejections of
-further additions are stated as losing `OP860412 297`, "the hit cluster 5 gained". Part 6 records
-`OP860412 297` (stall 10802) as a gain of the `strong` 1.1.2 variant. Settle with the `grep` in B4
-before deployment; if `OP860412 297` is a cluster-5 gain, add it to B1 with its frozen cluster.
+**Count conflict — RESOLVED 2026-11-17 by E3.** The ten `NEW` rows of the accepted model are, with
+baseline bit scores:
+
+| site | bits | | site | bits |
+|---|---|---|---|---|
+| NC_024299 628 | 30.1 | | NC_012671 545 | 23.4 |
+| NC_027817 543 | 28.3 | | LR694076 476 | 23.4 |
+| NC_027819 561 | 27.7 | | MH237596 478 | 23.4 |
+| MH827524 595 | 26.6 | | **OP860412 297** | **23.2** |
+| NC_021069 597 | 24.9 | | | |
+| AB981186 590 | 23.4 | | | |
+
+Count = 10, and **`OP860412 297` is among them.** The earlier arithmetic — "6 own sites + 4
+recovered loci" — was wrong on one point: **NC_008604 10707 is not a gain.** Its cluster-5 copy was
+added to the seed (it is one of the six sequences `pp_check` aligns), but it was *already* an
+included hit, so adding it to the seed produced no new annotation. The correct accounting is
+**5 own sites + 4 recovered loci + OP860412 297 = 10**, and the rejections of further additions were
+right to call `OP860412 297` "the hit cluster 5 gained". B1 above lists NC_008604 as a gain; that
+one row is the error.
 
 #### B2. Tested against Class_1b, not included — transition candidates, open
 
@@ -147,7 +162,96 @@ accession + stall from a **hand-kept** lookup, `cm/class1b_groups.tsv`. B2 group
 addition and why it was made — the reason the file is hand-kept rather than derived, and the rows
 to write: Part 9 → `class1b_groups.tsv`.** Written at E6, with four `frozen_cluster` values coming out of E5.
 
-#### B4. Commands that settle sections B1–B3
+#### E5 RESULT — main Class_1b clusters and every B1/B2 label, 2026-11-17
+
+Run on `explorer_cm_scan.py extract`'s node table. **Cross-checks exactly against Part 8's
+documented explorer contents**, which validates it: the per-class drops between the 416 nodes and
+the 265 that carry a frozen cluster sum to 151, and 416 − 265 = 151.
+
+| cls | documented, all 416 | in a frozen cluster | unassigned |
+|---|---|---|---|
+| 1a | 78 | 71 | 7 |
+| **1b** | **106** | **73** | **33** |
+| 2 | 17 | 16 | 1 |
+| dumbbell | 7 | 4 | 3 |
+| None found | 208 | 101 | 107 |
+
+**Main Class_1b clusters: 131 and 133.**
+
+| fz | nodes | 1b | cum 1b | cum % of the 73 | other classes present |
+|---|---|---|---|---|---|
+| **131** | 69 | **48** | 48 | 66 | None found 21 |
+| **133** | 14 | **14** | 62 | **85** | — |
+| 130 | 16 | 7 | 69 | 95 | None found 9 |
+| 135 | 4 | 3 | 72 | 99 | None found 1 |
+| 21 | 3 | 1 | 73 | 100 | None found 2 |
+
+131 and 133 hold 62 of the 73 Class_1b nodes that are in any cluster (85 %), or 58 % of all 106.
+Cluster 133 is pure Class_1b; 131 is Class_1b plus 21 "None found".
+
+**Every B1/B2 label, decided per stall.** No B1 site is `core` — all are transition groups:
+
+| site | stall | fz | explorer cls | label |
+|---|---|---|---|---|
+| NC_008604 | 10707 | **5** | None found | `transition:5` |
+| NC_021069 | 10735 | **5** | None found | `transition:5` |
+| NC_024299 | 10747 | **5** | None found | `transition:5` |
+| AB981186 | 10732 | **5** | None found | `transition:5` |
+| MH827524 | 10759 | **5** | None found | `transition:5` |
+| NC_012671 | 10735 | — | no node (2/4 reps) | `transition:5`, inherited from MH827524 10759 |
+| LR694076 | 10565 | **21** | None found | `transition:21` |
+| MH237596 | 10555 | — | **no node at this stall** | `transition:21`, inherited from LR694076 10565 (same element) |
+| NC_027817 | 10757 | — | accession absent from the 416 | `transition:5`? — see below |
+| NC_027819 | 10811 | — | **no node at this stall** | its 10587 node is **fz 7, cls 1a** |
+| NC_034017 | 10511 | **106** | None found | `transition_candidate:106` |
+| NC_034204 | 10523 | **106** | None found | `transition_candidate:106` |
+| ON949931 | 10608 | **106** | None found | `transition_candidate:106` |
+| NC_005064 | 11245 | **21** | None found | `transition_candidate:21` |
+| MW897328 | 10653 | **135** | None found | `transition_candidate:135` |
+| MN587651 | 9782 | **131** | None found | **`core`** — a main cluster |
+| MN587661 | 9940 | **131** | None found | **`core`** |
+| OM030319 | 11865 | — | no node | — |
+| OP860412 | 10802 | — | no node | — |
+
+**The pattern this exposes, and it is the independent confirmation the cluster-5 story needed.**
+Every cluster-5 genome carries **three or four ordinary Class_1b elements in main cluster 131**, plus
+the fifth copy in cluster 5:
+
+| genome | Class_1b nodes in 131 | the cluster-5 copy |
+|---|---|---|
+| AB981186 | 10240, 10339, 10487, 10619 | 10732 |
+| MH827524 | 10269, 10368, 10514, 10644 | 10759 |
+| NC_012671 | 10245, 10344, 10490, 10620 | (10735, no node) |
+| NC_021069 | 10244, 10343, 10489, 10621 | 10735 |
+| NC_024299 | 10211, 10349, 10561, 10637 | 10747 |
+| NC_008604 | 10246, 10478, 10598 | 10707 |
+
+So the clustering, which knows nothing about any CM, independently separates the array's fifth copy
+from its first four — exactly the P1-deviant ISF subtype this file identified from the literature and
+from the triple. `transition:5` is the right label and it is now evidence-based rather than a
+convention.
+
+**Cluster 21 is a second group of the same kind**, not noticed before:
+
+| genome | Class_1b nodes in main 133 | the cluster-21 copy |
+|---|---|---|
+| LR694076 (CFAV) | 10185, 10271 | 10565 — the recovered xr3 locus |
+| NC_005064 (Kamiti) | 10358, 10954 | 11245 — the site the `kamiti` variant was rejected for |
+
+And MW897328 likewise carries 11228 in main 133 while its own odd copy sits in 135. **So "a
+main-cluster Class_1b copy plus one odd copy in a satellite cluster" is a recurring genome
+architecture, and clusters 5, 21 and 135 are the satellites.** That reframes the transition groups:
+they are not scattered oddities but the same phenomenon three times over, which is a reason to keep
+the labels and a hypothesis worth testing against the remaining satellites.
+
+**Two consequences for `class1b_groups.tsv`.** `MN587651 9782` and `MN587661 9940` sit in main
+cluster **131**, so if either is ever included they are `core`, not transition — which is consistent
+with their aligning at PP 0.74–0.93 and argues they are ordinary Class_1b that the model cannot hold
+for entropy reasons (E2), not a distinct group. And `NC_027817`'s accession has no node at all, so
+its group must be inherited; `NC_027819 10811` has no node either, though that genome does have an
+**fz 7 / cls 1a** node at 10587, which is a Class_1a element and not a basis for inheritance.
+
+#### B4. Commands that settle sections B1–B3#### B4. Commands that settle sections B1–B3
 
 ```bash
 bash $FLAVISCRIPTS/cm_class1b_E.sh e5     # main 1b clusters + the cluster of every B1/B2 site
@@ -160,8 +264,9 @@ cluster with a **cumulative share**, then every explorer node in the B1/B2 genom
 B1/B2 accessions with no node at all.
 
 Read it as: the clusters down to ~80 % cumulative are the **main Class_1b clusters**. Record them
-here, then fill the B1/B2 `frozen cluster` and `label` columns and the `<E5>` rows of
-`class1b_groups.tsv` (Part 9). The script prints the `clog` line to run.
+here, then fill the B1/B2 `frozen cluster` and `label` columns and the rows of
+`class1b_groups.tsv` (Part 9). **Done 2026-11-17** — main clusters 131 and 133, every label assigned,
+the groups file written. The script prints the `clog` line to run.
 
 ### Cluster 106's own alignment, read against the pooled one — 2026-11-17
 
@@ -283,11 +388,17 @@ Structural homology and CM-absorbability are different things, and this is the c
 them: two homologous elements can be too far apart in primary sequence for one covariance model.
 That is the "siblings, not one family" relationship this file already uses for class1c.
 
-So **cluster 106 is a distinct class 1 element, sibling to Class_1b** — and `class1d` is the right
-name *if* the class 1 assignment holds, for which the triple is now the evidence rather than the
-obstacle. What is still missing is only what it was before: **sequences.** A model from 3 sequences
-at 0.84–0.94 identity generalises to nothing, so E7 remains the gate on naming it, and the three
-features above are the diagnostics to search with.
+So **cluster 106 is a distinct element, sibling to Class_1b** — distinct on three measured features
+and not absorbable by the Class_1b CM. Whether it is a class **1** element is a separate question
+the evidence here does not answer: the base triple cannot decide it (every subclass has one, and
+C-G-C spans Class_1b and class 2), and the P2–P3 insert points the other way, toward class 2 and
+class1c. So `class1d` is not the right name on current evidence, because it asserts an axis that is
+itself in question; the label stays `transition_candidate:106`.
+
+What is still missing is what it was before — **sequences.** A model from 3 sequences at 0.84–0.94
+identity generalises to nothing, so E7 remains the gate, and the three features are the diagnostics
+to search with: a 2-bp P1, an AAA insert before P3, and a **U•(A-U)** triple where both established
+classes read C-G-C.
 
 #### The base triple: U•A-U, present and conserved
 
@@ -313,22 +424,43 @@ unchanged:
 (`A` at 6 → `.`, `a` at 47 → `.`. Saved as `cluster106_edit261117_triple.stk` with the triple
 recorded in `#=GF CC` lines.)
 
-**This reverses the naming argument made earlier today.** That argument looked for a conserved C
-immediately 5′ of P1, found an A, and concluded `class1d` should not be presumed. The expectation
-was wrong: the triple is not 5′ of P1, it sits against the innermost pseudoknot pair, and it **is**
-present — as U•A-U rather than Class_1b's C…G-C.
+**The triple carries no class information, and two arguments made earlier on 2026-11-17 were
+wrong.** Reported 2026-11-17: **every subclass has a base triple, and class 2's is also C-G-C.**
+That retires both attempts to read the naming off this feature:
 
 | | triple | where |
 |---|---|---|
-| Class_1b | **C…G-C** | cm 7 / 29 / 43 |
-| cluster 106 | **U…A-U** | col 6 / 5 / 48 (c106-alone numbering) |
+| Class_1b / cluster 5 | **C•(G-C)** | cm 7 / 29 / 43, PP ≥ 0.85, 6/6 |
+| **class 2** | **C•(G-C)** | reported 2026-11-17 |
+| class1c | ? | — |
+| **cluster 106** | **U•(A-U)** | col 6 / 5 / 48, 3/3 |
 
-Same interaction class, substituted identity — a pyrimidine contacting a Watson–Crick pair adjacent
-to the pseudoknot, with both bases of the pair swapped and the triple base swapped with them. That
-is what a related-but-distinct class 1 element should look like, and it is a **positive** argument
-for class 1 membership. So `class1d` is defensible on architecture: two pseudoknots, a short P1, and
-a conserved base triple at the pseudoknot. What it still lacks is not structure but **sequences** —
-see the covariation limit above, and E7.
+- The **first** argument — no conserved C 5′ of P1, so not class 1 — tested the wrong position; the
+  triple sits against PK1's innermost pair, not 5′ of P1.
+- The **second** — a triple is present, so class 1 membership is supported — was wrong because
+  presence is universal. Every subclass has one, so having one distinguishes nothing. And the C-G-C
+  identity spans Class_1b **and** class 2, so even that is not class-1-diagnostic.
+
+**What survives, and it is the stronger half.** The concerted substitution between cluster 5 and
+cluster 106 at homologous columns — all three positions moved together, each group invariant —
+remains good evidence that cluster 106's triple is **real** and that it is **homologous** to cluster
+5's at that position. That was never an argument about which class; it is an argument that the
+feature exists and is shared. It stands.
+
+**What it now implies is the opposite of what I wrote.** If Class_1b and class 2 both read C-G-C,
+then **U•(A-U) is a novel triple identity**, not a within-class substitution — cluster 106 is the
+outlier on the one feature where the two established classes agree. Combined with its 2-bp P1 and
+its AAA insert, that is three features, none matching either class fully. So a **distinct element is
+more defensible than before**, while the name **`class1d` is less** so: it asserts class 1, and
+nothing here places cluster 106 in class 1 rather than class 2. The insert in fact groups it with
+class 2 and class1c (see the open hypothesis below).
+
+**Working position, revised later the same day:** class 2 is itself a class 1 subclass (below), so
+the `class1<x>` series **is** the right series and `class1d` is defensible in substance. What holds
+the name up is bookkeeping and evidence, not the axis: class 2 belongs in the series and is not in
+it, and cluster 106 has three near-identical sequences with no covariation support. The label stays
+**`transition_candidate:106`** until E7. The novel U•(A-U) is meanwhile a **search diagnostic** for
+E7, alongside the 2-bp P1 and the AAA insert.
 
 **Neither the triple nor the pseudoknots reach the model.** `cmbuild` reads only the primary nested
 `SS_cons`; `A`/`a` and `B`/`b` are not WUSS characters and are ignored, and Infernal has no base
@@ -340,6 +472,119 @@ cannot be scored, and a CM search can neither confirm nor refute it.
 One further consequence: the triple positions being invariant means **covariation can never support
 the triple either**, from these three sequences. It is a prediction from structure plus conservation,
 and should be labelled as such wherever it is cited.
+
+### class 2 is a subclass of class 1, and what that does to the naming — 2026-11-17
+
+Reported from the structural side, and it settles the axis question rather than leaving it open:
+**class 2 is misnamed. By structure these are subclasses of class 1.** Class 2's distinctive feature
+is a **long PK1**; it differs from Class_1b in several ways besides, one being **the A between P2
+and P3**. And **every subclass has a base triple** — class 2's is **C-G-C**, like Class_1b's.
+
+So the feature table is not evidence for two classes, it is a table of subclass distinctions within
+one:
+
+| | P1 | PK1 | insert between P2 and P3 | base triple |
+|---|---|---|---|---|
+| Class_1b / cluster 5 | 3 bp | 3 bp | **none** (0/5) | **C•(G-C)**, 6/6 at PP ≥ 0.85 |
+| **class 2** | ? | **long — its distinctive feature** | **an A** | **C•(G-C)** |
+| class1c | ? | ? | **a purine** (reported as resembling class 2) | ? |
+| **cluster 106** | **2 bp** | 3 bp | **AAA**, 3 purines (3/3) | **U•(A-U)** |
+| Class_1a | ? | ? | ? | ? |
+
+**What this means for cluster 106's name.** The series `class1<x>` is the right series — cluster 106
+has the class 1 architecture (P1, P2, P3, PK1, PK2, triple at PK1's innermost pair), so there was
+never a real question of it being "class 2 instead". `class1d` is therefore defensible in substance.
+
+The difficulty is bookkeeping, not biology: **class 2 belongs in the series and is not in it.**
+Adding `class1d` to a series that already excludes one of its own members leaves two inconsistencies
+instead of one, and makes the lettering uninformative — a reader cannot tell from the names that
+class 2 is a sibling of 1b while 1d is a sibling of both. So the order to do this in matters:
+
+1. decide whether class 2 is renamed into the series (and to what), since that is the pre-existing
+   inconsistency;
+2. then assign cluster 106's letter, which is free once the series is coherent;
+3. and only after E7, because a subclass with three near-identical sequences and no covariation
+   support is not yet established regardless of what it is called.
+
+Until then the label stays **`transition_candidate:106`**. That is a statement about evidence, not
+about the axis, so it survives whatever is decided about class 2's name.
+
+**Three positions were taken on this name on 2026-11-17 and the first two were wrong.** For the
+record: (i) "no conserved C 5′ of P1, so not class 1" — wrong position for the triple; (ii) "a
+triple is present, so class 1 is supported" — wrong because presence is universal; (iii) "the
+class 1 / class 2 axis may not be real, so defer" — the axis question was real but is now answered,
+and the answer is that class 2 is a class 1 subclass. What was stable throughout, and what the
+evidence actually supports: cluster 106 is a **distinct subclass with the class 1 architecture**,
+distinguished by a 2-bp P1, three purines between P2 and P3, and a **U•(A-U) triple where both
+Class_1b and class 2 read C-G-C**. The novel triple identity is the strongest of the three, because
+its positions substitute together and are invariant within each group.
+
+**The feature matrix is still the thing to build**, now as a subclass table rather than a test of
+the axis. The `?` cells — class 2's P1 length, class1c's triple, Class_1a's row — are what would
+make the subclass distinctions systematic instead of pairwise. Procedure, per model: recover the
+seed alignment (class1c's is in its build tree, Part 5; the provided models may need `cmemit -c`
+plus the model's `SS_cons`), identify P1/P2/P3/PK1/PK2 in that model's own coordinates, and tabulate
+the four features. PK1 length cannot come from any CM, since `cmbuild` reads only the primary nested
+`SS_cons` — it has to come from an alignment with the pseudoknot annotated.
+
+### Should cluster 5 be its own subclass? And when do the models get checked against each other?
+
+**No, and `pp_check` is why.** All six cluster-5 additions carry Class_1b's **C…G-C triple at cm
+7/29/43** with PP 0.85 to >0.95 and no insertions (E4, above). Cluster 106 carries **U…A-U** at the
+homologous position. The triple is the class's defining tertiary feature, so on the one criterion
+that distinguishes these elements structurally, cluster 5 is inside Class_1b and cluster 106 is not.
+
+The fragility finding does not argue otherwise. Cluster 5's sites being the marginal band
+(23.4–27.7 b) measures **divergence in primary sequence**, not a different architecture: they align
+full length, at the right columns, with the right triple. A model's inclusion threshold is a
+property of the model's entropy budget, and E2 showed that budget is exhausted — which is why those
+sites are first to fall. Low score, correct structure.
+
+What the sub-structure does deserve is a label, and it already has one: **`transition:5`**, because
+cluster 5 occupies its own explorer frozen cluster (B1, B3). The E2 result strengthens the case for
+keeping that label rather than dissolving these sites into `core` — they behave as a distinct, more
+weakly-scoring group within the class, and the annotation should say so.
+
+| | cluster 5 | cluster 106 |
+|---|---|---|
+| triple | **C…G-C**, PP ≥ 0.85, 6/6 | **U…A-U**, 3/3 |
+| P1 | 3 bp | 2 bp |
+| AAA between P2 and P3 | absent | present |
+| joins the Class_1b CM | **yes**, 0 lost, 10 gained | **no**, 19 lost, not recruited at its stalls |
+| verdict | divergent subtype **inside** Class_1b, labelled `transition:5` | **separate element**, sibling to Class_1b |
+
+**When the models get checked against each other** — this is the overlap check, and it is per site
+by **position**, never by accession membership (E2b is the cautionary case: a grep by accession said
+cluster 106 "came in" when no hit covered its stalls). It happens at three points:
+
+1. **Before E6, for the deployed set.** Each pair of models that could claim the same site gets
+   `cm_round_stats.py overlap A.tbl B.tbl <nameA> <nameB>`, and overlaps are resolved by lower E —
+   the procedure already used when class1c and Class_1b collided (Class_1b won 16 of 16). With
+   cluster 5 merged, the pairs worth re-running are **Class_1b × class1c** and **Class_1b × Class_1a**,
+   because the ten new sites are new opportunities for collision.
+2. **For any new candidate, at `cm_candidate.sh build`.** The build stage prints the instruction;
+   the test is the same `overlap`, plus **reciprocal scoring** — score each model's seed with the
+   other's model and compare **bit scores** in both directions, never E-values across different
+   targets. One family scores well both ways, siblings moderately, unrelated not at all.
+3. **For cluster 106 specifically, once its model exists.** That is the measurement that converts
+   "sibling" from a reading of E2b into a number. Expectation from E2b: moderate both ways.
+
+```bash
+# 1. deployed-set collisions, after E6 re-annotation
+python3 $FLAVISCRIPTS/cm_round_stats.py overlap \
+  <class1b.tbl> <class1c.tbl> Class_1b class1c
+
+# 3. cluster 106 against Class_1b, both directions, bit scores
+#    (needs the c106 model from cm_candidate.sh build)
+C106CM=$INFERNAL/build/aln_FJIS_c106_261117/iter_v1_explorer80/cm/aln_FJIS_c106_261117.cm
+esl-sfetch -Cf $FA <class1b_seed_fetchlist> > /tmp/c1b_seed.fa
+cmsearch --toponly --max -E 100 --tblout /tmp/c106_vs_1bseed.tbl "$C106CM" /tmp/c1b_seed.fa
+cmsearch --toponly --max -E 100 --tblout /tmp/1b_vs_c106seed.tbl "$C5.cm" \
+  $INFERNAL/build/aln_FJIS_c106_261117/iter_v1_explorer80/aln_FJIS_c106_261117.stk.fa
+```
+
+Use `--max` for both directions of the reciprocal test: the point is what the CM scores, not what
+the filter passes, and E1 showed those differ by enough to flip a conclusion.
 
 ### Where the three live questions stand — 2026-11-17
 
@@ -363,10 +608,11 @@ Class_1b cannot align or recruit it. A name needs three things, and cluster 106 
 | separation from the existing models **per site, by position** | partly: E2b shows Class_1b does not recruit it at its stalls, and the guided class1c test gave 1.55 / 1.33 / −2.14 bits. Needs the formal `overlap` check once a model exists |
 | **recruits members beyond its seed** | impossible at present: 3 sequences at 0.84–0.94 identity build a model that finds only themselves. **E7 is the blocker** |
 
-And if it does become a class, `class1d` is the right name **only if it is a class 1 xrRNA**, which
-turns on a base triple 5′ of P1. That cannot be read from the Class_1b CM alignment — PP 0.397–0.465
-makes the Menghai cm 29/43 deletion unreadable in both directions — so the triple question is itself
-a Track B question, answered in cluster 106's own coordinates with the pseudoknot annotated.
+And a name is a fourth requirement, not a consequence of the other three. The architecture is class
+1 — class 2 is itself a class 1 subclass, so `class1<x>` is the right series — but the base triple
+cannot be what establishes that, since every subclass has one and C-G-C spans Class_1b and class 2
+while cluster 106's U•(A-U) matches neither. The name waits on two things that are not evidence
+about cluster 106 at all: resolving class 2's place in the series, and E7.
 
 Until all three hold, the label stays `transition_candidate:106`.
 
@@ -575,9 +821,11 @@ the stated reason no model is attempted. So:
   because only sequences can satisfy (a) and (c).
 - Until then the correct label is `transition_candidate:106`, not `class1d`, and not "Class_1b".
 
-Naming note: if it does become its own class, `class1d` is the right name under the Part 9 scheme
-only if it is a class 1 xrRNA — which is exactly what the triple 5′ of P1 would establish. If the
-architecture turns out not to be class 1, it needs a name outside the `class1<x>` series.
+Naming note, settled 2026-11-17: the series is right, the timing is not. Class 2 is itself a class 1
+subclass by structure, so `class1<x>` is the correct series and `class1d` is defensible in substance.
+Hold it anyway until (a) class 2's place in the series is resolved — it belongs there and is not
+there, and adding a letter to an inconsistent series makes the lettering uninformative — and (b) E7
+supplies sequences. Label meanwhile: `transition_candidate:106`.
 
 ### C. Unknown — no model, no assignment
 
@@ -610,9 +858,14 @@ architecture turns out not to be class 1, it needs a name outside the `class1<x>
 4. **FJTB 64 and PLLG 117**: position checks against the existing candidates before any alignment.
 5. **HPPV 39**: align (Aligning block, Part 3).
 6. **`cand_FJTB_261026` / `cand_PLLG_260915`**: record the 10-27 RNAvirus DB results; step 14a.
-7. **Class_1b: finish, deploy, then widen** — the steps of "Where Class_1b expansion goes" below,
-   in that order. **E1 is done and cleared, so E2 is the live step**, and E6 (deployment) now waits
-   on it: the model that gets deployed may be cluster 5 plus `strong` or `newvirus`.
+7. **Class_1b: E1–E5 are all done; E6 is the live step.** The model to deploy is **cluster 5
+   alone** (E2 rejected `strong` and `newvirus`). Nothing is outstanding before it: E3 settled the
+   count, E4 passed both parts and confirmed the seed's columns need no change, and E5 supplied every
+   label, now written to `cm/class1b_groups.tsv`. **E6:** MANIFEST, new `cm_set_<yymmdd>`, the
+   groups file, steps 10–11b, the tile-collapse follow-up, recount against **7** models — commands and
+   the replace-vs-add decision in "E6: the deployment commands" below. Record at E6 that seven of the ten
+   cluster-5 sites are marginal (23.4–27.7 b) and will not survive a later revision, and that four
+   rows of the groups file carry an unresolved group that must not be joined yet.
 8. **Clade pools** with `make_pool_fastas.py`; reconcile the hepaci lists and the 13 partial 1b
    matches inside HPHV.
 
@@ -634,18 +887,253 @@ syntax-checked, never run — read each step's output before the next).
 | # | step | why here | where the commands are |
 |---|---|---|---|
 | **E1** ✓ | **AB021287 `--max`** against the existing `strong` / `newvirus` models | **RUN 2026-11-17: it IS a filter artefact.** Original model 29.7 b both modes; `strong` and `newvirus` give NO HIT by default but **30.0 b** and **30.2 b** under `--max`, E 8e-7 / 7.5e-7, both `!`. The CM scores it *higher* than the original does — the HMM filter drops it. So the only ground for rejecting both variants falls away and **library-internal expansion is reopened**. → E2 | Part 6, end of "Class_1b expansion attempt" |
-| **E2** ◀ **now live** | E1 cleared, so: **rebuild `strong` and `newvirus` on the cluster-5 seed** and judge per hit against the cluster-5 baseline | the 10-30 runs used the **original** model as baseline, so they must be redone whichever way E1 reads. At stake: 3 stall-anchored gains (OM030319 11865, MN587651 9782, OP860412 10802) against MH307700 −4.0 and MH282908 −5.5 | Part 6 method + the `plusFJIS` block in Part 3, with `$SEED1B` replaced by the cluster-5 `.stk` |
+| **E2** ✓ | E1 cleared, so: **rebuilt `strong` and `newvirus` on the cluster-5 seed** and judge per hit against the cluster-5 baseline | **RUN 2026-11-17: BOTH REJECTED, and library-internal expansion is closed for good.** Each loses the **same 9** hits — the 9 weakest in the baseline, 23.4–27.8 b — of which **7 are cluster 5's own gains**. Gains: 2 sites (`strong`) or 1 (`newvirus`). Since the 68 novel hits were **already found** by the baseline, adding them to the seed buys no annotation: net **−7 sites for nothing**. `eff_nseq` 50.24 → 25.58, `lower_bits` 55, worst −6.2: the model is at its relative-entropy ceiling | Part 6 method + the `plusFJIS` block in Part 3, with `$SEED1B` replaced by the cluster-5 `.stk` |
 | **E2b** ✓ | **cluster 106 alone, added to the cluster-5 baseline** — `cmalign --mapali $C5.stk` of the 3 cluster-106 sequences, rebuild, compare per hit against `${C5}_library.tbl` | **the test that decides whether 106 is Class_1b, and it has never been run.** Every rejection of 106 used the **original 88-sequence** model, and `all` added it *pooled with cluster 5*. The baseline changed on 11-02: the seed now contains the P1-deviant ISF subtype, which is the closest thing in the model to cluster 106, so the alignment it gets may not be the PP 0.38–0.47 it got before. Cheap; files all exist. **RUN 2026-11-16: negative** — PP 0.397–0.465, still 5′-truncated, negative bits; identical to the old model's reading. Cluster 106 goes to Track B. **Re-run under 1.1.2 gave identical figures to 3 d.p., so CONFIRMED and citable.** `cmcalibrate` onward not needed for the verdict | `cm_class1b_E.sh e2b` |
 | **E3** | **`OP860412 297` count conflict** | no decision depends on it, but the membership table must be right before deployment, and E2 reuses the number | Part 3, B4 block (`grep -E 'NEW\|LOST'`) |
-| **E4** | **`pp_check`** (PP of the six added sequences' triple columns) and **`insertcheck`** (how many included sites occupy the insert columns beside cm 29 / 43) | written down, never run. `insertcheck` can change the seed's column layout, so it belongs **before** deployment, not after | Part 3, the triple and seed-shift sections |
-| **E5** | **B4**: main Class_1b clusters, frozen cluster of every B1 / B2 site | fills the `class1b_groups.tsv` rows that deployment needs | Part 1, B4 |
-| **E6** | **deploy once**: MANIFEST, `cm_set_<yymmdd>`, `class1b_groups.tsv` (Part 9), cluster steps 10–13, recount the no-CM pool against 8 models | until this runs, the 10 sites the accepted model claims are still counted as gaps, so the gap list is wrong by 10 | Part 9 → `class1b_groups.tsv`; cluster steps per the 261021 run log |
+| **E4** ✓ | **`pp_check`** (PP of the six added sequences' triple columns) and **`insertcheck`** (how many included sites occupy the insert columns beside cm 29 / 43) | **RUN 2026-11-17, both pass.** `pp_check`: all six added sequences read C/G/C at cm 7/29/43 at PP 0.85–>0.95, no insertions — so every cluster-5 site carries the Class_1b triple. `insertcheck`: **0 insert columns beside any of the three, occupied in 0/139 sites** — the seed layout stands and nothing needs re-comparing | Part 3, the triple and seed-shift sections |
+| **E5** ✓ | **B4**: main Class_1b clusters, frozen cluster of every B1 / B2 site | **RUN 2026-11-17: main clusters are 131 and 133** (62 of the 73 clustered Class_1b nodes). Every B1/B2 label assigned per stall; `cm/class1b_groups.tsv` written, 19 rows. **No deployed site is `core`** — all eleven model members are satellite copies | Part 1, B4 |
+| **E6** ◀ **now live** | **deploy once**: MANIFEST, `cm_set_<yymmdd>`, `class1b_groups.tsv` (Part 9), cluster steps 10–13, recount the no-CM pool against **7** models (the successor replaces Class_1b; it is not an 8th) | until this runs, the 10 sites the accepted model claims are still counted as gaps, so the gap list is wrong by 10 | Part 9 → `class1b_groups.tsv`; cluster steps per the 261021 run log |
 | **E7** | **a targeted set of complete ISF genomes from NCBI** — around *Xishuangbanna aedes flavivirus*, *Menghai flavivirus*, *Kilpisjarvi flavivirus*, and the ISF genomes carrying tandem arrays | the only route left, and it serves three stuck questions at once: cluster 106 (3 near-identical sequences can neither support a model nor pass the covariation gate), NC_005064 and MW897328 (both need "a looser model of their own or sequences from outside this library"), and any further Class_1b addition. **The RNAvirus DB is demonstrably too narrow here**: 4 of the 8 FJIS seed genomes score 52–79 bits in the library and do not appear in it at all | written 2026-10-30 under the FJIS RNAvirus-DB section; never run |
 
-**The pattern this follows.** Every rebuild from inside this library now fails, and class4 acquired
-its diversity from a wider target, not from refining its seed (Part 8, the iteration recipe). So
-E7 is a data-collection step, not another rebuild attempt, and it is where the remaining Class_1b
-work actually is.
+### E6: the deployment commands, and the one decision they need — 2026-11-17
+
+Grounded in steps 10 and 11b as recorded under "How the CM columns are produced" (Part 9), not
+invented. Two facts from there govern everything else:
+
+- **`$CMS` lives in `scripts/env_261021_flaviLib.sh`, "the single definition of the CM set."** That
+  file is what must change; dropping a `.cm` into `cm/` annotates nothing.
+- **"Column names are the `.tbl` basenames including `.cm` … Rename a `.cm` and every downstream
+  column moves with it."** So the model's *filename* is the column name.
+
+#### The decision: replace the Class_1b model, or add alongside it?
+
+| | replace `CL_Class_1b_xrRNA_final.cm` in the set | add as an 8th model |
+|---|---|---|
+| models annotating | stays **7** | **8** |
+| the 10 new sites | appear in the Class_1b column | appear in a new column |
+| double-claiming | none | **the same element is claimed by two versions of one model** — and overlap resolution by lower E is for competing *classes*, not for a model against its own successor |
+| column name | changes unless the file keeps the old name | old column untouched |
+
+**Replace.** The successor is strictly better by the rule that accepted it — 0 lost, 10 gained — so
+keeping both would double-count every Class_1b site and make the no-CM recount meaningless. The
+earlier note in this file about recounting "against 8 models" was wrong; it stays **7**, with
+`cm_set_261021` preserved as the provenance of the old annotation.
+
+That leaves a real cost, and it is the sub-decision to make deliberately:
+
+- **Keep the filename `CL_Class_1b_xrRNA_final.cm` and swap its contents.** Column name stable, no
+  downstream edits — but the file then contradicts its own name and the md5 in MANIFEST is the only
+  record of which model produced which table. **Not recommended**: silently changing what a named
+  file contains is the exact failure this document exists to prevent.
+- **Use the real name, `class1b_plusFJIS_cluster5_inf112.cm`.** Honest provenance, and the `_inf112`
+  suffix carries the builder version as Part 9's scheme requires — at the price of a column rename
+  that downstream consumers must follow. Find them first:
+
+```bash
+grep -rn "CL_Class_1b_xrRNA_final" ~/Desktop/viromelib --include="*.py" --include="*.R" \
+  --include="*.sh" --include="*.md" | grep -v CM_CANDIDATES.md
+```
+
+#### The commands
+
+```bash
+source $FLAVISCRIPTS/flavi_env.sh
+V=261117                                    # the new cm_set's date
+NEW=class1b_plusFJIS_cluster5_inf112        # decide the filename BEFORE this point
+
+# 1. the new set: copy the 7, swapping Class_1b for its successor
+mkdir -p "$CMDIR/cm_set_$V"
+cp "$CMSET"/*.cm "$CMDIR/cm_set_$V"/
+rm "$CMDIR/cm_set_$V/CL_Class_1b_xrRNA_final.cm"
+cp "$C5.cm" "$CMDIR/cm_set_$V/$NEW.cm"
+ls "$CMDIR/cm_set_$V"                       # expect 7 .cm files
+
+# 2. MANIFEST.tsv -- not yet created (Part 9 says so); create it now, for BOTH sets
+{ printf 'cm_set	model	md5	built_by_infernal	nseq	eff_nseq	clen	bps	bifs
+'
+  for S in cm_set_261021 "cm_set_$V"; do
+    for f in "$CMDIR/$S"/*.cm; do
+      b=$(basename "$f")
+      printf '%s	%s	%s	%s	%s
+' "$S" "$b" "$(md5 -q "$f")" "$(cm_version "$f")" \
+        "$(conda run -n "$(cm_env_for "$f")" cmstat "$f" | grep -v '^#' | awk '{print $4"	"$5"	"$6"	"$8"	"$9}')"
+    done
+  done
+} > "$CMDIR/MANIFEST.tsv"
+cat "$CMDIR/MANIFEST.tsv"
+
+# 3. the groups file
+cp class1b_groups.tsv "$CMDIR/class1b_groups.tsv"
+
+# 4. point $CMS at the new set -- edit scripts/env_261021_flaviLib.sh, or copy it to
+#    env_${V}_flaviLib.sh and change CMS and the cm_set path there. This is the step that
+#    actually changes what gets annotated.
+grep -n 'CMS\|cm_set' ~/Desktop/viromelib/scripts/env_261021_flaviLib.sh
+
+# 5. step 10 -- only the NEW model needs a search; the other six .tbl files are reused
+#    unchanged, because a .tbl belongs to the reference, not to a run.
+cmsearch --tblout "$TBLOUT/$NEW.cm.tbl" --cpu 8 "$CMDIR/cm_set_$V/$NEW.cm" "$FA"
+
+# 6. step 11b -- re-annotate with seven --infernal-tbl arguments, per Part 9
+# 7. then the required follow-up: collapse peaks across overlapping tiles at the same stall
+#    position per accession (56 % of no-hit rows at 10 mM are tile duplicates)
+# 8. recount the no-CM pool per Part 7, and compare against its recorded counts
+clog class1b "E6 deploy cluster-5 successor as cm_set_$V" "<7 models; the 10 sites now annotated; new no-CM count vs Part 7>"
+```
+
+Steps 6–8 are deliberately not written as commands: step 11b's full `post_process_peaks.py` call
+has elided arguments in the source document (`--out-raw … ...`), the tile-collapse step is specified
+in `flaviLib.md` rather than here, and Part 7's counts come from a derivation this file records as
+figures, not as a script. Read those three before running them rather than taking a reconstruction
+from me.
+
+**Two things to record at E6**, both measured today: seven of the ten cluster-5 sites are marginal
+(23.4–27.7 b) and will not survive any later model revision; and four rows of `class1b_groups.tsv`
+carry an unresolved group that must not be joined into the annotation yet.
+
+### E2 result: Class_1b is saturated, and the cluster-5 merge is fragile — 2026-11-17
+
+Both variants rebuilt on the cluster-5 seed and compared per hit against `${C5}_library.tbl`:
+
+| | nseq | eff_nseq | clen/bps/bifs | matched | lost | gained | lower | worst |
+|---|---|---|---|---|---|---|---|---|
+| cluster-5 baseline | 94 | 50.24 | 81/19/2 | — | — | — | — | — |
+| `strong` (+38) | 132 | **25.58** | 81/19/2 | 130 | **9** | 2 | 55 | −6.20 |
+| `newvirus` (+34) | 128 | **25.64** | 81/19/2 | 130 | **9** | 1 | 56 | −6.00 |
+
+**Both rejected.** And the decisive argument is not the loss count but what the gains are worth:
+**the 68 novel hits were already found by the baseline model** — that is what "68 library hits not
+in its seed" means — so moving them into the seed buys no annotation at all. The only true gains are
+the sites the baseline does *not* find: `OM030319 57` at 31.5 b and, in `strong` only,
+`MN587651 70` at 24.4 b. So the trade is **+2 sites against −9, i.e. net −7 annotated sites in
+exchange for nothing**, and that holds however the AB021287 filter question is decided.
+
+#### The nine lost are the nine weakest, and seven of them are cluster 5's own
+
+Identical list in both variants, with baseline bit scores 23.4–27.8 — the marginal band:
+
+| lost site | genomic | bits | cluster 5's own gain? |
+|---|---|---|---|
+| AB021287 65 | 8932 | 27.8 | no (the E1 site) |
+| NC_027819 561 | 10810 | 27.7 | **yes** (MECDV xr1, recovered locus) |
+| MH827524 595 | 10760 | 26.6 | **yes** |
+| MH307700 124 | 11357 | 26.6 | no |
+| NC_021069 597 | 10737 | 24.9 | **yes** |
+| AB981186 590 | 10733 | 23.4 | **yes** |
+| NC_012671 545 | 10736 | 23.4 | **yes** (the no-explorer-node site) |
+| LR694076 476 | 10565 | 23.4 | **yes** (CFAV xr3) |
+| MH237596 478 | 10555 | 23.4 | **yes** (CFAV xr3, 2nd isolate) |
+
+Seven of cluster 5's ten gains; only NC_008604 10707, NC_024299 10747 and NC_027817 10757 survive.
+**The cluster-5 merge is therefore fragile**: the sites it added sit at the inclusion threshold, so
+they are the first casualties of any further broadening. That is worth recording before E6, because
+it means those seven annotations will not survive a future model revision, whatever that revision is.
+
+#### The mechanism: a relative-entropy ceiling, not a structural problem
+
+The added sequences are **not** bad. They align full length at PP 0.74–0.93, most at `1-81` with no
+truncation, at 23–46 b. They are Class_1b elements. What fails is capacity:
+
+| model | nseq | eff_nseq |
+|---|---|---|
+| baseline | 94 | 50.24 |
+| +3 (cluster 106) | 97 | **71.32** — three *divergent* sequences, so weighting rises |
+| +34 (newvirus) | 128 | **25.64** — many *similar* sequences, so weighting falls |
+| +38 (strong) | 132 | **25.58** |
+
+With `relent` fixed at 0.700, `cmbuild` down-weights harder as similar sequences accumulate, the
+emission distributions flatten, and every score falls — `lower_bits` 55 of 130 matched, worst −6.2.
+The marginal hits then drop below `incE 0.01`. This is the entropy-weighting reading already
+recorded on 2026-10-30, now measured in both directions: divergent additions raise `eff_nseq`,
+similar additions lower it, and **either way the marginal band is lost.**
+
+So **library-internal Class_1b expansion is closed**, now demonstrated three independent ways on
+the same baseline — `+3 divergent` (19 lost), `+38 similar` (9 lost), `+34 similar` (9 lost) — each
+losing the same marginal set. E1 reopened the question on a technicality and E2 has closed it on the
+substance. Nothing in this library adds to Class_1b. The only remaining route for this model is a
+wider target, which is E7's business.
+
+One parameter was *not* varied and should be named rather than quietly ignored: `--ere`. Raising the
+target relative entropy would keep the model sharper and might retain the marginal sites while
+absorbing new sequences. It is a legitimate Infernal option, but changing it breaks the
+like-for-like comparison the no-loss rule depends on, and tuning it to rescue a particular result is
+not a measurement. If it is ever tried, it must be a declared modelling decision applied to the
+baseline as well, with both models re-searched.
+
+#### E3 answered, E4 half answered, E5 blocked — 2026-11-17
+
+**E3: done.** Ten `NEW` rows, `OP860412 297` among them, and NC_008604 10707 is not a gain. Full
+accounting in B1's count-conflict note above.
+
+**E4 `pp_check`: done, and it answers the cluster-5 question.** All six added cluster-5 sequences
+align with **no insertions** at the triple columns and PP of 0.85 to >0.95 there:
+
+| sequence | cm 7 | cm 29 | cm 43 | PP at the three |
+|---|---|---|---|---|
+| MH827524 594-673 | C | G | C | 9/*/* |
+| NC_021069 596-675 | C | G | C | */*/* |
+| AB981186 589-668 | C | G | C | */*/* |
+| NC_012671 544-623 | C | G | C | */*/* |
+| NC_008604 576-654 | C | G | C | 9/*/* |
+| NC_024299 629-709 | C | G | C | */*/* |
+
+(`*` = PP > 0.95, `9` = 0.85–0.95.) **Every cluster-5 addition carries the Class_1b triple C…G-C at
+high posterior probability.** That is the single cleanest piece of evidence in this file that cluster
+5 belongs inside Class_1b, and it stands in direct contrast to cluster 106's U…A-U. It also
+retrospectively validates the cluster-5 merge: the sites were accepted on a no-loss rule, and they
+turn out to share the class's defining tertiary feature.
+
+**E4 `insertcheck`: done, and it passes.** `cm_round_stats.py fetch` returned 139 included library
+sites; aligned to the cluster-5 model, the result is:
+
+```
+cm  7: 0 insert column(s) before it, occupied in 0/139 sequences
+cm 29: 0 insert column(s) before it, occupied in 0/139 sequences
+cm 43: 0 insert column(s) before it, occupied in 0/139 sequences
+```
+
+**No insert columns exist beside any of the three triple columns at all**, so no included site needs
+one. The seed-shift question answered on 2026-11-03 — should the seed be shifted so the triple
+aligns? no — is now confirmed from the other direction: the seed does not misdescribe the family
+there, and **nothing has to be re-compared before E6.** This was the last step that could have moved
+the model's columns.
+
+Taken with `pp_check`, E4 is complete: the triple columns are correctly placed, unoccupied by
+inserts across 139 sites, and read at PP 0.85–>0.95 in all six added sequences.
+
+**E5: resolved, and it should never have been blocked.** `DATA` has 416 `nodes` carrying
+`acc, cls, conc, det, e1c, ev, fam, genus, id, q, seq, sf, sp, xr` — and **no `fz`.** The per-site
+cluster assignment lives in `DATA.sets`: six saved clusterings, each
+`{view, mode, date, cl, clusters, inmsa}`, where **`cl` is a list of ints parallel to `DATA.nodes`**
+(−1 = unassigned). The frozen clustering of 2026-10-28 is one of those six; the `mode: "default"`
+entries hold a much coarser cut (cluster ids in the low teens), the frozen one the ids this file
+uses (5, 21, 106, 131, 133, 135, …).
+
+**This was already documented, and a working parser already existed.** Part 3 states it plainly:
+"`explorer_cm_scan.py extract` parses the explorer's embedded `const DATA = {...};` line as JSON.
+Each node gives the feature ID, the stall … and the frozen cluster `fz`." `fz` is a field that
+script *derives* — it is what produced the memberships recorded in Part 3 (cluster 41 12/12, 44 8/8,
+5 5/5, 106 3/3, 39 4/4, 110 3/3). Writing a second parser that guessed at raw field names was the
+error; the rule in Part 8 about reusing the existing scripts exists for exactly this.
+
+`e5` now runs `explorer_cm_scan.py extract` and reads its node table, falling back to `DATA.sets`
+only if no table is written. The fallback selects the set by **name** (`mode` containing `frozen`,
+`view` of `all`), prints which one it chose and why, and `--list-sets` prints all six with their
+cluster counts so the choice can be checked before the numbers are trusted — picking the wrong set
+would silently give the wrong clusters.
+
+```bash
+bash $FLAVISCRIPTS/cm_class1b_E.sh e5
+# or, to see the six clusterings first:
+python3 $FLAVISCRIPTS/explorer_class1b_clusters.py --list-sets "$EXPLORER"
+```
+
+**E5 does not block the model.** It fills `frozen_cluster` for four B1 rows and decides which
+clusters are the main Class_1b ones, i.e. the `core` vs `transition:<cluster>` labels. The model
+itself, the new `cm_set`, the re-annotation and the recount can all proceed; `class1b_groups.tsv`
+is then completed when E5 resolves. Splitting E6 that way is better than holding a deployment that
+fixes a gap list currently wrong by 10.
+
 
 ## Where each workstream stands
 
@@ -654,14 +1142,14 @@ work actually is.
 | 1 | class1c: another cmalign round + library search | 10-28 – 10-29 | would realigning class1c's library hits and searching again add anything? | No. Its 46 included library hits are its own 46 seed sequences; the realignment round was already done one model earlier (`pesti_short1b`). Part 5 | **closed** — only an RNAvirus-database search could add sequences |
 | 2 | class1c: borderline hits (step 17) | 10-29 – 10-30 | add KY370101, ON949931 or NC_025677 to class1c? | No variant accepted: gains do not reach E 1e-10, and the broadened models reach Class_1b sites, where Class_1b wins every time. Part 5 | **closed** |
 | 3 | merge class1b and class1c? | 10-29 – 10-30 | one model or two? | Two. class1c had the lower E-value at none of its 16 overlaps with Class_1b (1, 4 and 11 across the three class1c models tested). Overlaps are resolved per site by lower E-value. Part 6 | **closed** |
-| 4 | Class_1b expansion | 10-30 | Class_1b has 68 library hits not in its seed; add them? | Every rebuild loses at least one existing hit (AB021287). The original model was built with Infernal 1.1.2, which changed how comparisons must be made. Part 6 | **paused** — AB021287 `--max` check outstanding; re-run on the cluster-5 baseline (11-03) |
+| 4 | Class_1b expansion | 10-30 | Class_1b has 68 library hits not in its seed; add them? | Every rebuild loses at least one existing hit (AB021287). The original model was built with Infernal 1.1.2, which changed how comparisons must be made. Part 6 | **closed 11-17** — E1 showed AB021287's loss is a filter artefact (30.0/30.2 b under `--max`), which reopened it; E2 then rejected `strong` and `newvirus` on the cluster-5 baseline, each losing the same 9 marginal hits for +2/+1 gains. Library-internal expansion is saturated. Part 1, "E2 result" |
 | 5 | explorer scan with the missing models | 10-29 | how many explorer "None found" sites are already class1c / cl3? | 45 class1c, 3 cl3 (loquat, cluster 110). 163 no-CM sites remain; 6 no-CM clusters of ≥ 3 sites. Part 3 | **done** |
-| 6 | **gap filling: FJIS clusters 5 and 106** | 10-30 – 11-02 | new candidate | **`cand_FJIS_261029`**: pooled cluster 5 + cluster 106, 80-nt windows, MATER edit (2 pseudoknots). Covariation gate passed (4 covarying vs 0.2 expected); separate from class1c and Class_1b site by site; saturated on library and RNAvirus DB. Part 3. **11-02/03: split.** Cluster 5 (+ NC_012671) joined Class_1b as `class1b_plusFJIS_cluster5_inf112` (0 lost, 10 gained; the P1-deviant ISF subtype); further additions (Kamiti, MW897328) rejected; cluster 106 does not fit Class_1b | **cluster 5 closed** (transition from 1b, Part 1 B1; not deployed); **cluster 106 open** (Part 1 B2, priority 2) |
+| 6 | **gap filling: FJIS clusters 5 and 106** | 10-30 – 11-02 | new candidate | **`cand_FJIS_261029`**: pooled cluster 5 + cluster 106, 80-nt windows, MATER edit (2 pseudoknots). Covariation gate passed (4 covarying vs 0.2 expected); separate from class1c and Class_1b site by site; saturated on library and RNAvirus DB. Part 3. **11-02/03: split.** Cluster 5 (+ NC_012671) joined Class_1b as `class1b_plusFJIS_cluster5_inf112` (0 lost, 10 gained); further additions rejected. **11-17:** E2b rejected cluster 106 on the cluster-5 baseline (19 lost, not recruited at its stalls), and `pp_check` showed all six cluster-5 additions carry the Class_1b C…G-C triple while cluster 106 carries U…A-U | **cluster 5 closed** (`transition:5`, inside Class_1b; not yet deployed); **cluster 106 closed as a Class_1b member, open as its own element** (Part 1; Track B model built, gated on E7) |
 | 7 | **gap filling: FJJI 41 / 44, HPPV 39, FJTB 64, PLLG 117** | 11-02 | new candidates | FJJI aligned: two separate elements; cluster 41 stalls at 10 mM only. Others not aligned | **in progress** — FJJI MATER |
 | 8 | earlier candidates `cand_FJTB_261026`, `cand_PLLG_260915` | 09-15 – 10-27 | | built; blocked on sequence diversity; RNAvirus-database searches started 10-27, results not recorded | **results pending** |
 | 9 | Mifsud-clade pools beyond the explorer clusters | 10-28 | | pool queue ranked (Part 3); pool FASTAs not built | **queued** |
 
-## Next steps, in order — 2026-11-02, superseded by "Next priority" (2026-11-16) above
+## Next steps, in order — 2026-11-02, superseded by "Next priority" (2026-11-16) in Part 1
 
 The full list of gaps, with state and where each is described, is the **gap register** at the top of
 Part 3.
@@ -3115,6 +3603,12 @@ Option 3 is the conservative reading of the no-loss rule as it was applied on 11
 difference between 1 and 2 is a documentation question, not a modelling one. The decision belongs
 with E2's per-hit comparison, where the three gains can be weighed against it.
 
+**Moot as of E2 (2026-11-17).** Both variants were rejected for losing nine hits, not one, so
+nothing turns on AB021287's filter behaviour any more. It is recorded because it is true of the
+model — the CM scores that site at 30 b and the filter hides it — and because the same could be
+true of other sites under the deployed model; but it no longer decides anything. The three options
+above apply again only if some future Class_1b version is otherwise acceptable.
+
 Paths: `build/class1b/iter_v1_saturation/r0/` (original model's search, novelty table),
 `iter_v2_alignHits/` (1.1.5 builds, fetch lists), `iter_v2_alignHits_inf112/{v0,strong,all,newvirus}/`
 (1.1.2 builds, `class1b_alignHits_<subset>_inf112.{stk,cm,_library.tbl,_library.tbl.compare.tsv}`).
@@ -3445,10 +3939,11 @@ interpretation and is edited by hand when a run changes a conclusion.
 | `make_pool_fastas.py` | `f363267accdfc27a9b03e4c061779e3d` | nothing; builds the pool FASTAs and `pool_summary.tsv` |
 | `cm_add_borderline.sh` | `a330c754f27244edeabb2e69e0d1a718` | step 17: one run-log row per variant (v0 + each `--add`) |
 | `seed_vs_hits.py` | `c5ac6aea20b4045c63c4c02f0ae5f875` | nothing; seed vs tblout comparison (saturation and lineage checks) |
-| `explorer_cm_scan.py` | `1c4b4ad1d63695100ee8694c4ee1f441` | nothing; scans the flavi150 explorer's sites with a CM; `fetch` (reference windows) and `seqs` (the explorer's own 80-nt windows) per cluster |
+| `explorer_cm_scan.py` | `1c4b4ad1d63695100ee8694c4ee1f441` | nothing; scans the flavi150 explorer's sites with a CM; `fetch` (reference windows) and `seqs` (the explorer's own 80-nt windows) per cluster. **2026-11-17: `extract`, `seqs` and `fetch` raise `KeyError: 'fz'` on the regenerated explorer** — see Part 8. Apply `explorer_cm_scan_fz.patch` |
+| `explorer_cm_scan_fz.patch` | `4bf4d41b6a241d1e6732781db0b01214` | n/a — a patch, not a script. Adds `resolve_fz(d)` to `explorer_cm_scan.py` so `extract` injects `fz` from `DATA.sets` when the regenerated explorer's nodes lack it; chooses the set by name and prints it, and backs up `data.json` / `nodes.tsv` / `nodes.fa` before overwriting them. Written 2026-11-17, tested on both explorer generations, **not yet applied** |
 | `flavi_env.sh` | `d38c8ffdee67696cb75f98d867d56f36` | nothing; **sourced by the three scripts below — every path is defined here and nowhere else**, and it **establishes** the conda env rather than reporting on it (`flavi_require`, which exits if a tool is absent and prints the Infernal version). `bash flavi_env.sh --check` verifies paths, tools and the cmalign/cmbuild/1.1.2 versions side by side. Overridable from the caller (`ROOT=`, `ITER=`, `CONDA_ENV=`). Also holds `clog`, `need`, `have`, `infernal_version`, **`cm_version` / `cm_env_for` / `cm_env_require`** (the builder version read from a model's own header, and the env that matches it), **`hits_at_stall`** (whether a hit covers the stall, converted from the sequence name's own offset — a grep by accession does not answer this), `stk_oneblock`, `alifold_line`. 2026-11-16; `--check` activates `$CONDA_ENV` before reporting (fixed same day: it had inspected the active env, giving false 'absent' for tools that are installed). `REF` and `SEED1B` were MISSING on the laptop and need their real paths |
-| `cm_class1b_E.sh` | `72250b18463143b7bc27125929a99f30` | nothing yet; prints the `clog` line to run. Subcommands `e1`, `e2`, `e2b`, `e3`–`e5` = steps E1–E5 (`e2b` decides cluster 106) of "Where Class_1b expansion goes" (Part 1). Written 2026-11-16, **syntax-checked only, never run** |
-| `explorer_class1b_clusters.py` | `5e9ce4901a2f9fdb74008f2292098c46` | nothing; E5 — Class_1b nodes per frozen cluster with a cumulative share, plus the frozen cluster of every B1/B2 site. Called by `cm_class1b_E.sh e5`. Tested on a mock explorer only |
+| `cm_class1b_E.sh` | `1ac793dec8f8e8b8ead92a1566c27e34` | nothing yet; prints the `clog` line to run. Subcommands `e1`, `e2`, `e2b`, `e3`–`e5` = steps E1–E5 (`e2b` decides cluster 106) of "Where Class_1b expansion goes" (Part 1). Written 2026-11-16, **syntax-checked only, never run** |
+| `explorer_class1b_clusters.py` | `6d30ac2159cce0e09c1cfb5e35088f92` | nothing; E5 — Class_1b nodes per frozen cluster with a cumulative share, plus the frozen cluster of every B1/B2 site. **Reads `explorer_cm_scan.py extract`'s node table** (the validated parser, which derives `fz`); the HTML path is a fallback that reads `DATA.sets` by name (`mode` frozen, `view` all), says which set it chose, and offers `--list-sets`. Rewritten 2026-11-17 after two wrong guesses at the raw field names. Now reports rows read / with a cluster / skipped, **cross-checks the `cls` counts against Part 8's documented 416-node explorer** and warns if they disagree (it had been run on the annotated `nodes_cl3.tsv`), states both denominators for the main-cluster call, and decides each B1/B2 label **per stall, not per accession** |
 | `cm_candidate.sh` | `cb01b7cb5618c093743162613b4808ed` | one row per stage, by `clog`. Track B: `align` (GATE 1, stops at MATER), `build` (GATE 2, model, library + RNAvirus DB), and `subset` (rebuild an existing refined alignment minus named sequences, reusing its hand-made structure; `--keep-columns` synthesises RF so cm numbering is preserved when the source has none; no manual step). Supersedes `build_candidate_cm.sh`. Written 2026-11-16, **GATE 1 parser tested on a real-format log; the stages never run** |
 | `cm_rename_builds.sh` | `a6afb45fb394d1045d83c82a121a3e36` | one row on `--apply`. Renames build folders to the stage-prefixed scheme (Part 9 → Naming); check-only by default, never overwrites or deletes; writes `build/RENAMES.tsv` + `RENAMED_FROM.txt`. Written 2026-11-16, **tested on a mock build tree, not run on the real one** |
 
@@ -3478,7 +3973,97 @@ sections in a session — so there must be one master and a fixed hand-off, or r
 - Alternative: if the flaviLib-local GitHub repository is attached to a session, Claude can commit
   the edit directly and the laptop `git pull`s — no file copying.
 
-#### How the scripts fit together
+#### The explorer has been regenerated, and `explorer_cm_scan.py` no longer runs on it — 2026-11-17
+
+**`explorer_cm_scan.py extract`, `seqs` and `fetch` all raise `KeyError: 'fz'` on the current
+explorer.** Its node fields have changed:
+
+| | node fields |
+|---|---|
+| what the script expects (its own docstring) | `id, acc, sp, genus, cls, sf, det, conc, fz, seq` |
+| the current explorer | `id, acc, sp, genus, cls, sf, det, conc, seq` + **`e1c, ev, fam, q, xr`**, and **no `fz`** |
+
+The per-site cluster assignment has moved into `DATA.sets` — a list of saved clusterings, each
+`{view, mode, date, cl, clusters, inmsa}` with `cl` parallel to `DATA.nodes` (−1 = unassigned). The
+script reads `n['fz']` at three places (lines 52 and 55 in `extract`, 105 in `seqs`, 134 in
+`fetch`), so all three fail.
+
+**What this blocks: only `extract`.** `seqs`, `fetch` and `annotate` all read `data.json`, not the
+HTML, so the remaining gaps — **FJTB 64, PLLG 117, HPPV 39** — can have their seeds regenerated
+right now from the existing `$SCAN/data.json`. (An earlier note here said they were blocked; that
+was wrong.)
+
+**The real hazard is the write order inside `extract`.** It writes `data.json` at line 46, opens
+`nodes.fa` and `nodes.tsv` with `"w"` at line 48, and only reaches `n['fz']` at line 52. So running
+it **unpatched** on the regenerated explorer would overwrite `data.json` with the fz-less schema and
+truncate both node files **before** crashing — destroying the 2026-10-29 snapshot and breaking
+`seqs` and `fetch`, which currently work. Nothing is broken today; running one command would break
+it. **Back those three files up before `extract` is ever run again:**
+
+```bash
+cd "$SCAN" && for f in data.json nodes.tsv nodes.fa; do
+  [ -e "$f" ] && cp -n "$f" "$f.20261029.bak" && echo "backed up $f"
+done
+python3 -c "import json;d=json.load(open('data.json'));print('data.json nodes carry fz:', 'fz' in d['nodes'][0])"
+```
+
+If that prints `False`, `extract` has already been run against the new explorer and the snapshot is
+gone — recover `data.json` from git, or from `nodes_cl3.tsv`, which still holds `id` and `fz` for
+all 416 nodes.
+
+**What it does not invalidate.** The node table E5 read, `nodes_cl3.tsv`, is the 2026-10-29
+snapshot from the previous explorer, and it **cross-checks exactly** against this file's documented
+counts (416 nodes; 1a 78, 1b 106, 2 17, dumbbell 7, None found 208). So it is the clustering this
+file refers to and the E5 labels stand. But it is a snapshot, and the `e1c` / `xr` fields suggest the
+new explorer carries a class1c annotation of its own that postdates it.
+
+**Should the previous explorer just be put back? No.** The HTML is not what changed — the
+*generator* did (`build_flavi150_explorer.py`, named in `explorer_cm_scan.py`'s own docstring).
+Reverting the data file leaves the next regeneration to reintroduce exactly this, and it discards
+whatever the new fields are for: `e1c` and `xr` look like a class1c call and an xrRNA call carried
+in the explorer itself, and six clustering sets spanning `view` ∈ {all, 01mM, 10mM} is the Mg-condition
+split this file reasons about throughout. Keep **both**, dated, as this file's own conventions
+require for reference data — a `.tbl` belongs to the reference state and not to a run, and the same
+holds for the explorer. The 2026-10-29 snapshot is evidence: every recorded cluster number depends
+on it, so it is preserved under a dated name, not left as the live file.
+
+**Fix:** `scripts/explorer_cm_scan_fz.patch` — one function, `resolve_fz(d)`, plus one call in
+`extract`, and a pre-overwrite backup of the three outputs (step 3b) so the crash-after-write
+hazard cannot recur. It injects `fz` from `DATA.sets` when the nodes lack it, choosing the set by **name**
+(`mode` containing `frozen`, `view` of `all`) and printing which one and why, since picking the
+wrong set would silently give the wrong clusters. Everything downstream is untouched: `seqs`,
+`fetch` and `annotate` read `data.json`, which `extract` writes after the injection. Tested on both
+generations — unpatched fails on the new explorer, patched handles new and old identically, and
+`seqs` still produces the same FASTA.
+
+**Verify before trusting it**, because the two explorers may differ in more than schema:
+
+```bash
+python3 $FLAVISCRIPTS/explorer_cm_scan.py extract "$EXPLORER" /tmp/scan_new
+diff <(cut -f2,6 /tmp/scan_new/nodes.tsv | sort) <(cut -f2,6 $SCAN/nodes.tsv | sort) | head
+```
+
+Identical `id`+`fz` output means the 2026-10-29 clustering is still current and the E5 labels hold
+unchanged. Any difference is a change in the clustering itself, which would change those labels —
+and the new counts would then be a **second generation to record separately**, not a correction to
+the Part 8 figures.
+
+#### Interface audit of the 2026-11-17 scripts against the existing ones
+
+Checked after reading `cm_log.py`, `explorer_cm_scan.py`, `cm_iterate.sh` and `cm_round_stats.py`:
+
+| what was checked | result |
+|---|---|
+| `clog` → `cm_log.py DOC --model --step --result` | correct. It escapes `\|` itself and appends each row after the last in its section, which is the order the manual rows follow |
+| `cm_log.py` updating the `Last updated` line | **never fires**: its regex wants `Last updated YYYY-MM-DD.` alone on the line, and this file's is a long parenthetical. Pre-existing; the line is maintained by hand |
+| `cm_round_stats.py fetch` output path | **was wrong in `e4`.** `fetch` writes to its `OUT` argument *exactly*, with no suffix; passing `$OUT/insertcheck` and then opening `insertcheck.fetchlist` is why 11-17's first run failed. Now passes the full filename |
+| `compare` writing `NEW.tbl.compare.tsv` | correct, as `e3` assumed |
+| `overlap A.tbl B.tbl NAME_A NAME_B`, resolved by lower E | correct — and it is explicitly Rfam clan competition. Prints to stdout, writes no file |
+| the `cmstat` field order | correct: `nseq` f[3], `eff_nseq` f[4], `clen` f[5], `bps` f[7], `bifs` f[8], `relent` f[10] |
+| `cm_iterate.sh` flags used by `cm_candidate.sh build` | all valid. Note it **requires a calibrated CM** (`grep ^ECMLC`), so `cmcalibrate` must precede it, as `build` does; its default `--incE` is `1e-10`; and with `--doc` it writes its own run-log rows |
+| `nodes.tsv` columns vs what `explorer_class1b_clusters.py` reads | columns are `node id species genus cls fz sf det seq_len` — no `acc`, no `stall`. It works only because the reader falls back to splitting `id` on `\|`, which is the right derivation |
+
+#### How the scripts fit together#### How the scripts fit together
 
 They are **separate files, not nested**. The two shell scripts call the Python helpers as
 ordinary commands, by path, from the directory the shell script itself is in
@@ -4301,34 +4886,35 @@ the gap list.
 the ≥3-replicate gate (10 mM: 2 reps, SF 0.311), so its group is inherited from MH827524 stalling at
 the same element in a relative — that has to be legible from the row, not reconstructed.
 
-Rows to write at E6, from B1 and B2 (four `frozen_cluster` values come out of E5):
+**Written 2026-11-17 from the E5 result: `cm/class1b_groups.tsv`, 19 rows, 9 columns.** No
+`<E5>` placeholders remain — E5 supplied every frozen cluster that exists. Summary:
 
-```
-accession	stall	frozen_cluster	group	decided	model	change	rationale	source
-NC_008604.2	10707	5	transition:5	2026-11-02	class1b_plusFJIS_cluster5_inf112	0 lost / 10 gained (set)	no-loss rule; P1-deviant ISF subtype in its own frozen cluster	explorer node, fz 5
-NC_021069.1	10735	5	transition:5	2026-11-02	class1b_plusFJIS_cluster5_inf112	0 lost / 10 gained (set)	no-loss rule	explorer node, fz 5
-NC_024299.2	10747	5	transition:5	2026-11-02	class1b_plusFJIS_cluster5_inf112	0 lost / 10 gained (set)	no-loss rule; 3-copy array, Class_1b holds 92-185 and 230-315	explorer node, fz 5
-AB981186.1	10732	5	transition:5	2026-11-02	class1b_plusFJIS_cluster5_inf112	0 lost / 10 gained (set)	no-loss rule; genome absent from the 88-seq seed	explorer node, fz 5
-MH827524.1	10759	5	transition:5	2026-11-02	class1b_plusFJIS_cluster5_inf112	0 lost / 10 gained (set)	no-loss rule; genome absent from the 88-seq seed	explorer node, fz 5
-NC_012671.1	10735		transition:5	2026-11-02	class1b_plusFJIS_cluster5_inf112	new hit 78.6 b, stall-anchored	no-loss rule; element present, stall weak	no explorer node (2/4 reps, SF 0.311); inherited from MH827524 10759, same element
-LR694076.1	10565	21	transition:21	2026-11-02	class1b_plusFJIS_cluster5_inf112	19.9b ? -> 23.4b !	recovered seed locus, CFAV xr3, P1-deviant	explorer node, fz 21
-MH237596.1	10555	<E5>	<E5>	2026-11-02	class1b_plusFJIS_cluster5_inf112	? -> ! (in the 23.4-28.3 b range)	recovered seed locus, CFAV xr3, 2nd isolate	<E5>
-NC_027817.1	10757	<E5>	<E5>	2026-11-02	class1b_plusFJIS_cluster5_inf112	? -> ! (in the 23.4-28.3 b range)	recovered seed locus, PaRV xr4	<E5>
-NC_027819.1	10811	<E5>	<E5>	2026-11-02	class1b_plusFJIS_cluster5_inf112	? -> ! (in the 23.4-28.3 b range)	recovered seed locus, MECDV xr1, its only seed copy	<E5>
-NC_034017.1	10511	106	transition_candidate:106	2026-11-16	all (rejected); E2b (rejected, Infernal 1.1.2)	PP 0.397, cm 27-81 5'-trunc, -10.59 b on the cluster-5 baseline	RESOLVED: Class_1b cannot align it on the best baseline; confirmed under the model's own Infernal. Track B	explorer node, fz 106
-NC_034204.1	10523	106	transition_candidate:106	2026-11-16	all (rejected); E2b (rejected, Infernal 1.1.2)	PP 0.465, cm 17-78 5'-trunc, -12.38 b	RESOLVED as above; the cm 29/43 deletion is still unreadable at this PP and is not cited either way	explorer node, fz 106; MFV_xr1, 4th published P1-deviant sequence
-ON949931.1	10608	106	transition_candidate:106	2026-11-16	all (rejected); E2b (rejected, Infernal 1.1.2)	PP 0.424, cm 17-61 5'&3'-trunc, -14.40 b	RESOLVED as above; also a sub-threshold class1c match, 13.3 b, cm 1-84	explorer node, fz 106, SF 0.900
-NC_005064.1	11245	21	transition_candidate:21	2026-11-03	kamiti (rejected)	loses OP860412 297; aligns full length at PP 0.853	no-loss rule; G.U at cm 43 is a genuine triple variant -- needs its own model or E7 sequences	explorer node, fz 21
-MW897328.1	10653	135	transition_candidate:135	2026-11-03	phaiomys (rejected)	loses AB981186 590, NC_012671 545, OP860412 297; PP 0.622, 3'-truncated	no-loss rule; two of the three losses are cluster-5 sites just added	explorer node, fz 135
-```
+| group | rows | which |
+|---|---|---|
+| `transition:5` | 6 | the five cluster-5 sites plus NC_012671, which inherits |
+| `transition:21` | 2 | LR694076 10565, and MH237596 10555 inheriting from it |
+| `transition:unknown` | 3 | NC_027817 10757, NC_027819 10811, OP860412 10802 — **no explorer node, nothing to inherit from** |
+| `transition_candidate:106` | 3 | the cluster-106 sites |
+| `transition_candidate:21` | 1 | NC_005064 11245 — the same satellite as LR694076 |
+| `transition_candidate:135` | 1 | MW897328 10653 |
+| `core` | 2 | MN587651 9782, MN587661 9940 — both in main cluster 131 |
+| `core?` | 1 | OM030319 11865, provisional: no node, so unmeasured |
 
-`<E5>` placeholders are filled from E5's second table before the file is used; a placeholder left
-in is the signal the join is not ready. The three cluster-106 rows show the mechanism working: on
-2026-11-16 their `model` went from `all (rejected)` to `all (rejected); E2b (rejected, Infernal
-1.1.2)`, `change` from the old model's figures to the cluster-5 baseline's, and `rationale` from
-`NOT RESOLVED` to `RESOLVED … Track B`, with `decided` moved to that date. The row is rewritten in
-place and the run log keeps the history — which is why `decided` has to be on the row. The 68-novel-hit gains (E1/E2) and the 13 hepaci partial
-matches get rows only once their extensions are decided.
+**No site included in the deployed model is `core`.** All eleven model members are
+`transition:*`, which is the strongest statement this table makes: the expanded Class_1b's additions
+are, without exception, the satellite copies rather than main-cluster elements.
+
+**Six rows have an empty `frozen_cluster`, and they divide into two kinds.** Two inherit cleanly from
+a relative stalling at the same element (NC_012671 ← MH827524; MH237596 ← LR694076). Four cannot:
+NC_027817 has no explorer node at all; NC_027819's only node is `fz 7 / cls 1a`, a Class_1a element
+and not a basis for inheritance; OP860412 and OM030319 have no node either. Those four carry
+`transition:unknown` or `core?` and **must not be joined into the annotation until resolved** — a
+guessed group is worse than a blank one. Cluster 21 is the likely answer for the two recovered
+P1-deviant loci by analogy with LR694076 and MH237596, but that is inference and the column says so.
+
+One value to confirm before use: `NC_005064.1` — that version has not been seen in any tblout here,
+only the bare accession in this file.
+
 
 ---
 
@@ -4455,6 +5041,19 @@ matches get rows only once their extensions are decided.
 | 2026-11-17 | cluster 106 aligned alone; architecture confirmed, covariation impossible | cluster106_edit261117.stk (3 seqs, 85 cols) compared element-for-element with the pooled result-oneblock_edit261102-MATER-wiggle-refined_shortenP1forBT.stk (8 seqs, 98 cols). SAME ARCHITECTURE: P1 outer 2 bp (G-C, C-G, the same two pairs in both -- the pooled P1's third pair is cluster 5's alone, G-U, col 8 being a gap in all three c106 seqs), 7-bp inner hairpin, 4-bp hairpin 2, pk_A GGAU:AUCC (4 bp alone vs 3 pooled), pk_B UCAC:GGUG 4 bp. Canonical fractions on the pooled structure, c106 seqs: nested 36/37 97%, pk_A 9/9 100%, pk_B 12/12 100%, overall 57/58 98%; cluster 5: 58/58, 15/15, 12/15 80%, overall 85/88 97% -- so cluster 106 fits at least as well as cluster 5 and better on pk_B. DECISIVE LIMIT: of the 21 pairs in the c106-alone alignment, 16 are IDENTICAL in all three sequences; only 13:24, 14:23 (one A-C non-canonical in NC_034204), 15:22, 16:21 (both gapped in ON949931) and 34:43 vary. P1, pk_A, pk_B and 3 of hairpin 2's 4 pairs are invariant, so R-scape has zero power on them however the alignment is drawn and expected covarying pairs ~ 0. GATE 1 is not applicable rather than failed: this is a data limit, not a modelling failure, and no further alignment work changes it -- E7 is the only route to a class claim. TRIPLE: see the correcting row below -- the reading given here, that there is no conserved C 5' of P1 and so class1d should not be presumed, tested the wrong expectation and is superseded. SCRIPT CORRECTION: neither .stk carries #=GC RF, so build will infer match columns by occupancy (clen will not be 85) and yesterday's claim that subset preserves cm numbering was wrong for these files; subset now warns and offers --keep-columns, which synthesises RF over the source's occupied columns |
 | 2026-11-17 | cluster 106 has a conserved U-A-U base triple; the earlier naming argument was wrong | Reported from the structural prediction: the triple base is U6 of cluster106_edit261117.stk, currently swallowed into pk_A as the 6:47 pair. Freeing it gives pk_A = 3 bp (3:50, 4:49, 5:48) and the triple U6 . (A5-U48) = U-A-U against pk_A's innermost pair. All three positions -- U6, A5, U48 -- are invariant across all three sequences. The POOLED alignment already had this right: its equivalent U is col 7, left unpaired, with pk_A = 3 bp (4:56, 5:55, 6:54) and the triple U7 . (A6-U54); so the new file over-extends pk_A by one pair. Corrected SS_cons (A at 6 -> ., a at 47 -> .) saved as cluster106_edit261117_triple.stk with #=GF CC provenance; 85 cols and 13 nested bp unchanged. CORRECTION: the argument made earlier today -- that there is no conserved C immediately 5' of P1 and therefore class1d should not be presumed -- tested the wrong expectation. The triple is not 5' of P1; it sits against the innermost pseudoknot pair, and it IS present, as U...A-U where Class_1b has C...G-C at cm 7/29/43. Same interaction class with the identity substituted, which is a POSITIVE argument for class 1 membership, so class1d is defensible on architecture (two pseudoknots, short P1, conserved triple at the pseudoknot). What is missing is sequences, not structure. MODEL BLINDNESS: cmbuild reads only the primary nested SS_cons, so A/a and B/b are ignored and Infernal has no base-triple state; both alignments give a 13-bp model, matching the 13 bp recorded for the pooled model's cmbuild output. The triple cannot be scored or refuted by any CM search, and since its positions are invariant, covariation cannot support it either -- cite it as a prediction from structure plus conservation |
 | 2026-11-17 | three diagnostic features for cluster 106, and a concerted triple substitution between the clusters | Features reported and verified against both alignments. (1) P1 shortened to 2 bp (G-C, C-G) where cluster 5 has 3 (G-U, C-G, A-U); in the pooled alignment the third pair cannot form for cluster 106 because pool col 63 is gapped in all three. (2) THREE UNPAIRED PURINES, AAA, between P2's 3' strand and P3: c106 cols 28-30, pool cols 33-35, occupied in 3/3 cluster-106 sequences and 0/5 cluster-5 sequences (NC_024299 has a lone G at pool col 35). (3) The base triple, at pooled cols 7/6/54: cluster 5 reads C.(G-C) in 5/5 sequences, cluster 106 reads U.(A-U) in 3/3 -- all three positions substituted together, each cluster invariant, interaction preserved as pyrimidine.(purine-pyrimidine). TWO CONSEQUENCES. First, the triple is real: a coincidence would not substitute all three partners coherently while staying fixed within each cluster, and cluster 5's C.(G-C) independently reproduces the Class_1b triple recorded in this file as C...G-C at cm 7/29/43, from sequences aligned without reference to it -- a cross-check on the Class_1b annotation too. Second, this is where the covariation lives: within cluster 106 alone 16 of 21 pairs are invariant and R-scape has no power, but between clusters the variation is concerted, which is why the POOLED alignment gave 4 covarying pairs against 0.2 expected while neither cluster alone can give any. So the pooled alignment is not superseded by the c106-alone one -- it is the only alignment in which this structure has statistical support, and it is the one to cite for the structure. SYNTHESIS with E2b: shared architecture with between-cluster covariation, every diagnostic feature substituted, and primary sequence too diverged for the Class_1b CM -- structural homology and CM-absorbability are different things, which is the siblings-not-one-family relationship this file already uses for class1c. Cluster 106 is a distinct class 1 element, sibling to Class_1b; class1d is right if the class 1 assignment holds, and the triple is now the evidence for it rather than the obstacle. Still gated on E7: 3 sequences at 0.84-0.94 identity generalise to nothing, and the three features above are the diagnostics to search with |
+| 2026-11-17 | E2: strong and newvirus both rejected; Class_1b is saturated; the cluster-5 merge is fragile | Rebuilt on the cluster-5 seed with cmalign/cmbuild in infernal112 (model header read as 1.1.2). strong: 132 seqs, eff_nseq 25.58, 81/19/2; matched 130, lost 9, gained 2, lower_bits 55, worst -6.20. newvirus: 128, 25.64, 81/19/2; matched 130, lost 9, gained 1, lower 56, worst -6.00. Fetchlists found at iter_v2_alignHits/novel_strong.fetchlist (38) and novel_newvirus.fetchlist (34). BOTH REJECTED. Decisive argument is not the loss count but the value of the gains: the 68 novel hits were ALREADY FOUND by the baseline, so moving them into the seed buys no annotation; the only true gains are sites the baseline does not find, OM030319 57 at 31.5 b and (strong only) MN587651 70 at 24.4 b. Trade is +2 against -9 = net -7 annotated sites for nothing, independent of the AB021287 filter question, which is now moot. THE NINE LOST ARE THE NINE WEAKEST (23.4-27.8 b) and identical in both variants: AB021287 65, NC_027819 561, MH827524 595, MH307700 124, NC_021069 597, AB981186 590, NC_012671 545, LR694076 476, MH237596 478 -- SEVEN of which are cluster 5's own ten gains (only NC_008604 10707, NC_024299 10747, NC_027817 10757 survive). So the cluster-5 merge is fragile: its sites sit at the inclusion threshold and are the first casualties of any broadening; record this at E6, since those seven annotations will not survive a later revision. MECHANISM: the added sequences align full length at PP 0.74-0.93, 23-46 b, so they are genuine Class_1b elements; what fails is capacity. eff_nseq moves 50.24 -> 25.58/25.64 on similar additions and 50.24 -> 71.32 on the three divergent cluster-106 ones, so with relent fixed at 0.700 cmbuild down-weights harder as similar sequences accumulate, emissions flatten and every score falls (55 of 130 lower, worst -6.2) until the marginal band drops below incE 0.01. Either direction loses the same marginal set. CONCLUSION: library-internal Class_1b expansion is closed, demonstrated three independent ways on one baseline (+3 divergent 19 lost; +38 similar 9 lost; +34 similar 9 lost). E1 reopened it on a technicality, E2 closed it on the substance. NOT VARIED: --ere. Raising the target relative entropy might retain the marginal sites, but it breaks the like-for-like comparison the no-loss rule rests on and tuning it to rescue a result is not a measurement; if tried it must be declared, applied to the baseline too, and both models re-searched. E3 PARTLY ANSWERED: OP860412 297 appears as matched, 23.2 -> 26.2 (strong) and 23.2 -> 26.0 (newvirus), so it IS in the cluster-5 baseline at 23.2 b; whether it was new relative to the original 88-seq model still needs E3's grep. CONSEQUENCE: the model to deploy at E6 is cluster 5 ALONE |
+| 2026-11-17 | E3 resolved; E4 pp_check shows every cluster-5 site carries the Class_1b triple; E4 insertcheck and E5 blocked on script bugs, both fixed | E3: ten NEW rows in the accepted cluster-5 model -- NC_024299 628 (30.1), NC_027817 543 (28.3), NC_027819 561 (27.7), MH827524 595 (26.6), NC_021069 597 (24.9), AB981186 590 (23.4), NC_012671 545 (23.4), LR694076 476 (23.4), MH237596 478 (23.4), OP860412 297 (23.2) -- count 10 and OP860412 297 IS among them. The count conflict is settled and the earlier arithmetic was wrong on one point: NC_008604 10707 is NOT a gain. Its cluster-5 copy was added to the seed (it is one of the six pp_check aligns) but was already an included hit, so it produced no new annotation. Correct accounting: 5 own sites + 4 recovered loci + OP860412 297 = 10. The B1 row listing NC_008604 as a gain is the error. E4 pp_check: all six added cluster-5 sequences align with NO insertions at the triple columns and PP 0.85 to >0.95, reading C at cm 7, G at cm 29, C at cm 43 in every one -- so every cluster-5 addition carries the Class_1b C...G-C triple, against cluster 106's U...A-U. This is the cleanest evidence in the file that cluster 5 belongs inside Class_1b, and it retrospectively validates a merge that had been accepted only on the no-loss rule. Answers the question of whether cluster 5 should be split off: no -- its marginal bit scores measure primary-sequence divergence, not a different architecture, and the transition:5 label already records the sub-structure, which E2's fragility finding argues for keeping rather than dissolving into core. E4 insertcheck: cm_round_stats.py fetch reported 139 sites but wrote no file at the assumed path, so esl-sfetch failed; the script now discovers whatever file fetch wrote and lists the directory if there is none. insertcheck is the last step that could still move the seed's columns and must run before E6. E5: the explorer's node list carries no 'fz' field -- the cluster key is named something else -- so explorer_class1b_clusters.py now auto-detects cluster and class keys from a candidate list and, failing that, prints DATA's structure and every list-of-dicts with its first item's keys, with --cluster-key / --class-key to override. Also recorded: when models get checked against each other (overlap by POSITION before E6 for Class_1b x class1c and x Class_1a; reciprocal bit-score scoring with --max for any new candidate, cluster 106 included once its model exists) |
+| 2026-11-17 | E4 complete, both parts pass; E5 blocked on the explorer's field names | pp_check, 6 added cluster-5 sequences aligned without --mapali: cm 7 = C in all six at PP 0.85->0.95 (two at 9, four at *), cm 29 = G at PP * in all six, cm 43 = C at PP * in all six; RF reads GGCAa / cGGGG / CCCCC at the three windows and the sequences carry no insertions there. insertcheck, 139 included library sites fetched at 70% coverage and aligned to the cluster-5 model: ZERO insert columns exist beside cm 7, 29 or 43, occupied in 0/139 sequences. So the seed does not misdescribe the family at the triple columns, confirming the 2026-11-03 seed-shift answer from the other direction, and NOTHING needs re-comparing before E6 -- this was the last step that could have moved the model's columns. E4 is therefore complete: triple columns correctly placed, insert-free across 139 sites, and read at high PP in every added sequence. E5 still blocked: the explorer's cluster field is 'cl' on a list at DATA.sets, but that list's keys (cl, clusters, date, inmsa, mode, view) are CLUSTERING DEFINITIONS, not sites -- one entry per saved clustering, with the per-site assignment presumably inside its 'clusters' field keyed by date 20261028 and mode frozen. The auto-detector matched it only because one key is spelled 'cl'. Script now requires a cluster-like AND a class-like key in the same list, prefers the largest such list, and has a --dump mode printing DATA's full shape. Needed from the dump: which list holds the ~416 sites, which field gives each site's frozen cluster (or how DATA.sets[...].clusters keys back to them), and which field gives the class label with what value meaning Class_1b. NOTE: E5 does not block the model -- it fills four frozen_cluster rows and decides core vs transition labels, so E6's cm_set, re-annotation and recount can proceed and class1b_groups.tsv be completed afterwards |
+| 2026-11-17 | E5 unblocked -- fz is derived, not raw, and a validated parser already existed | The explorer dump: DATA has 416 nodes with keys acc, cls, conc, det, e1c, ev, fam, genus, id, q, seq, sf, sp, xr and NO fz. Per-site cluster assignment lives in DATA.sets -- six saved clusterings, each {view, mode, date, cl, clusters, inmsa}, where cl is a list of ints PARALLEL to DATA.nodes (-1 = unassigned); the mode=default entries are a coarse cut (ids in the low teens), the frozen one carries the ids this file uses (5, 21, 106, 131, 133, 135). SELF-CORRECTION: this was already documented. Part 3 states that explorer_cm_scan.py extract parses the DATA line and that each node gives the feature ID, the stall and the frozen cluster fz -- fz being a field that script DERIVES, and the one that produced the recorded memberships (41 12/12, 44 8/8, 5 5/5, 106 3/3, 39 4/4, 110 3/3). Writing a second parser that guessed at raw field names was the error, twice over (first fz, then a key spelled cl on DATA.sets). e5 now runs explorer_cm_scan.py extract and reads its node table; the HTML path is a fallback that selects the set by NAME (mode contains frozen, view all), reports which it chose and why, and offers --list-sets to show all six with cluster counts, since picking the wrong set would silently give wrong clusters |
+| 2026-11-17 | open hypothesis: the P2-P3 insert is a cross-class feature and class 2 may be misnamed | Reported from the structural side: class 2's distinguishing features are a long PK1 and a purine between P2 and P3, resembling class1c in the second respect, so class 2 may be a subclass rather than a class. This bears on cluster 106, which has THREE purines between P2 and P3 (3/3) where cluster 5 has none (0/5) -- so the insert is not a cluster-106 peculiarity but recurs across currently separate classes and may group the elements differently from the present naming. If it holds, cluster 106 would share its insert with class 2 and class1c while sharing its triple architecture with Class_1b, and class1d would assert the very axis the insert contradicts; the question becomes whether the class 1 / class 2 split is the right axis at all. TEST: a feature matrix over the models' own seeds -- P1 length, PK1 length, presence/length/purine content of any unpaired P2-P3 insert, and the triple's identity and position relative to PK1's innermost pair -- built from the alignments, with cmemit -c plus the model's SS_cons where a provided model's seed is not to hand, and noting that PK lengths are unavailable from any CM since cmbuild reads only the primary nested SS_cons. CAUTIONS: a shared insert is weak evidence alone (single-nucleotide junction insertions recur, and purine is a two-letter alphabet) where the triple substitution is strong because all three positions moved together with each group invariant; and nothing is to be decided from three cluster-106 sequences. Open hypothesis, not a finding; changes no current call -- cluster 5 stays inside Class_1b on the triple evidence, cluster 106 stays transition_candidate:106 pending E7 |
+| 2026-11-17 | the base triple carries no class information: every subclass has one, and class 2's is also C-G-C | Reported. Two consequences, both retractions of arguments made earlier the same day. (1) The argument that cluster 106 lacks a conserved C 5' of P1 and is therefore not class 1 tested the wrong position -- the triple sits against PK1's innermost pair. (2) The replacement argument, that a triple IS present and so class 1 membership is supported, was wrong because presence is universal: every subclass has a triple, so having one distinguishes nothing, and the C-G-C identity spans Class_1b AND class 2, so even that is not class-1-diagnostic. WHAT SURVIVES: the concerted substitution between cluster 5 and cluster 106 at homologous columns -- three positions moving together, each group invariant -- remains good evidence that cluster 106's triple is real and homologous to cluster 5's. That was never a claim about which class. WHAT IT NOW IMPLIES, opposite to what was written: if Class_1b and class 2 both read C-G-C, cluster 106's U.(A-U) is a NOVEL triple identity rather than a within-class substitution, making cluster 106 the outlier on the one feature where the two established classes agree. With the 2-bp P1 and the AAA insert that is three features, none matching either class fully, so a distinct element is MORE defensible while the name class1d is LESS: nothing places cluster 106 in class 1 rather than class 2, and the insert groups it with class 2 and class1c. The two measured features sort the elements differently -- the triple puts Class_1b with class 2 and leaves 106 alone; the insert puts 106 with class 2 and class1c and leaves Class_1b alone -- and neither grouping is the class 1 / class 2 split. WORKING POSITION: do not use class1d; the label stays transition_candidate:106 and the class name waits on the feature matrix and E7, since a name presupposing the axis is worse than no name. U.(A-U) is a search diagnostic for E7 alongside the 2-bp P1 and the AAA insert, and the stronger of the two distinguishing features, because the triple's positions substitute together and are invariant within each group whereas a purine at a junction is not |
+| 2026-11-17 | E5 RESULT: main Class_1b clusters are 131 and 133; every B1/B2 label assigned; a satellite-cluster pattern found | Run on explorer_cm_scan.py extract's node table. Cross-checks exactly against Part 8: of 416 nodes, 265 carry a frozen cluster and 151 do not, and the per-class drops (1a 78->71, 1b 106->73, 2 17->16, dumbbell 7->4, None found 208->101) sum to exactly 151. MAIN CLASS_1B CLUSTERS 131 (69 nodes, 48 1b, 21 None found) and 133 (14 nodes, all 1b, pure), together 62 of the 73 clustered 1b nodes = 85% (58% of all 106); then 130 (7), 135 (3), 21 (1). LABELS, per stall: all five cluster-5 sites are fz 5 -> transition:5; NC_012671 10735 has no node and inherits transition:5 from MH827524 10759; LR694076 10565 is fz 21 -> transition:21; MH237596 10555 has NO NODE at that stall and inherits transition:21 from LR694076; NC_027817's accession is absent from the 416 entirely; NC_027819 10811 has no node, though that genome has an fz 7 / cls 1a node at 10587 which is a Class_1a element and not a basis for inheritance; the three cluster-106 sites are fz 106; NC_005064 11245 fz 21; MW897328 10653 fz 135; and MN587651 9782 and MN587661 9940 are fz 131, a MAIN cluster, so they would be core not transition -- consistent with their PP 0.74-0.93 alignments and with E2's reading that they are ordinary Class_1b the model cannot hold for entropy reasons. No B1 site is core. SATELLITE PATTERN, new: every cluster-5 genome carries 3-4 ordinary Class_1b elements in main cluster 131 plus the fifth copy in cluster 5 (AB981186 10240/10339/10487/10619 + 10732; MH827524 10269/10368/10514/10644 + 10759; NC_012671 10245/10344/10490/10620 + none; NC_021069 10244/10343/10489/10621 + 10735; NC_024299 10211/10349/10561/10637 + 10747; NC_008604 10246/10478/10598 + 10707) -- so the clustering, which knows nothing about any CM, independently separates the array's fifth copy from its first four, which is the P1-deviant subtype identified from the literature and the triple. CLUSTER 21 IS THE SAME PHENOMENON: LR694076 has 10185/10271 in main 133 plus 10565 in 21, and NC_005064 has 10358/10954 in main 133 plus 11245 in 21; MW897328 has 11228 in main 133 plus its own odd copy in 135. So 'a main-cluster Class_1b copy plus one odd copy in a satellite cluster' recurs, with 5, 21 and 135 as the satellites -- the transition groups are one phenomenon three times over, not scattered oddities. SCRIPT FIXES: e5 globbed nodes*.tsv by mtime and picked the annotated nodes_cl3.tsv, and the loader silently dropped the 151 unassigned rows while reporting 73 as though it were the total; it now prefers the plain nodes.tsv, reports the row accounting, cross-checks against Part 8, states both denominators, and labels per stall rather than per accession |
+| 2026-11-17 | class 2 is a class 1 subclass, so the class1<x> series is right and the hold on the name is bookkeeping | Reported: class 2 is misnamed -- by structure these are subclasses of class 1, its distinctive feature is a LONG PK1, it differs from Class_1b in several further ways including an A between P2 and P3, and every subclass has a base triple with class 2's being C-G-C. That answers the axis question raised earlier the same day rather than leaving it open, and the feature table becomes a table of subclass distinctions within one class. CONSEQUENCE FOR THE NAME: cluster 106 has the class 1 architecture, so class1<x> is the right series and class1d is defensible in substance; what holds it up is that class 2 belongs in the series and is not in it, so adding a letter now leaves two inconsistencies and uninformative lettering. Order: resolve class 2's name first, then assign cluster 106's letter, and only after E7. Label meanwhile transition_candidate:106, which is a statement about evidence and survives whatever is decided about class 2. FOR THE RECORD, three positions were taken on this name today and the first two were wrong: (i) no conserved C 5' of P1 so not class 1 -- wrong position for the triple; (ii) a triple is present so class 1 is supported -- wrong because presence is universal; (iii) the axis may not be real so defer -- the axis question was real but is now answered. Stable throughout: cluster 106 is a distinct subclass with the class 1 architecture, distinguished by a 2-bp P1, three purines between P2 and P3, and a U.(A-U) triple where both Class_1b and class 2 read C-G-C, the triple being the strongest of the three because its positions substitute together and are invariant within each group |
+| 2026-11-17 | the explorer has been regenerated; explorer_cm_scan.py no longer runs on it | Found by reading the four existing scripts. explorer_cm_scan.py reads n['fz'] in extract (lines 52, 55), seqs (105) and fetch (134), but the current explorer's nodes carry id, acc, sp, genus, cls, sf, det, conc, seq plus NEW fields e1c, ev, fam, q, xr -- and no fz; the per-site assignment moved to DATA.sets[].cl. So extract, seqs and fetch all raise KeyError. BLOCKS: seqs and fetch are how every cluster FASTA here was made, so the remaining gaps FJTB 64, PLLG 117 and HPPV 39 cannot have their seeds regenerated until it is fixed; annotate still works since it reads data.json. DOES NOT INVALIDATE E5: nodes_cl3.tsv is the 2026-10-29 snapshot from the previous explorer and cross-checks exactly against the documented 416-node counts, so it is the clustering this file refers to and the labels stand -- but it is a snapshot, and the e1c/xr fields suggest the new explorer carries its own class1c annotation postdating it. FIX: scripts/explorer_cm_scan_fz.patch adds resolve_fz(d) plus one call in extract, injecting fz from DATA.sets and choosing the set by name (mode frozen, view all) with the choice printed, since the wrong set would silently give wrong clusters; seqs, fetch and annotate are untouched because they read data.json. Tested on both generations: unpatched fails on the new explorer, patched handles both and seqs reproduces the same FASTA. Not yet applied. After applying, diff id+fz against $SCAN/nodes.tsv -- identical means the 10-29 clustering is current and the E5 labels hold; any difference changes those labels and the new counts are a second generation to record separately, not a correction to Part 8 |
+| 2026-11-17 | correction: only `extract` is broken, and the hazard is its write order | The earlier row overstated this. seqs, fetch and annotate all read data.json, not the HTML, so the FJTB 64 / PLLG 117 / HPPV 39 seeds can be regenerated right now from the existing $SCAN/data.json -- nothing is blocked. The real problem is the write order: extract writes data.json at line 46, opens nodes.fa and nodes.tsv in write mode at line 48, and only reaches n['fz'] at line 52, so running it UNPATCHED on the regenerated explorer overwrites data.json with the fz-less schema and truncates both node files BEFORE crashing -- destroying the 2026-10-29 snapshot and breaking seqs and fetch, which work today. One command would break what is currently fine. Back up data.json, nodes.tsv and nodes.fa before extract is run again, and check whether data.json's nodes still carry fz; if not, the snapshot is already gone and must come from git or be rebuilt from nodes_cl3.tsv, which holds id and fz for all 416 nodes. DECISION: do NOT revert the explorer HTML. The generator (build_flavi150_explorer.py) is what changed, so reverting the data file only defers the problem to the next regeneration, and it discards the new fields -- e1c and xr look like a class1c call and an xrRNA call carried in the explorer itself, and six clustering sets across view all/01mM/10mM is the Mg-condition split this file reasons about throughout. Keep both, dated, per this file's own rule that reference data belongs to a reference state and not to a run. The patch gains a pre-overwrite backup of the three outputs so the crash-after-write hazard cannot recur |
+| 2026-11-17 | class1b_groups.tsv written; E1-E5 complete, E6 is the live step | The 10-29 explorer snapshot was confirmed intact (data.json nodes carry fz) and backed up as data.json/nodes.tsv/nodes.fa .20261029.bak, so seqs and fetch keep working and the E5 labels rest on a preserved artefact. cm/class1b_groups.tsv written from the E5 result: 19 rows, 9 columns, no placeholders left. Groups: transition:5 x6 (the five cluster-5 sites plus NC_012671 inheriting from MH827524 10759), transition:21 x2 (LR694076 10565 and MH237596 10555 inheriting from it), transition:unknown x3 (NC_027817 10757, NC_027819 10811, OP860412 10802), transition_candidate:106 x3, transition_candidate:21 x1 (NC_005064 11245, the same satellite as LR694076), transition_candidate:135 x1 (MW897328 10653), core x2 (MN587651 9782 and MN587661 9940, both fz 131), core? x1 (OM030319 11865, provisional). KEY RESULT: no site included in the deployed model is core -- all eleven model members are transition:*, so the expanded Class_1b's additions are without exception the satellite copies rather than main-cluster elements. Four rows cannot be resolved by inheritance (NC_027817 has no node at all; NC_027819's only node is fz 7 / cls 1a, a Class_1a element; OP860412 and OM030319 have no node) and must NOT be joined into the annotation until settled -- cluster 21 is the likely answer for the two recovered P1-deviant loci by analogy, but that is inference and the rationale column says so. NC_005064.1's version is unconfirmed, seen only as a bare accession in this file. STATUS: E1, E2, E2b, E3, E4 and E5 are all complete and E6 is live -- MANIFEST, new cm_set, the groups file, cluster steps 10-13, recount against 8 models |
+| 2026-11-17 | E6 commands written; the successor REPLACES Class_1b, so the set stays at 7 models | Grounded in steps 10 and 11b as recorded in Part 9. Two facts there govern it: $CMS lives in scripts/env_261021_flaviLib.sh, 'the single definition of the CM set', so editing that file is what changes the annotation and dropping a .cm into cm/ annotates nothing; and column names are the .tbl basenames including .cm, so the model's FILENAME is the column name. DECISION: replace CL_Class_1b_xrRNA_final.cm rather than add an 8th model. The successor is strictly better by the rule that accepted it (0 lost, 10 gained), so keeping both would double-count every Class_1b site and make the no-CM recount meaningless; and overlap resolution by lower E is for competing classes, not for a model against its own successor. CORRECTION: the earlier rows in this log saying 'recount against 8 models' are wrong -- the set stays at 7, with cm_set_261021 preserved as the provenance of the old annotation. SUB-DECISION left open deliberately, because it has a downstream cost: keeping the filename CL_Class_1b_xrRNA_final.cm and swapping its contents holds the column name stable and needs no downstream edits but makes the file contradict its own name, which is the failure this document exists to prevent; using the real name class1b_plusFJIS_cluster5_inf112.cm gives honest provenance and carries the builder version as Part 9's scheme requires, at the price of a column rename that every downstream consumer must follow (a grep to find them is in the E6 block). Steps 6-8 of that block -- step 11b's full post_process_peaks.py call, the tile-collapse follow-up specified in flaviLib.md, and Part 7's recount -- are deliberately NOT written as commands, because the source document elides step 11b's arguments and Part 7 records figures rather than a script; they are to be read at the source rather than reconstructed |
+| 2026-11-17 | interface audit of the new scripts against cm_log.py, explorer_cm_scan.py, cm_iterate.sh, cm_round_stats.py | One real bug of mine: cm_round_stats.py fetch writes to its OUT argument EXACTLY with no suffix, so e4 passing $OUT/insertcheck and then opening insertcheck.fetchlist is why the first 11-17 run failed; e4 now passes the full filename. Everything else checks out: clog matches cm_log.py's --model/--step/--result (which escapes pipes itself and appends after the last row in its section); compare writes NEW.tbl.compare.tsv as e3 assumed; overlap takes A.tbl B.tbl NAME_A NAME_B and resolves by lower E-value, explicitly Rfam clan competition, printing to stdout; the cmstat field order read in this file is right (nseq f[3], eff_nseq f[4], clen f[5], bps f[7], bifs f[8], relent f[10]); and every cm_iterate.sh flag cm_candidate.sh passes is valid, with the caveats that it requires an already calibrated CM, defaults to --incE 1e-10, and writes its own run-log rows when given --doc. Two notes: cm_log.py's Last updated regex wants a bare date and a period, so it never fires on this file's parenthetical line, which is maintained by hand; and nodes.tsv has no acc or stall column, so explorer_class1b_clusters.py works only via its fallback of splitting id on the pipe |
 | 2026-11-16 | cm_set_261021 mixes Infernal builder versions | Headers read by flavi_env.sh --check: CL_Class_1a, CL_Class_1b and CL_Class_2 are all 1.1.2 (provided); class1c.cm is 1.1.5 (built here); class1b_plusFJIS_cluster5_inf112.cm is 1.1.2. There is therefore no single correct env for the deployed set, which is the reason the env is derived per model from its header instead of being configured once. Any future class1c rebuild or extension must run in viromelib, not infernal112, and cm_env_for now selects that automatically |
 
 ### `cand_FJIS_fz106_261029`

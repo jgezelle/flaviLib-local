@@ -259,8 +259,26 @@ EOF
 # ---------- E5: main Class_1b clusters, and the cluster of every B1/B2 site ----------
 e5() {
   need "$EXPLORER" || { find "$ROOT" -name flavi150_explorer.html; return 1; }
-  python3 "$FLAVISCRIPTS/explorer_class1b_clusters.py" "$EXPLORER" \
-    | tee "$PLUS/E5_class1b_clusters.txt"
+  local X=$SCAN
+  # explorer_cm_scan.py extract is the VALIDATED parser -- it derives the frozen cluster `fz`
+  # per node and produced the memberships recorded in Part 3 (41 12/12, 44 8/8, 5 5/5, 106 3/3).
+  # Prefer its node table; `fz` is not a raw field on DATA.nodes.
+  local TSV; TSV=$(ls -t "$X"/nodes*.tsv 2>/dev/null | head -1)
+  if [ -z "$TSV" ]; then
+    echo "no node table under $X -- running explorer_cm_scan.py extract"
+    python3 "$FLAVISCRIPTS/explorer_cm_scan.py" extract "$EXPLORER" "$X" || return 1
+    TSV=$(ls -t "$X"/nodes*.tsv 2>/dev/null | head -1)
+  fi
+  if [ -n "$TSV" ]; then
+    echo "node table: $TSV"
+    python3 "$FLAVISCRIPTS/explorer_class1b_clusters.py" "$TSV" | tee "$PLUS/E5_class1b_clusters.txt"
+  else
+    echo "extract wrote no node table; falling back to reading DATA.sets directly."
+    echo "Check the set it picks against --list-sets before trusting the numbers."
+    python3 "$FLAVISCRIPTS/explorer_class1b_clusters.py" "$EXPLORER" --list-sets
+    python3 "$FLAVISCRIPTS/explorer_class1b_clusters.py" "$EXPLORER" \
+      | tee "$PLUS/E5_class1b_clusters.txt"
+  fi
   echo
   echo "then: fill frozen_cluster/group in Part 1 B1-B2 and the <B4> rows of Part 9's"
   echo "class1b_groups.tsv, and: clog class1b 'E5 main Class_1b clusters' '<clusters; labels>'"
