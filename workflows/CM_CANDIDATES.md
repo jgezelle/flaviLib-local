@@ -17,7 +17,7 @@
 
 Model md5s belong in `~/Desktop/viromelib/work/infernal/cm/MANIFEST.tsv` (not yet created).
 
-Last updated 2026-11-17 (**E1–E5 are all complete and E6 is the live step, with its commands now written** — grounded in Part 9's steps 10 and 11b, and resting on two facts from there: `$CMS` in `scripts/env_261021_flaviLib.sh` is the single definition of the annotating set, and a model's filename *is* its annotation column. **The successor replaces Class_1b rather than joining as an 8th model**, so the set stays at 7 and the earlier "against 8 models" notes are corrected; the open sub-decision is whether to keep the old filename (stable column, dishonest file) or use the real one (honest provenance, a column rename to chase downstream). `cm/class1b_groups.tsv` is written — 19 rows, no placeholders — and its key result is that **no site included in the deployed model is `core`**: all eleven model members are `transition:*`, the satellite copies rather than main-cluster elements. Four rows carry an unresolved group and must not be joined yet. The 10-29 explorer snapshot is confirmed intact and backed up. **the explorer has been regenerated and `explorer_cm_scan.py extract` no longer runs on it** — its nodes have lost `fz` and gained `e1c, ev, fam, q, xr`, with cluster assignments now in `DATA.sets[].cl`. Only `extract` is affected: `seqs`, `fetch` and `annotate` read `data.json`, so **nothing is blocked**. The hazard is that `extract` writes `data.json` and truncates the node files *before* it crashes, which would destroy the 10-29 snapshot — back those three files up first. **Do not revert the explorer**: the generator changed, so reverting defers the problem and discards the new fields; keep both, dated. `explorer_cm_scan_fz.patch` fixes `extract` and adds the backup. E5's labels stand — its node table is the 10-29 snapshot and cross-checks exactly against the documented counts. Also an interface audit of the new scripts against the four existing ones: one real bug found (`cm_round_stats.py fetch` writes its `OUT` argument exactly, which is why `insertcheck` failed). **E5 result: main Class_1b clusters are 131 and 133**, holding 62 of the 73 clustered Class_1b nodes; every B1/B2 label now assigned per stall, and **no B1 site is `core`**. A **satellite-cluster pattern** emerged: every cluster-5 genome carries 3–4 ordinary Class_1b elements in main cluster 131 plus the fifth copy in cluster 5, and clusters 21 and 135 repeat it — so the clustering independently separates the P1-deviant copy without reference to any CM. **class 2 is a class 1 subclass**, which answers the axis question: the `class1<x>` series is right and `class1d` is defensible in substance, held up only by class 2 not being in the series and by E7. **the base triple carries no class information** — every subclass has one, and class 2's is also C-G-C, which retracts both of the day's attempts to read cluster 106's naming off it. What survives is that the cluster 5 ↔ cluster 106 substitution is concerted and homologous; what changes is that **U•(A-U) is a novel identity**, not a within-class swap, making cluster 106 the outlier on the one feature where Class_1b and class 2 agree. A distinct element is therefore more defensible and the name `class1d` less: **do not use it** — the label stays `transition_candidate:106` until the feature matrix and E7 resolve whether the class 1 / class 2 axis is the right one at all. **E5 unblocked**: `fz` is *derived* by `explorer_cm_scan.py extract`, not a raw field — `DATA.nodes` has none, and per-site clusters live in `DATA.sets` as `cl` arrays parallel to the nodes. Part 3 already said so and a validated parser already existed; `e5` now uses it. **Open hypothesis raised**: class 2's long PK1 and purine between P2 and P3 make it resemble class1c and may make it a subclass rather than a class — and since cluster 106 has three purines there where cluster 5 has none, the P2–P3 insert is a cross-class axis that could cut across the class 1 / class 2 split; a feature matrix over the models' own seeds would settle it. **E4 complete, both parts pass**: `pp_check` reads C/G/C at cm 7/29/43 at PP 0.85–>0.95 in all six added cluster-5 sequences, and `insertcheck` finds **zero insert columns beside any of the three, occupied in 0/139 sites** — the seed layout stands, nothing needs re-comparing, and this was the last step that could have moved the model's columns. E5 is blocked on the explorer's field names (`DATA.sets` holds clustering definitions, not sites; run `--dump`) but **does not block the model** — only the `core`/`transition` labels. **E3 resolved**: 10 gains, `OP860412 297` among them, and NC_008604 10707 is **not** a gain — its copy was already an included hit, so the correct accounting is 5 own + 4 recovered + OP860412. **E4 `pp_check`: every one of the six cluster-5 additions carries the Class_1b C…G-C triple** at cm 7/29/43 with PP 0.85 to >0.95 and no insertions — so cluster 5 belongs inside Class_1b and should not be split off, against cluster 106's U…A-U; the `transition:5` label stays. `insertcheck` and E5 both hit script bugs, now fixed. **E2: `strong` and `newvirus` both rejected — Class_1b is saturated.** Each loses the same 9 hits, the 9 weakest at 23.4–27.8 b, **7 of them cluster 5's own gains**; and since the 68 novel hits were already found by the baseline, the trade is +2 sites against −9 for no annotation gain. `eff_nseq` 50.24→25.6 on similar additions and →71.32 on divergent ones, so the model is at its relative-entropy ceiling either way: library-internal expansion is closed, shown three ways on one baseline. **The model to deploy is cluster 5 alone**, and seven of its ten sites are marginal and will not survive a later revision. **cluster 106's three diagnostic features, and a concerted triple substitution between the clusters**: P1 shortened to 2 bp, three unpaired purines (AAA) between P2 and P3 present in 3/3 cluster-106 and 0/5 cluster-5 sequences, and the triple reading **C•(G-C) in cluster 5 (5/5) against U•(A-U) in cluster 106 (3/3)** at the same pooled columns — all three positions substituted together, each cluster invariant. That makes the triple real, independently reproduces the recorded Class_1b C…G-C from cluster 5, and locates the covariation **between** the clusters, which is why the pooled alignment yielded 4 covarying pairs where neither cluster alone can yield any: the pooled alignment is the one to cite for the structure, not a superseded step. With E2b this gives a distinct class 1 element, sibling to Class_1b, still gated on E7 for sequences. **cluster 106 has a conserved U•A-U base triple** — U6 against pk_A's innermost A5-U48 pair, all three positions invariant; the new alignment swallows that U into pk_A as a 4th pair, which the pooled alignment correctly left unpaired. Class_1b's triple is C…G-C, so this is the same interaction with the identity substituted, which **supports** class 1 membership and makes `class1d` defensible on architecture — correcting the opposite conclusion reached earlier the same day from the wrong expectation. `cmbuild` sees neither the triple nor the pseudoknots: 13 nested bp either way. **cluster 106 aligned alone**: same architecture as the pooled alignment element for element — P1 2 bp, 7-bp inner hairpin, 4-bp hairpin 2, pk_A `GGAU:AUCC`, pk_B `UCAC:GGUG` — and cluster 106 fits that structure at least as well as cluster 5 (98 % vs 97 % canonical, and 100 % vs 80 % on pk_B). But **16 of its 21 pairs are identical in all three sequences**, so covariation has no power on P1 or either pseudoknot: GATE 1 is inapplicable, not failed, and only E7 can settle a class claim. No conserved C 5′ of P1, so `class1d` should not be presumed as the name. **E1: AB021287's loss is a filter artefact** — NO HIT by default but 30.0/30.2 b under `--max` in `strong`/`newvirus`, higher than the original model's 29.7 b, so the CM never lost it and **library-internal Class_1b expansion is reopened**; E2 is the live step and E6 deployment waits on it. Cluster 5 stays in: nothing in E2b bears on it. **E2b complete: cluster 106 rejected on every criterion** — PP 0.397/0.465/0.424 5′-truncated with negative alignment scores, identical between 1.1.5 and 1.1.2; 19 hits lost including eight of cluster 5's own ten gains, eff_nseq 50.24→71.32 on three sequences, 111 hits lower; and by a position check the three sites are **not recruited at their stalls** at all, the model instead finding other loci — ON949931 even loses a 30.2 b Class_1b hit 333 nt away. Cluster 106 is a different element sharing an architecture, not a subtype; → Track B, and E7 for a named class. `flavi_env.sh` gains `hits_at_stall`, since the first check used accession membership. Side finding: `cmalign` to a fixed model is version-stable where `cmbuild` is not. `cm_set_261021` mixes builder versions — `class1c.cm` is 1.1.5, the three provided `CL_*` are 1.1.2 — so the env is derived per model from its header, never configured once. The conda env is now part of the method: `flavi_env.sh` activates it, exits on a missing tool and pins `cmalign` to 1.1.2. Cluster 106 reopened: the covariation that defines the pooled structure comes from comparing cluster 5 with cluster 106, cluster 106 is 91 % canonical on it vs cluster 5's 83 %, and every rejection of 106 used the superseded 88-seq model — new step E2b tests it alone on the cluster-5 baseline, and the file's two readings of the Menghai triple contradict each other; `class1b_groups.tsv` extended to nine columns with `decided`/`model`/`change`/`rationale`; `flavi_env.sh` holds every path for all scripts; naming scheme revised in Part 9 — stage prefix `aln_`/`cand_`/`conf_`/`class<N>`, `c<N>` for frozen clusters, the alignment round out of the name and into `iter_v<n>_<window>`, with `cm_rename_builds.sh` to apply it; classification status added to Part 1: finished classes / Class_1b extensions and transitions from 1b / unknown; the Class_1b expansion route decided as E1–E7; `class1b_groups.tsv` specified in Part 9; the two tracks and where the manual MATER step sits, Part 8; `cm_class1b_E.sh` and `cm_candidate.sh` written, the latter superseding `build_candidate_cm.sh`; next-priority list replaced; Part 1 workstream rows brought to 11-03 state). Previous: 2026-11-03 (sub-threshold Class_1b additions rejected; the triple read with windows and PP; seed-shift question answered; explicit Class_1b membership table; cluster 106 plan). Reorganised into dated parts on 2026-11-02; no content removed
+Last updated 2026-11-17 (**E8 is closed and E6 is live again. The positional hypothesis is confirmed and there is nothing to add: the accepted model *is* the positional model.** With species names attached, clusters 5 and 21 are **entirely insect-specific flaviviruses** and 3′-most in **8 of 8**, while clusters 39 and 135 are **entirely rodent pegiviruses** — cluster 39 being `HPPV 39`, already a registered gap — so the apparent 5′ satellite was a different genus, not a second ISF position, and my earlier "satellites occupy the array's ends" merged two genera and is retracted. Every ISF positional element is seeded or already annotated **except Kamiti River virus NC_005064 11245**, rejected alone on 11-03 as `kamiti`, so `e8b` has no experiment left and is struck. The 13 genomes this file had never mentioned are hepaci-, pegi- and pestiviruses plus *Tamana bat virus* — non-*Flavivirus* Flaviviridae, belonging to the priority-8 clade pools, not to E7. **One thing gates E6**: NC_008604 10707 is in the seed yet scores 20.9 b `?` in the model built from it, where the E3 row says it "was already an included hit" — either E3's reason is wrong or the accepted model lost an included hit and fails the no-loss rule. Formerly: **E8 view 1 run, positional hypothesis holds 8 of 8** — every cluster-5 and cluster-21 satellite is its array's 3′-most copy — but the right statement is **satellites occupy the array's *ends***, because LC602141, MT210614 and MT210620 each carry a **cluster 39** copy at the 5′ end as well, making `HPPV 39` a 5′-terminal subtype rather than a scattered gap. 20 of the 22 apparent failures are unclustered 3′-most copies, open cases rather than counterexamples; only MW897328 and ON949931 are genuine. **View 2 raises a contradiction that must be settled before E6 moves**: five of the six added cluster-5 sequences are included, but **NC_008604 10709 is 20.9 b `?`, not included**, where the E3 row says that locus "was already an included hit" — so either E3's reason is wrong or the accepted model lost an included hit and fails the no-loss rule it was accepted under. Also: `KC181923 859` is one of **E2b's** nineteen, not E2's nine, correcting my own earlier row. The candidate list needed three fixes (seed exclusion, a bit floor, and clustering support exempting a candidate from that floor) and `e8` now chains both views. **E6 remains held.** Part 1 now carries **Next, in order**, a six-step runnable procedure: install and md5-verify the script, re-run `e8`, settle NC_008604 10707 (gates E6), find the real `$CMS` definition, run `e8b`, then E6 with whichever model survives. `e8`'s first run was invalid** — `class1b_arrays.py` filtered `cls == "1b"`, and the explorer's `cls` is **CM-derived**, so every satellite copy is labelled `None found` by construction and the filter deleted the question; it also read an unassigned `fz` of `None` as a satellite, manufacturing all four counterexamples. Both fixed. **One real result survived: KC181923** carries copies at 10492 / 10630 (fz 133) and **10929 (fz 21)** — a cluster-21 satellite as its 3′-most copy, in a genome this file calls ordinary core Class_1b, and in no addition set. The decisive check is whether `KC181923 859`, one of the nine marginal sites E2 loses, *is* that element; if the nine marginals are the satellites, E2's fragility finding and the positional hypothesis are one result. **`scripts/env_261021_flaviLib.sh` does not exist**, so the claim that `$CMS` lives there is a stale path inherited from the 261021 run log, and E6 step 4 is unverified until the file is located. Two corrections first: **the accepted model is not "cluster 5"** — that phrase names the seed-addition set that survived E2, not the model's coverage, and the model already recovers PaRV xr4, MECDV xr1 and **CFAV xr3** (a named sequence of the provided seed, finally included at 23.4 b) and already spans two frozen clusters, since LR694076 10565 is fz 21; and **Part 9's `_inf<ver>` rule is conditional**, applying only to a non-default builder, with the version authoritative in the `.cm` header rather than the filename. **E8**: PMC7527734 defines this element *positionally* — the P1-deviant subtype sits in downstream copies, xr3/xr4 — and E5's satellite pattern found the same from the clustering side, so the set to seed may be "the 3′-most copy of every ISF array", which **no step has tested**: E2 cut on bit score, `newvirus` on novelty, and 11-03 tested the sub-threshold sites one at a time. `class1b_arrays.py` plus `cm_class1b_E.sh e8`/`e8b` run it in two independent views; E5's own data already contains one counterexample (MW897328's odd copy is upstream of its main-cluster copy). E6 is held because steps 10–13 are the expensive part and E8 is one `cmbuild`. The **grep sweep is done**: 49 hits, only three live consumers (`build_pllg_outputs.py:142`, `plot_combined_peaks.R:50`, `flavi_env.sh:29`), the rest archived logs and provenance not to be edited — and `scripts/env_261021_flaviLib.sh` is **not among them**, so `$CMS` is a directory or glob and "replaces, does not join" is enforced by the predecessor being absent from the new set rather than by editing a list. **the deployed name is settled: `class1b_v2_inf112.cm`**. Previously: **E1–E5 all complete, E6's commands written** — grounded in Part 9's steps 10 and 11b, and resting on two facts from there: `$CMS` in `scripts/env_261021_flaviLib.sh` is the single definition of the annotating set, and a model's filename *is* its annotation column. **The successor replaces Class_1b rather than joining as an 8th model**, so the set stays at 7 and the earlier "against 8 models" notes are corrected; **the deployed name is settled: `class1b_v2_inf112.cm`**, so the annotation column becomes `class1b_v2_inf112.cm_hit` -- a new name rather than a content swap under the old one, with the build name `class1b_plusFJIS_cluster5_inf112` kept in MANIFEST's `build_path` and the run log instead of in every downstream table. Part 9 gains **Versions of an existing model** to cover the case the stage scheme had not: `<family>_v<n>_inf<ver>.cm`, the family name retained, a version replacing its predecessor rather than joining it, and a version bump requiring a recorded grep sweep for the old column name -- **that sweep is the next action**, before E6 runs. `cm/class1b_groups.tsv` is written — 19 rows, no placeholders — and its key result is that **no site included in the deployed model is `core`**: all eleven model members are `transition:*`, the satellite copies rather than main-cluster elements. Four rows carry an unresolved group and must not be joined yet. The 10-29 explorer snapshot is confirmed intact and backed up. **the explorer has been regenerated and `explorer_cm_scan.py extract` no longer runs on it** — its nodes have lost `fz` and gained `e1c, ev, fam, q, xr`, with cluster assignments now in `DATA.sets[].cl`. Only `extract` is affected: `seqs`, `fetch` and `annotate` read `data.json`, so **nothing is blocked**. The hazard is that `extract` writes `data.json` and truncates the node files *before* it crashes, which would destroy the 10-29 snapshot — back those three files up first. **Do not revert the explorer**: the generator changed, so reverting defers the problem and discards the new fields; keep both, dated. `explorer_cm_scan_fz.patch` fixes `extract` and adds the backup. E5's labels stand — its node table is the 10-29 snapshot and cross-checks exactly against the documented counts. Also an interface audit of the new scripts against the four existing ones: one real bug found (`cm_round_stats.py fetch` writes its `OUT` argument exactly, which is why `insertcheck` failed). **E5 result: main Class_1b clusters are 131 and 133**, holding 62 of the 73 clustered Class_1b nodes; every B1/B2 label now assigned per stall, and **no B1 site is `core`**. A **satellite-cluster pattern** emerged: every cluster-5 genome carries 3–4 ordinary Class_1b elements in main cluster 131 plus the fifth copy in cluster 5, and clusters 21 and 135 repeat it — so the clustering independently separates the P1-deviant copy without reference to any CM. **class 2 is a class 1 subclass**, which answers the axis question: the `class1<x>` series is right and `class1d` is defensible in substance, held up only by class 2 not being in the series and by E7. **the base triple carries no class information** — every subclass has one, and class 2's is also C-G-C, which retracts both of the day's attempts to read cluster 106's naming off it. What survives is that the cluster 5 ↔ cluster 106 substitution is concerted and homologous; what changes is that **U•(A-U) is a novel identity**, not a within-class swap, making cluster 106 the outlier on the one feature where Class_1b and class 2 agree. A distinct element is therefore more defensible and the name `class1d` less: **do not use it** — the label stays `transition_candidate:106` until the feature matrix and E7 resolve whether the class 1 / class 2 axis is the right one at all. **E5 unblocked**: `fz` is *derived* by `explorer_cm_scan.py extract`, not a raw field — `DATA.nodes` has none, and per-site clusters live in `DATA.sets` as `cl` arrays parallel to the nodes. Part 3 already said so and a validated parser already existed; `e5` now uses it. **Open hypothesis raised**: class 2's long PK1 and purine between P2 and P3 make it resemble class1c and may make it a subclass rather than a class — and since cluster 106 has three purines there where cluster 5 has none, the P2–P3 insert is a cross-class axis that could cut across the class 1 / class 2 split; a feature matrix over the models' own seeds would settle it. **E4 complete, both parts pass**: `pp_check` reads C/G/C at cm 7/29/43 at PP 0.85–>0.95 in all six added cluster-5 sequences, and `insertcheck` finds **zero insert columns beside any of the three, occupied in 0/139 sites** — the seed layout stands, nothing needs re-comparing, and this was the last step that could have moved the model's columns. E5 is blocked on the explorer's field names (`DATA.sets` holds clustering definitions, not sites; run `--dump`) but **does not block the model** — only the `core`/`transition` labels. **E3 resolved**: 10 gains, `OP860412 297` among them, and NC_008604 10707 is **not** a gain — its copy was already an included hit, so the correct accounting is 5 own + 4 recovered + OP860412. **E4 `pp_check`: every one of the six cluster-5 additions carries the Class_1b C…G-C triple** at cm 7/29/43 with PP 0.85 to >0.95 and no insertions — so cluster 5 belongs inside Class_1b and should not be split off, against cluster 106's U…A-U; the `transition:5` label stays. `insertcheck` and E5 both hit script bugs, now fixed. **E2: `strong` and `newvirus` both rejected — Class_1b is saturated.** Each loses the same 9 hits, the 9 weakest at 23.4–27.8 b, **7 of them cluster 5's own gains**; and since the 68 novel hits were already found by the baseline, the trade is +2 sites against −9 for no annotation gain. `eff_nseq` 50.24→25.6 on similar additions and →71.32 on divergent ones, so the model is at its relative-entropy ceiling either way: library-internal expansion is closed, shown three ways on one baseline. **The model to deploy is cluster 5 alone**, and seven of its ten sites are marginal and will not survive a later revision. **cluster 106's three diagnostic features, and a concerted triple substitution between the clusters**: P1 shortened to 2 bp, three unpaired purines (AAA) between P2 and P3 present in 3/3 cluster-106 and 0/5 cluster-5 sequences, and the triple reading **C•(G-C) in cluster 5 (5/5) against U•(A-U) in cluster 106 (3/3)** at the same pooled columns — all three positions substituted together, each cluster invariant. That makes the triple real, independently reproduces the recorded Class_1b C…G-C from cluster 5, and locates the covariation **between** the clusters, which is why the pooled alignment yielded 4 covarying pairs where neither cluster alone can yield any: the pooled alignment is the one to cite for the structure, not a superseded step. With E2b this gives a distinct class 1 element, sibling to Class_1b, still gated on E7 for sequences. **cluster 106 has a conserved U•A-U base triple** — U6 against pk_A's innermost A5-U48 pair, all three positions invariant; the new alignment swallows that U into pk_A as a 4th pair, which the pooled alignment correctly left unpaired. Class_1b's triple is C…G-C, so this is the same interaction with the identity substituted, which **supports** class 1 membership and makes `class1d` defensible on architecture — correcting the opposite conclusion reached earlier the same day from the wrong expectation. `cmbuild` sees neither the triple nor the pseudoknots: 13 nested bp either way. **cluster 106 aligned alone**: same architecture as the pooled alignment element for element — P1 2 bp, 7-bp inner hairpin, 4-bp hairpin 2, pk_A `GGAU:AUCC`, pk_B `UCAC:GGUG` — and cluster 106 fits that structure at least as well as cluster 5 (98 % vs 97 % canonical, and 100 % vs 80 % on pk_B). But **16 of its 21 pairs are identical in all three sequences**, so covariation has no power on P1 or either pseudoknot: GATE 1 is inapplicable, not failed, and only E7 can settle a class claim. No conserved C 5′ of P1, so `class1d` should not be presumed as the name. **E1: AB021287's loss is a filter artefact** — NO HIT by default but 30.0/30.2 b under `--max` in `strong`/`newvirus`, higher than the original model's 29.7 b, so the CM never lost it and **library-internal Class_1b expansion is reopened**; E2 is the live step and E6 deployment waits on it. Cluster 5 stays in: nothing in E2b bears on it. **E2b complete: cluster 106 rejected on every criterion** — PP 0.397/0.465/0.424 5′-truncated with negative alignment scores, identical between 1.1.5 and 1.1.2; 19 hits lost including eight of cluster 5's own ten gains, eff_nseq 50.24→71.32 on three sequences, 111 hits lower; and by a position check the three sites are **not recruited at their stalls** at all, the model instead finding other loci — ON949931 even loses a 30.2 b Class_1b hit 333 nt away. Cluster 106 is a different element sharing an architecture, not a subtype; → Track B, and E7 for a named class. `flavi_env.sh` gains `hits_at_stall`, since the first check used accession membership. Side finding: `cmalign` to a fixed model is version-stable where `cmbuild` is not. `cm_set_261021` mixes builder versions — `class1c.cm` is 1.1.5, the three provided `CL_*` are 1.1.2 — so the env is derived per model from its header, never configured once. The conda env is now part of the method: `flavi_env.sh` activates it, exits on a missing tool and pins `cmalign` to 1.1.2. Cluster 106 reopened: the covariation that defines the pooled structure comes from comparing cluster 5 with cluster 106, cluster 106 is 91 % canonical on it vs cluster 5's 83 %, and every rejection of 106 used the superseded 88-seq model — new step E2b tests it alone on the cluster-5 baseline, and the file's two readings of the Menghai triple contradict each other; `class1b_groups.tsv` extended to nine columns with `decided`/`model`/`change`/`rationale`; `flavi_env.sh` holds every path for all scripts; naming scheme revised in Part 9 — stage prefix `aln_`/`cand_`/`conf_`/`class<N>`, `c<N>` for frozen clusters, the alignment round out of the name and into `iter_v<n>_<window>`, with `cm_rename_builds.sh` to apply it; classification status added to Part 1: finished classes / Class_1b extensions and transitions from 1b / unknown; the Class_1b expansion route decided as E1–E7; `class1b_groups.tsv` specified in Part 9; the two tracks and where the manual MATER step sits, Part 8; `cm_class1b_E.sh` and `cm_candidate.sh` written, the latter superseding `build_candidate_cm.sh`; next-priority list replaced; Part 1 workstream rows brought to 11-03 state). Previous: 2026-11-03 (sub-threshold Class_1b additions rejected; the triple read with windows and PP; seed-shift question answered; explicit Class_1b membership table; cluster 106 plan). Reorganised into dated parts on 2026-11-02; no content removed
 (superseded passages are kept and marked).
 
 ## How to read this file
@@ -892,8 +892,355 @@ syntax-checked, never run — read each step's output before the next).
 | **E3** | **`OP860412 297` count conflict** | no decision depends on it, but the membership table must be right before deployment, and E2 reuses the number | Part 3, B4 block (`grep -E 'NEW\|LOST'`) |
 | **E4** ✓ | **`pp_check`** (PP of the six added sequences' triple columns) and **`insertcheck`** (how many included sites occupy the insert columns beside cm 29 / 43) | **RUN 2026-11-17, both pass.** `pp_check`: all six added sequences read C/G/C at cm 7/29/43 at PP 0.85–>0.95, no insertions — so every cluster-5 site carries the Class_1b triple. `insertcheck`: **0 insert columns beside any of the three, occupied in 0/139 sites** — the seed layout stands and nothing needs re-comparing | Part 3, the triple and seed-shift sections |
 | **E5** ✓ | **B4**: main Class_1b clusters, frozen cluster of every B1 / B2 site | **RUN 2026-11-17: main clusters are 131 and 133** (62 of the 73 clustered Class_1b nodes). Every B1/B2 label assigned per stall; `cm/class1b_groups.tsv` written, 19 rows. **No deployed site is `core`** — all eleven model members are satellite copies | Part 1, B4 |
-| **E6** ◀ **now live** | **deploy once**: MANIFEST, `cm_set_<yymmdd>`, `class1b_groups.tsv` (Part 9), cluster steps 10–13, recount the no-CM pool against **7** models (the successor replaces Class_1b; it is not an 8th) | until this runs, the 10 sites the accepted model claims are still counted as gaps, so the gap list is wrong by 10 | Part 9 → `class1b_groups.tsv`; cluster steps per the 261021 run log |
+| **E6** ◀ **now live** | **deploy once**: MANIFEST, `cm_set_<yymmdd>`, `class1b_groups.tsv` (Part 9), cluster steps 10–13, recount the no-CM pool against **7** models (the successor replaces Class_1b; it is not an 8th) | until this runs, the 10 sites the accepted model claims are still counted as gaps — **unblocked 2026-11-17 by E8**, which confirmed the positional hypothesis and found nothing to add, so the accepted cluster-5 model is the model to deploy. One thing first: the NC_008604 10707 anomaly, which bears on whether the acceptance holds. Until this runs, the 10 sites the accepted model claims are still counted as gaps, so the gap list is wrong by 10 | Part 9 → `class1b_groups.tsv`; cluster steps per the 261021 run log |
 | **E7** | **a targeted set of complete ISF genomes from NCBI** — around *Xishuangbanna aedes flavivirus*, *Menghai flavivirus*, *Kilpisjarvi flavivirus*, and the ISF genomes carrying tandem arrays | the only route left, and it serves three stuck questions at once: cluster 106 (3 near-identical sequences can neither support a model nor pass the covariation gate), NC_005064 and MW897328 (both need "a looser model of their own or sequences from outside this library"), and any further Class_1b addition. **The RNAvirus DB is demonstrably too narrow here**: 4 of the 8 FJIS seed genomes score 52–79 bits in the library and do not appear in it at all | written 2026-10-30 under the FJIS RNAvirus-DB section; never run |
+| **E8** ✓ **closed 2026-11-17** | **is the unit positional rather than clustered?** Seed *the 3′-most copy of every ISF tandem array* — the set E5's satellite pattern points at — and apply the no-loss rule. `cm_class1b_E.sh e8` enumerates the arrays in two independent views (explorer clustering, and the accepted model's own tbl by genomic position) and writes the fetchlist; `e8b` builds and compares | E2 closed a **bit-score** cut and `newvirus` a **novelty** cut; 2026-11-03 tested the sub-threshold sites **one at a time**. Nobody has tested the positionally-defined set, and it is the set the literature names (PMC7527734: the P1-deviant subtype is found in *downstream* copies, xr3/xr4). Cheap: one `cmbuild` and one `cmsearch` **RESULT: hypothesis confirmed, nothing to add.** Clusters 5 and 21 are entirely ISF and **3′-most in 8 of 8**; clusters 39 and 135 are entirely rodent pegiviruses (`HPPV 39`, already a registered gap), so the apparent 5′ satellite is a different genus, not a second ISF position. Every ISF positional element is seeded or already annotated **except Kamiti River virus NC_005064 11245**, rejected alone on 11-03 as `kamiti`. `e8b` has no experiment left. The accepted model **is** the positional model | this section; `class1b_arrays.py`; E5's satellite rows in Part 10 |
+
+### E8: the accepted model is not "cluster 5", and the unit may be positional — 2026-11-17
+
+**First, a scope correction, because it is this file's own wording that misleads.** "The model to
+deploy is cluster 5 alone" (E2's conclusion, Part 10) is about which *seed-addition set* survived
+testing — cluster 5's six sequences rather than `strong`, `newvirus`, `all` or cluster 106. It is
+**not** a statement about which elements the model covers, and reading it that way is wrong. What
+the accepted model actually does, from the 11-02 rows already in Part 10:
+
+| what | sites | note |
+|---|---|---|
+| six sequences **added to the seed** | NC_008604 10707, NC_012671 10735, NC_021069 10735, NC_024299 10747 (fifth array copies), AB981186 10732, MH827524 10759 (genomes absent from the seed) | these are the "cluster 5" of the build name |
+| four **recovered** seed loci the original model scored just below inclusion | **PaRV xr4** NC_027817 543 (22.3 → 28.3 b), **MECDV xr1** NC_027819 561 (22.3 → 27.7), **CFAV xr3** LR694076 476 and MH237596 478 (19.9 → 23.4) | already Class_1b seed members by name; the rebuild fixes a *recovery* failure |
+| one further gain | OP860412 297 | |
+
+So **CFAV's downstream element is already in, twice over**: `CFAV_NC_001564-2_10555-10632_xr3` is a
+named sequence of the provided Class_1b seed, and the rebuild is what finally includes it in the
+library at 23.4 b. And the model already spans two frozen clusters — LR694076 10565 is **fz 21**,
+not fz 5 — so it is not a one-cluster model even on the clustering's own terms. The build name
+`plusFJIS_cluster5` is the source of the confusion, which is a further argument for not carrying it
+downstream.
+
+**Second, the real gap, which is the question worth asking.** PMC7527734 identifies this element as
+the P1-deviant ISF subtype **found in downstream copies (xr3, xr4)** — a *positional* definition.
+E5 then found the same thing from the other direction: the clustering, which knows nothing about any
+CM, separates the array's last copy into a satellite cluster, and does it three times over (5, 21,
+135). If the unit is positional, then the set to seed is "the 3′-most copy of every ISF array", and
+**no step has tested that set**:
+
+- **E2** tested a *bit-score* cut (`strong`) and a *novelty* cut (`newvirus`). Both rejected.
+- **2026-11-03** tested the remaining sub-threshold sites **one at a time**: `kamiti`
+  (NC_005064 11245, fz 21, 18.5 b `?`) loses OP860412 297; `phaiomys` (MW897328 10653, fz 135,
+  19.3 b `?`) is 3′-truncated at PP 0.622 and loses three sites. Both rejected individually.
+- Nobody has added them **as a set**. That is a different test, and not a formality: a bit-score cut
+  adds whatever is marginal and flattens the emissions (eff_nseq 50.24 → 25.58 on 38 sequences),
+  whereas a handful of sequences that share a *defining* feature can sharpen the columns that
+  distinguish the subtype. One outcome is as informative as the other.
+
+Also outstanding: **AEFV xr3** (NC_012932) scores only 13.2 b under the FJIS model (11-02 reciprocal
+scoring) and is a downstream copy that appears in no addition set.
+
+**A counterexample is already visible in E5's own data**, and `e8` prints it: MW897328's odd
+copy at 10653 (fz 135) is **upstream** of its main-cluster copy at 11228 (fz 133). So "last copy"
+cannot be the whole definition, and that array needs reading by eye before the set is fixed.
+
+#### First run, 2026-11-17: the script filtered out the sites it was asking about
+
+`e8`'s first run reported 106 rows over 73 accessions and **no satellite copy** in AB981186,
+MH827524, NC_008604, NC_012671, NC_021069, NC_024299, LR694076 or NC_005064 — every one of E5's
+documented satellites missing, and MW897328 absent from the table entirely. The cause was a
+`cls == "1b"` filter in `class1b_arrays.py`:
+
+> **the explorer's `cls` is CM-derived.** A copy the Class_1b model misses is labelled
+> `None found`, which is *every satellite copy, by construction* — that is the whole reason the
+> expansion exists. Filtering on `cls` therefore deletes the question. This is the same error as
+> the two accession-based greps corrected earlier (E2b's "did they come in?" and E5's per-accession
+> listing): **using a CM-derived label to ask a question about what the CM misses.**
+
+Fixed: keep `cls` in {`1b`, `None found`}, drop `1a` / `2` / `dumbbell` (a Class_1a copy in the same
+genome is a different element, not an array member — NC_027819's fz 7 node at 10587), and restrict
+to genomes carrying at least one confirmed `1b` copy so unclassified nodes elsewhere do not flood
+the output. A second bug in the same run: 151 of 416 nodes have **no** frozen cluster, and `fz` of
+`None` was being read as a satellite, which manufactured all four reported counterexamples
+(MH282908, MT276199, NC_020902, NC_027817 — all unclustered, not satellites) and two of the three
+confirmations. Unassigned is now its own verdict, *3′-most copy is unclustered — still a candidate*.
+
+#### What survived that run: KC181923
+
+One result was real, because its node is `cls 1b` and the filter let it through:
+
+| accession | copies | frozen clusters | note |
+|---|---|---|---|
+| KC181923 | 10492, 10630, **10929** | 133, 133, **21** | Aedes flavivirus, listed in Part 10 (11-03) as "already Class_1b, cluster 133" |
+
+So a genome this file treats as ordinary core Class_1b carries a **cluster-21 satellite as its
+3′-most copy**, and that copy is in no addition set. It is the fourth instance of the satellite
+pattern and it was not found by E5, which labelled only the B1/B2 stalls rather than enumerating
+every array.
+
+**Correction to the above, from the 21:42 run:** I wrote that `KC181923 859` is "one of the nine
+marginal sites E2 loses". It is not — E2's nine are AB021287 65, NC_027819 561, MH827524 595,
+MH307700 124, NC_021069 597, AB981186 590, NC_012671 545, LR694076 476, MH237596 478. `KC181923 859`
+is one of **E2b's nineteen**, lost when cluster 106 was admitted. And view 2 settles the locus
+anyway: KC181923 10928 is **included at 29.0 b**, not marginal. So the tie between the marginal band
+and the satellite set has to be made from the satellites themselves, and view 2 now makes it
+directly — see below.
+
+#### E8 view 1, 2026-11-17 21:42: the positional hypothesis holds for every assigned satellite
+
+314 rows over 73 accessions with a `1b` copy, 35 arrays of more than one copy. **Every satellite the
+frozen clustering assigned to cluster 5 or cluster 21 is its array's 3′-most copy — 8 of 8:**
+
+| accession | array | satellite | fz |
+|---|---|---|---|
+| AB981186 | 10240, 10339, 10487, 10619 | **10732** | 5 |
+| MH827524 | 10269, 10368, 10514, 10644 | **10759** | 5 |
+| NC_008604 | 10246, 10478, 10598 | **10707** | 5 |
+| NC_021069 | 10244, 10343, 10489, 10621 | **10735** | 5 |
+| NC_024299 | 10211, 10349, (10429, 10501), 10561, 10637 | **10747** | 5 |
+| KC181923 | (10430), 10492, 10630 | **10929** | 21 |
+| LR694076 | 10185, 10271 | **10565** | 21 |
+| NC_005064 | 10358, (10914), 10954, (11088) | **11245** | 21 |
+
+**With species names attached (run 22:00), every apparent counterexample is a different virus
+group.** This is the result, and it is cleaner than the hypothesis as stated:
+
+| cluster | copies | viruses | where in the array |
+|---|---|---|---|
+| **5** | 5 | Culex flavivirus, Mosquito flavivirus ×2, Nienokoue virus, Quang Binh virus | **3′-most, 5/5** |
+| **21** | 3 | Aedes flavivirus, Cell fusing agent virus, Kamiti River virus | **3′-most, 3/3** |
+| 135 | 4 | *Phaiomys leucurus* pegivirus, Rodent pegivirus, Wenzhou *Rattus tanezumi* pegivirus 1, Wufeng *Niviventer fulvescens* pegivirus 1 | 3′-most ×3, 5′-most ×1 |
+| 39 | 3 | Rodent pegivirus, Wenzhou *Rattus tanezumi* pegivirus 1, Wufeng *Niviventer fulvescens* pegivirus 1 | **5′-most, 3/3** |
+| 106 | 1 | Kilpisjarvi flavivirus | mid-array |
+
+Clusters 5 and 21 are **entirely insect-specific flaviviruses**. Clusters 39 and 135 are
+**entirely rodent pegiviruses** — a different genus, and cluster 39 is already in the Part 1 gap
+register as **`HPPV 39`, "rodent pegiviruses, explorer cluster 39", 4 sites, priority 5**. The three
+genomes that produced the apparent 5′ satellite (LC602141, MT210614, MT210620) are those pegiviruses,
+and MW897328, the one counterexample from E5, is *Phaiomys leucurus* pegivirus.
+
+**Correction to what I wrote before the names were available:** "satellites occupy the array's ends"
+merged two genera and was wrong. Within insect-specific flaviviruses the positional hypothesis holds
+**without exception — 8 of 8, all 3′-most**. The 5′ satellite is a pegivirus phenomenon belonging to
+the `HPPV 39` workstream, not a second position in the ISF array. The only ISF exception is
+**Kilpisjarvi flavivirus** (ON949931), whose deviant copy is mid-array at 10608 and is cluster 106 —
+already rejected by E2b, and absent from the Class_1b tbl altogether, consistent with it.
+
+#### E8 VERDICT: hypothesis confirmed, and the accepted model already covers the set
+
+The positional set within ISFs, against the accepted model's own library tbl:
+
+| virus | locus | in the seed? | accepted model |
+|---|---|---|---|
+| Culex flavivirus NC_008604 | 10707 | **yes** | **20.9 b `?` — not included** |
+| Mosquito flavivirus AB981186 | 10732 | yes | 23.4 b `!` |
+| Mosquito flavivirus NC_021069 | 10735 | yes | 24.9 b `!` |
+| Nienokoue virus NC_024299 | 10747 | yes | 30.1 b `!` |
+| Quang Binh virus MH827524 | 10759 | yes | 26.6 b `!` |
+| Quang Binh virus NC_012671 | 10735 | yes (no explorer node) | 23.4 b `!` |
+| Aedes flavivirus KC181923 | 10929 | no | 29.0 b `!` |
+| CFAV LR694076 | 10565 | no (recovered) | 23.4 b `!` |
+| CFAV MH237596 | 10555 | no (recovered) | 23.4 b `!` |
+| PaRV NC_027817 | 10756 | no (recovered) | 28.3 b `!` |
+| **Kamiti River virus NC_005064** | **11245** | **no** | **18.5 b `?` — not included** |
+
+**Every ISF positional element is either seeded or already annotated, except Kamiti River virus
+11245 — which was tested alone on 2026-11-03 as `kamiti` and rejected, because it loses
+`OP860412 297`.** So E8 confirms the hypothesis and finds nothing to add: the candidate list reduces
+to one sequence whose rejection is already recorded. `e8b` has no experiment left to run — a
+one-sequence rebuild of an already-rejected addition is not a different test from the 11-03 one.
+
+**E8 is therefore closed, and E6 is unblocked** — subject only to the NC_008604 10707 anomaly below,
+which is a question about the accepted model's validity rather than about expansion.
+
+The deeper reading: the positional hypothesis was right, and the accepted model is the positional
+model. `cluster 5` was never the unit — it is the ISF 3′-terminal subtype, which is what PMC7527734
+described, and the 11-02 rebuild captured it by seeding cluster 5 and *recovering* the rest
+(PaRV xr4, CFAV xr3 ×2). That is why E2's broadenings all failed: there was nothing left of this
+element to add.
+
+#### E8 view 2, and a contradiction with E3 that must be resolved before E6
+
+View 2's verdict line ("holds for 0, fails for 30") was a bug of mine — in tbl mode `MAIN` can never
+match, so every *included* hit was counted as an odd copy. Fixed: in the tbl view the odd copy is a
+**sub-threshold** hit. What the run does establish, from the accepted model's own library tbl:
+
+**Five of the six added cluster-5 sequences are included; the sixth is not.**
+
+| added sequence | in the accepted model's tbl |
+|---|---|
+| AB981186 10733 | 23.4 b `!` |
+| MH827524 10760 | 26.6 b `!` |
+| NC_012671 10736 | 23.4 b `!` |
+| NC_021069 10737 | 24.9 b `!` |
+| NC_024299 10746 | 30.1 b `!` |
+| **NC_008604 10709** | **20.9 b `?` — not included** |
+
+This contradicts the E3 row, which states that "NC_008604 10707 is NOT a gain. Its cluster-5 copy
+was added to the seed … but **was already an included hit**, so it produced no new annotation." In
+the accepted model's own search it is not an included hit. Two readings, and they are not equally
+comfortable:
+
+1. **E3's reason is simply wrong** — the locus was never included, by either model. The conclusion
+   ("not a gain") survives, but so does a worse fact: a sequence in the seed is not recruited by the
+   model built from it.
+2. **It was included by the original model and is not now**, in which case the accepted model
+   **lost an included hit** and does not satisfy the no-loss rule it was accepted under
+   (`94 seqs, 10 gained, 0 lost`).
+
+Reading 2 would reopen the acceptance, so this is checked before E6 moves, not after:
+
+```bash
+source ~/Desktop/viromelib/flaviLib/scripts/flavi_env.sh
+hits_at_stall "$SAT/r0/search.tbl"  NC_008604:10707   # the ORIGINAL model's baseline
+hits_at_stall "${C5}_library.tbl"   NC_008604:10707   # the accepted model
+```
+
+Three further observations from view 2. **KJ741266 10930, LC536088 10908 and KC181923 10928 are all
+included at exactly 29.0 b** — three *Aedes flavivirus* genomes whose 3′-most copies score
+identically, and two of those three loci have **no explorer node at all**, so the node set is
+incomplete relative to the tbl and view 1 cannot see them. **The two views do not enumerate the same
+population** (NC_005064: 5 nodes against 3 hits; MW897328: 5 against 2), so expecting their copy
+counts to agree was naive — they must be compared by position, which is what `--satellites` now
+does. And **ON949931 10829 is not the cluster-106 locus**: its fz 106 node is at 10608, and 10275 is
+the included 30.2 b Class_1b hit E2b found was lost when cluster 106 was admitted, so 10829 is a
+third locus and adding it is not the same experiment as E2b.
+
+#### 13 of these genomes appear nowhere else in this file
+
+Checked against this file as it stood before 2026-11-17. Of the genomes `e8` surfaced, these have
+**no prior mention at all**: HE574573, KC796087, KX905133, LC602141, MT210614, MT210615, MT210620,
+MT276199, MZ229974, NC_024377, NC_031327, OM030329, OU592965. That includes **all three genomes
+that produced the 5′-satellite pattern** — LC602141, MT210614, MT210620 — so the new result sits
+entirely in genomes this project has not discussed, which is why it could only be reported as
+accessions: the file has no name for them.
+
+The names exist in the node table, which carries `species` and `genus` columns that
+`class1b_arrays.py` was reading past and discarding. Fixed: the array listing now prints the species
+beside the accession, `satellites.tsv` gains `species`, `genus`, `n_copies` and `is_3prime_most`,
+and the run ends with a **satellites-by-cluster summary giving each copy's species and which end of
+its array it occupies**. Every statement about these elements should be made in those terms, as the
+rest of this file does (PaRV xr4, MECDV xr1, CFAV xr3, QBV, NIEV), rather than by accession.
+
+Two consequences. **The gap register in Part 1 is incomplete** — it tracks FJTB 64, PLLG 117 and
+HPPV 39, but cluster 39 turns out to be a 5′-terminal subtype recurring across three unexamined
+genomes, which is a different kind of entry from a single-cluster gap. And **the 13 unmentioned
+genomes are not a side note**: they are where the array structure is least constrained by anything
+already decided here, so they are the natural targets for E7's NCBI search alongside the ISF genomes
+already listed.
+
+#### The candidate list needed three fixes before `e8b` could use it
+
+The 7 candidates the first run printed were not candidates, and after the fixes the list is **2**,
+then **1**:
+
+- **NC_008604 10709 is already in the seed.** Re-adding it would inflate `eff_nseq` for nothing.
+  `--seed $C5.stk` excludes seeded loci and reports them separately, since a sub-threshold hit at a
+  *seeded* locus is the finding above, not a candidate. **This did not work on the first attempt**:
+  the 22:00 run read the seed (6 sequences) and still listed NC_008604 10709, because seed names
+  carry the library sequence name *plus a relative subsequence range*
+  (`ACC.1|10000-11000/708-788`), so matching raw numbers against a genomic position compares 708
+  with 10707. Fixed by converting through the offset, exactly as the tbl view does. With that fix
+  the candidate list is **NC_005064 11245 alone**.
+- **NC_020902 11020 at 9.5 b and OM030329 10645 at 14.9 b** are nowhere near the 23.4–27.8 b band
+  this file argues over. A `--floor` (default 20.0 b) excludes them and says so.
+- **but a bit floor would also have discarded NC_005064 11245 at 18.5 b**, the one candidate *both*
+  views support (fz 21 **and** 3′-most sub-threshold). A low score is what the model does; the
+  clustering is independent evidence that the element is real. So `nodes` mode now writes
+  `satellites.tsv` and `tbl` mode takes `--satellites`, which **exempts a cluster-backed candidate
+  from the floor**. `e8` chains the two.
+
+**E6 is held until E8 runs.** Not because the deployment is wrong — a version replaces its
+predecessor, so a later `v3` is no catastrophe — but because cluster steps 10–13 and the no-CM
+recount are the expensive part, and E8 costs one `cmbuild` and one `cmsearch`. If E8 passes, `v2`
+should be the positional model and the name is already right.
+
+```bash
+# both views of the arrays, and the fetchlist
+bash ~/Desktop/viromelib/flaviLib/scripts/cm_class1b_E.sh e8
+
+# build the positional set and apply the no-loss rule
+bash ~/Desktop/viromelib/flaviLib/scripts/cm_class1b_E.sh e8b
+```
+
+
+### Next, in order — 2026-11-17
+
+Steps 1–4 are independent of each other except where noted; **step 3 gates E6** and **step 5 needs
+step 2**. Each step says what its output decides.
+
+**0. E8 is closed** (see *E8 VERDICT* above): the positional hypothesis is confirmed and the
+accepted model already covers the set, so `e8b` is **not** to be run — its one remaining candidate,
+Kamiti River virus 11245, was rejected alone on 11-03. Step 5 below is struck. The live path is
+step 3, then step 4, then E6.
+
+**1. Install the corrected `class1b_arrays.py` and verify it.** The version in `$FLAVISCRIPTS` has
+been wrong twice today in ways that produced plausible-looking output, so the md5 is the check, not
+the fact that it runs.
+
+```bash
+cp <download dir>/class1b_arrays.py "$FLAVISCRIPTS"/
+md5 "$FLAVISCRIPTS/class1b_arrays.py"      # expect 4df8f2cb72c55a0fd78b2421f6a12fe8
+md5 "$FLAVISCRIPTS/cm_class1b_E.sh"        # expect 41a3382bbcfb2b512a3465c78bd42f41
+```
+
+**2. Re-run `e8`** — only needed to regenerate `satellites.tsv` with the seed fix applied; the
+scientific result is already in hand. Output is named by species, chains both views, and writes
+`satellites.tsv` plus a filtered `positional_candidates.fetchlist`.
+
+```bash
+bash "$FLAVISCRIPTS/cm_class1b_E.sh" e8
+```
+
+Read the **satellites-by-cluster** summary at the end of view 1. Expect cluster 5 and cluster 21 to
+be `3'-most` in all 8, and cluster 39 to be `5'-most` in three genomes. Anything that contradicts
+that changes the hypothesis, not the script.
+
+**3. Settle NC_008604 10707 — this gates E6.** Either the E3 row's reason is wrong, or the accepted
+model lost an included hit and fails the no-loss rule it was accepted under.
+
+The signature is the one in `flavi_env.sh` line 153 — **tbl first, then `ACC:stall` colon-joined** —
+and the scripts here are `#!/usr/bin/env bash`, so this runs *under* bash rather than being sourced
+into an interactive zsh:
+
+```bash
+bash -c '
+  source "$HOME/Desktop/viromelib/flaviLib/scripts/flavi_env.sh"
+  echo "== original model"; hits_at_stall "$SAT/r0/search.tbl"  NC_008604:10707
+  echo "== accepted model"; hits_at_stall "${C5}_library.tbl"   NC_008604:10707
+'
+```
+
+- included in both → impossible, the tbl says otherwise; re-read the position conversion
+- included in the original, not in the accepted → **the acceptance reopens**; stop and record it
+- not included in either → E3's reason is wrong, its conclusion stands, and the live fact is that a
+  seed sequence is not recruited by the model built from it
+
+```bash
+clog class1b 'NC_008604 10707 resolved' '<original: X b; accepted: Y b; reading>'
+```
+
+**4. Find the real definition of `$CMS`.** `scripts/env_261021_flaviLib.sh` does not exist, so E6
+step 4 is unverified. Do not create the file.
+
+```bash
+find ~/Desktop/viromelib -name 'env_*flaviLib*' -o -name 'env_26*.sh' | sort
+grep -rn 'CMS=' ~/Desktop/viromelib --include='*.sh' | grep -v flavi_env.sh
+```
+
+**~~5. Run `e8b`~~ — struck.** After the seed-exclusion fix the candidate list is Kamiti River
+virus 11245 alone, and a one-sequence rebuild of an addition already rejected on 11-03 is not a
+different test. Record the closure instead:
+
+```bash
+clog class1b 'E8 closed: positional hypothesis confirmed, nothing to add' \
+  'clusters 5 and 21 ISF and 3-most 8/8; 39 and 135 rodent pegiviruses (HPPV 39); every ISF positional element seeded or annotated except NC_005064 11245, rejected 11-03 as kamiti'
+```
+
+**6. Then E6, with whichever model step 5 leaves standing** — the cluster-5 model as accepted, or the
+positional model. The deployed name `class1b_v2_inf112.cm` is right either way. Only after that, the
+two column renames the sweep found, since they must name the model that is actually deployed:
+`build_pllg_outputs.py:142` and `plot_combined_peaks.R:50`.
+
+**Not on this list, and deliberately:** cluster 39 as a 5′-terminal subtype, and the 13 genomes this
+file has never mentioned. Both belong to E7, which needs sequences from NCBI rather than anything in
+the library, and neither changes what E6 deploys.
 
 ### E6: the deployment commands, and the one decision they need — 2026-11-17
 
@@ -919,27 +1266,88 @@ keeping both would double-count every Class_1b site and make the no-CM recount m
 earlier note in this file about recounting "against 8 models" was wrong; it stays **7**, with
 `cm_set_261021` preserved as the provenance of the old annotation.
 
-That leaves a real cost, and it is the sub-decision to make deliberately:
+#### Deployed name: `class1b_v2_inf112.cm` — decided 2026-11-17
 
-- **Keep the filename `CL_Class_1b_xrRNA_final.cm` and swap its contents.** Column name stable, no
-  downstream edits — but the file then contradicts its own name and the md5 in MANIFEST is the only
-  record of which model produced which table. **Not recommended**: silently changing what a named
-  file contains is the exact failure this document exists to prevent.
-- **Use the real name, `class1b_plusFJIS_cluster5_inf112.cm`.** Honest provenance, and the `_inf112`
-  suffix carries the builder version as Part 9's scheme requires — at the price of a column rename
-  that downstream consumers must follow. Find them first:
+The model gets a **new name**, not a content swap under the old one: swapping what
+`CL_Class_1b_xrRNA_final.cm` contains would hold the column name stable at the price of a file that
+contradicts itself, which is the failure this document exists to prevent.
 
-```bash
-grep -rn "CL_Class_1b_xrRNA_final" ~/Desktop/viromelib --include="*.py" --include="*.R" \
-  --include="*.sh" --include="*.md" | grep -v CM_CANDIDATES.md
-```
+The deployed name is **`class1b_v2_inf112.cm`**, so the annotation column becomes
+**`class1b_v2_inf112.cm_hit`**:
+
+| part | why |
+|---|---|
+| `class1b` | keeps the column recognisable as *the* Class_1b column, and matches the lowercase convention of the models built here (`class1c.cm`, `cl3…`, `cl4_v9`) rather than the provided `CL_*_final` names |
+| `v2` | it is the successor to the provided model, which is v1 by implication |
+| `_inf112` | the builder version. Part 9's rule is **conditional** — models carry `_inf<ver>` *when built by a non-default Infernal* — and 1.1.2 is non-default here, the env's own `cmbuild` being 1.1.5. So it applies, but it is not a blanket requirement on every model name, and `class1c.cm` correctly has no suffix |
+
+The suffix is **redundant as data**: the builder version is in the model's own header
+(`INFERNAL1/a [1.1.2 | July 2016]`), which is what `cm_version` reads and what makes
+`cm_env_require` work, and the header is authoritative where a filename can be wrong. It is in the
+name for two other reasons. The filename *is* the annotation column, so the suffix carries the
+version into every downstream table without anyone opening the model; and a future rebuild of the
+same seed under 1.1.5 is a different model (88/48.62/81/19/2 against 88/87.08/78/18/2, Part 2) that
+must not be able to replace this one under one name.
+
+**Not** `class1b_plusFJIS_cluster5_inf112.cm`, the build name. `plusFJIS_cluster5` describes *how*
+the model was made, which belongs in MANIFEST and the run log, not in every downstream table for the
+rest of the project. Part 9's scheme already works this way — `cand_`/`conf_` build names become a
+clean name on acceptance — so renaming at deployment is the convention, not an exception. MANIFEST
+carries `build_path` so the link back to
+`build/class1b/iter_v3_plusFJIS/cluster5/class1b_plusFJIS_cluster5_inf112.cm` is exact.
+
+**Sweep run 2026-11-17**, 49 hits, of which only **three** are live consumers:
+
+| file | line | what it is |
+|---|---|---|
+| `flaviLib/scripts/build_pllg_outputs.py` | 142 | `"CL_Class_1b_xrRNA_final.cm_hit"` — **the column name**, must change |
+| `figures/fig1/plot_combined_peaks.R` | 50 | `CM_HIT_1B <- "CL_Class_1b_xrRNA_final.cm_hit"` — **the column name**, must change |
+| `flaviLib/scripts/flavi_env.sh` | 29 | `CL1B` path — keep, it is the predecessor and still referenced |
+
+Everything else is one of three things that must **not** be edited: archived and dated workflow
+records (`archive/`, `vintage_md/`, `FIGURES_log_consolidate_20261103.md`, the `260914-260917` and
+`260915` logs) which record what was run at the time; md5 tables of the old model and its `.tbl`,
+which are provenance; and `.sto` / `.cm` paths for the predecessor, which stay valid because the
+predecessor is not deleted. Per Part 9 → **Renaming, and what is not rewritten**, a run log is
+history and is appended to, never corrected in place.
+
+**Two results worth noting, both contrary to expectation.**
+
+- **`scripts/env_261021_flaviLib.sh` is not in the sweep at all.** This file's own claim that it
+  holds "the single definition of the CM set" is true as far as `$CMS` goes, but `$CMS` evidently
+  does **not** name the models by basename — it is a directory or a glob. So E6 step 4 may be a
+  no-op and dropping the new `.cm` into the set directory may be the whole of it. Confirm before
+  editing anything:
+
+  ```bash
+  # 2026-11-17: this path DOES NOT EXIST -- find the file before anything else
+  find ~/Desktop/viromelib -name 'env_*flaviLib*' -o -name 'env_26*.sh' | sort
+  grep -rn 'CMS=' ~/Desktop/viromelib --include='*.sh' | grep -v flaviLib/scripts/flavi_env.sh
+  ```
+
+  **`~/Desktop/viromelib/scripts/env_261021_flaviLib.sh` is not there** (checked 2026-11-17), which
+  is the real reason the sweep missed it — not a glob. So this file's repeated claim that `$CMS`
+  "lives in `scripts/env_261021_flaviLib.sh`, the single definition of the CM set" has a **stale
+  path**, inherited from the 261021 run log and never re-checked. Everything E6 step 4 says about
+  editing that file is unverified until the file is located. Two possibilities, and the commands
+  above distinguish them: the file moved or was renamed (likely — the 261021 run was re-run in
+  261015–261019 and the workflows have been reorganised since), or `$CMS` is set somewhere else
+  entirely. **Do not create it.** If no file defines `$CMS`, then the annotating set is defined by
+  whatever directory the pipeline reads, and the "replaces, does not join" rule is enforced by the
+  predecessor being physically absent from `cm_set_261117`.
+
+  If `$CMS` is a glob over a directory, then **the new model is picked up automatically and the old
+  one must be physically absent from the new `cm_set_261117` directory**, which is how the
+  "replaces, does not join" rule gets enforced in practice rather than by editing a list.
+- **`figures/fig1/plot_combined_peaks.R` is the only R consumer**, and it binds the column to a
+  single constant at line 50, so the plotting side is a one-line change.
 
 #### The commands
 
 ```bash
 source $FLAVISCRIPTS/flavi_env.sh
 V=261117                                    # the new cm_set's date
-NEW=class1b_plusFJIS_cluster5_inf112        # decide the filename BEFORE this point
+NEW=class1b_v2_inf112                       # deployed name; column becomes ${NEW}.cm_hit
 
 # 1. the new set: copy the 7, swapping Class_1b for its successor
 mkdir -p "$CMDIR/cm_set_$V"
@@ -3926,6 +4334,42 @@ not sub-species branch order.
 
 ## Working with this file and the scripts
 
+### Invocation: these scripts are bash, and the shell here is zsh
+
+Recorded 2026-11-17 after `hits_at_stall` came back `command not found`. Two separate traps, both
+of which cost a round trip:
+
+- **Every script here starts `#!/usr/bin/env bash`**, and the interactive shell on this machine is
+  **zsh**. Sourcing a bash script into zsh is not something they are written for. Run helpers under
+  bash and keep the whole sequence inside one invocation, so the sourced environment survives:
+
+  ```bash
+  bash -c 'source "$HOME/Desktop/viromelib/flaviLib/scripts/flavi_env.sh"; <helper> ...'
+  ```
+
+  Note also that `$FLAVISCRIPTS` is **defined by** `flavi_env.sh`, so it cannot be used to locate
+  the file being sourced in a shell that has not already sourced it — spell that one path out.
+- **An md5 in the table below is only a check if it is run against the *installed* file.** The
+  `command not found` persisted under `bash -c` because `hits_at_stall` was added to
+  `flavi_env.sh` during E2b and the copy in `$FLAVISCRIPTS` predates that: it has every function
+  used up to `stk_oneblock` (line 147) and stops before `hits_at_stall` (line 154), so everything
+  else kept working. Verifying a local copy's md5 against this table proves nothing about what is
+  installed. List what the installed file actually defines:
+
+  ```bash
+  md5 "$HOME/Desktop/viromelib/flaviLib/scripts/flavi_env.sh"   # expect d38c8ffdee67696cb75f98d867d56f36
+  grep -n '^[a-z_]*() {' "$HOME/Desktop/viromelib/flaviLib/scripts/flavi_env.sh"
+  ```
+- **Read a helper's signature from its own usage comment, not from memory.** `hits_at_stall` is
+  `hits_at_stall <tblout> <ACC:genomic_stall> [ACC:stall ...]` (`flavi_env.sh` line 153): the tbl
+  comes **first** and the accession and stall are joined by a **colon**, because the function takes
+  several loci in one call. Three invocations recorded in this file had the arguments in the wrong
+  order and form; all are corrected.
+
+The same applies to the two tbl paths that go with it: the original model's library search is
+`$SAT/r0/search.tbl` (`SAT` = `build/class1b/iter_v1_saturation`, the baseline every comparison in
+Part 6 uses), **not** `$CL1B.tbl`, which does not exist — `$CL1B` is the model, not a search.
+
 ### How this file is kept current
 
 The **Run log** tables at the end are written by the scripts, not by hand. Everything above them is
@@ -3942,7 +4386,8 @@ interpretation and is edited by hand when a run changes a conclusion.
 | `explorer_cm_scan.py` | `1c4b4ad1d63695100ee8694c4ee1f441` | nothing; scans the flavi150 explorer's sites with a CM; `fetch` (reference windows) and `seqs` (the explorer's own 80-nt windows) per cluster. **2026-11-17: `extract`, `seqs` and `fetch` raise `KeyError: 'fz'` on the regenerated explorer** — see Part 8. Apply `explorer_cm_scan_fz.patch` |
 | `explorer_cm_scan_fz.patch` | `4bf4d41b6a241d1e6732781db0b01214` | n/a — a patch, not a script. Adds `resolve_fz(d)` to `explorer_cm_scan.py` so `extract` injects `fz` from `DATA.sets` when the regenerated explorer's nodes lack it; chooses the set by name and prints it, and backs up `data.json` / `nodes.tsv` / `nodes.fa` before overwriting them. Written 2026-11-17, tested on both explorer generations, **not yet applied** |
 | `flavi_env.sh` | `d38c8ffdee67696cb75f98d867d56f36` | nothing; **sourced by the three scripts below — every path is defined here and nowhere else**, and it **establishes** the conda env rather than reporting on it (`flavi_require`, which exits if a tool is absent and prints the Infernal version). `bash flavi_env.sh --check` verifies paths, tools and the cmalign/cmbuild/1.1.2 versions side by side. Overridable from the caller (`ROOT=`, `ITER=`, `CONDA_ENV=`). Also holds `clog`, `need`, `have`, `infernal_version`, **`cm_version` / `cm_env_for` / `cm_env_require`** (the builder version read from a model's own header, and the env that matches it), **`hits_at_stall`** (whether a hit covers the stall, converted from the sequence name's own offset — a grep by accession does not answer this), `stk_oneblock`, `alifold_line`. 2026-11-16; `--check` activates `$CONDA_ENV` before reporting (fixed same day: it had inspected the active env, giving false 'absent' for tools that are installed). `REF` and `SEED1B` were MISSING on the laptop and need their real paths |
-| `cm_class1b_E.sh` | `1ac793dec8f8e8b8ead92a1566c27e34` | nothing yet; prints the `clog` line to run. Subcommands `e1`, `e2`, `e2b`, `e3`–`e5` = steps E1–E5 (`e2b` decides cluster 106) of "Where Class_1b expansion goes" (Part 1). Written 2026-11-16, **syntax-checked only, never run** |
+| `cm_class1b_E.sh` | `41a3382bbcfb2b512a3465c78bd42f41` | nothing yet; prints the `clog` line to run. Subcommands `e1`, `e2`, `e2b`, `e3`–`e5` = steps E1–E5 (`e2b` decides cluster 106), and `e8`/`e8b` = step E8, the positional downstream set. Written 2026-11-16, e8 added 2026-11-17. E1–E5 have been run; **`e8`/`e8b` are syntax-checked only**. **Superseded md5s: `7a2c5bbb3f5041ad6a7fb3c989324a60`** = `e8` dies on `C5_library_tbl: unbound variable` before view 2; **`b973c4e77dae54db6d7a268ca205a6c8`** = runs both views but does not chain them, so the clustering cannot exempt a candidate from the bit floor |
+| `class1b_arrays.py` | `4df8f2cb72c55a0fd78b2421f6a12fe8` | nothing; prints and writes `positional_candidates.fetchlist`. Enumerates each genome's Class_1b array and tests whether the satellite / sub-threshold copy is the array's 3′-most. Two modes: `nodes <nodes.tsv>` (the explorer's clustering, CM-independent) and `tbl <search.tbl>` (bits and inclusion, converting each hit to genomic coordinates via the sequence name's own offset, as `hits_at_stall` does). Written 2026-11-17, **corrected the same day**: the first version filtered `cls == "1b"`, which removes every satellite copy because `cls` is CM-derived, and read an unassigned `fz` of `None` as a satellite. Both fixed; `nodes` mode now reproduces E5's documented arrays including the MW897328 counterexample. Writes `satellites.tsv` (`nodes`) and `positional_candidates.fetchlist` (`tbl`); options `--seed`, `--satellites`, `--floor`. **Superseded md5s: `cc6f1350af4fb7d6c1a220c68b8769b3`** = the `cls` filter bug, output invalid; **`c33a7a01f438b576b18b903b90cadbf3`** = correct `nodes` mode but the `tbl` verdict line is meaningless (`MAIN` cannot match an `incl`/`sub` label) and the candidate list has no seed exclusion or bit floor |
 | `explorer_class1b_clusters.py` | `6d30ac2159cce0e09c1cfb5e35088f92` | nothing; E5 — Class_1b nodes per frozen cluster with a cumulative share, plus the frozen cluster of every B1/B2 site. **Reads `explorer_cm_scan.py extract`'s node table** (the validated parser, which derives `fz`); the HTML path is a fallback that reads `DATA.sets` by name (`mode` frozen, `view` all), says which set it chose, and offers `--list-sets`. Rewritten 2026-11-17 after two wrong guesses at the raw field names. Now reports rows read / with a cluster / skipped, **cross-checks the `cls` counts against Part 8's documented 416-node explorer** and warns if they disagree (it had been run on the annotated `nodes_cl3.tsv`), states both denominators for the main-cluster call, and decides each B1/B2 label **per stall, not per accession** |
 | `cm_candidate.sh` | `cb01b7cb5618c093743162613b4808ed` | one row per stage, by `clog`. Track B: `align` (GATE 1, stops at MATER), `build` (GATE 2, model, library + RNAvirus DB), and `subset` (rebuild an existing refined alignment minus named sequences, reusing its hand-made structure; `--keep-columns` synthesises RF so cm numbering is preserved when the source has none; no manual step). Supersedes `build_candidate_cm.sh`. Written 2026-11-16, **GATE 1 parser tested on a real-format log; the stages never run** |
 | `cm_rename_builds.sh` | `a6afb45fb394d1045d83c82a121a3e36` | one row on `--apply`. Renames build folders to the stage-prefixed scheme (Part 9 → Naming); check-only by default, never overwrites or deletes; writes `build/RENAMES.tsv` + `RENAMED_FROM.txt`. Written 2026-11-16, **tested on a mock build tree, not run on the real one** |
@@ -4597,6 +5042,36 @@ seed (Part 2).
 So any token is unambiguous by shape: `c5` is a cluster, `iter_v2` is a round, `261029` is a date,
 `inf112` is an Infernal version, `vsA` is a vsearch cluster.
 
+### Versions of an existing model
+
+The stage scheme above covers new candidates becoming new classes. A **new version of a model that
+already annotates** is a different case and was unwritten until 2026-11-17:
+
+```
+<family><_v N>_inf<ver>.cm        e.g. class1b_v2_inf112.cm
+```
+
+- the **family name** stays, so the annotation column is still recognisably that family's;
+- `_v<n>` counts versions, the originally provided model being v1 by implication;
+- `_inf<ver>` carries the builder version, which for the whole Class_1b line is 1.1.2;
+- the **build name does not survive deployment.** `class1b_plusFJIS_cluster5_inf112` says how the
+  model was made; that belongs in `MANIFEST.tsv` (as `build_path`) and in the run log, not in a
+  column heading that every downstream table and plot then carries.
+
+**Renaming a deployed model is a downstream-breaking change**, because "column names are the `.tbl`
+basenames including `.cm`" (Part 9 → How the CM columns are produced). So a version bump requires,
+and must record, a sweep for the old column name:
+
+```bash
+grep -rn "<old model basename>" ~/Desktop/viromelib --include="*.py" --include="*.R" \
+  --include="*.sh" --include="*.md" | grep -v CM_CANDIDATES.md
+```
+
+A version **replaces** its predecessor in the annotating set rather than joining it — two versions of
+one model would double-count every site they share, and the overlap rule (lower E) exists for
+competing classes, not for a model against its own successor. The predecessor stays in its old
+`cm_set_<yymmdd>` as the provenance of the tables it produced.
+
 ### Promotion
 
 By gates already defined in this file, so nothing new has to be judged:
@@ -5054,6 +5529,11 @@ only the bare accession in this file.
 | 2026-11-17 | class1b_groups.tsv written; E1-E5 complete, E6 is the live step | The 10-29 explorer snapshot was confirmed intact (data.json nodes carry fz) and backed up as data.json/nodes.tsv/nodes.fa .20261029.bak, so seqs and fetch keep working and the E5 labels rest on a preserved artefact. cm/class1b_groups.tsv written from the E5 result: 19 rows, 9 columns, no placeholders left. Groups: transition:5 x6 (the five cluster-5 sites plus NC_012671 inheriting from MH827524 10759), transition:21 x2 (LR694076 10565 and MH237596 10555 inheriting from it), transition:unknown x3 (NC_027817 10757, NC_027819 10811, OP860412 10802), transition_candidate:106 x3, transition_candidate:21 x1 (NC_005064 11245, the same satellite as LR694076), transition_candidate:135 x1 (MW897328 10653), core x2 (MN587651 9782 and MN587661 9940, both fz 131), core? x1 (OM030319 11865, provisional). KEY RESULT: no site included in the deployed model is core -- all eleven model members are transition:*, so the expanded Class_1b's additions are without exception the satellite copies rather than main-cluster elements. Four rows cannot be resolved by inheritance (NC_027817 has no node at all; NC_027819's only node is fz 7 / cls 1a, a Class_1a element; OP860412 and OM030319 have no node) and must NOT be joined into the annotation until settled -- cluster 21 is the likely answer for the two recovered P1-deviant loci by analogy, but that is inference and the rationale column says so. NC_005064.1's version is unconfirmed, seen only as a bare accession in this file. STATUS: E1, E2, E2b, E3, E4 and E5 are all complete and E6 is live -- MANIFEST, new cm_set, the groups file, cluster steps 10-13, recount against 8 models |
 | 2026-11-17 | E6 commands written; the successor REPLACES Class_1b, so the set stays at 7 models | Grounded in steps 10 and 11b as recorded in Part 9. Two facts there govern it: $CMS lives in scripts/env_261021_flaviLib.sh, 'the single definition of the CM set', so editing that file is what changes the annotation and dropping a .cm into cm/ annotates nothing; and column names are the .tbl basenames including .cm, so the model's FILENAME is the column name. DECISION: replace CL_Class_1b_xrRNA_final.cm rather than add an 8th model. The successor is strictly better by the rule that accepted it (0 lost, 10 gained), so keeping both would double-count every Class_1b site and make the no-CM recount meaningless; and overlap resolution by lower E is for competing classes, not for a model against its own successor. CORRECTION: the earlier rows in this log saying 'recount against 8 models' are wrong -- the set stays at 7, with cm_set_261021 preserved as the provenance of the old annotation. SUB-DECISION left open deliberately, because it has a downstream cost: keeping the filename CL_Class_1b_xrRNA_final.cm and swapping its contents holds the column name stable and needs no downstream edits but makes the file contradict its own name, which is the failure this document exists to prevent; using the real name class1b_plusFJIS_cluster5_inf112.cm gives honest provenance and carries the builder version as Part 9's scheme requires, at the price of a column rename that every downstream consumer must follow (a grep to find them is in the E6 block). Steps 6-8 of that block -- step 11b's full post_process_peaks.py call, the tile-collapse follow-up specified in flaviLib.md, and Part 7's recount -- are deliberately NOT written as commands, because the source document elides step 11b's arguments and Part 7 records figures rather than a script; they are to be read at the source rather than reconstructed |
 | 2026-11-17 | interface audit of the new scripts against cm_log.py, explorer_cm_scan.py, cm_iterate.sh, cm_round_stats.py | One real bug of mine: cm_round_stats.py fetch writes to its OUT argument EXACTLY with no suffix, so e4 passing $OUT/insertcheck and then opening insertcheck.fetchlist is why the first 11-17 run failed; e4 now passes the full filename. Everything else checks out: clog matches cm_log.py's --model/--step/--result (which escapes pipes itself and appends after the last row in its section); compare writes NEW.tbl.compare.tsv as e3 assumed; overlap takes A.tbl B.tbl NAME_A NAME_B and resolves by lower E-value, explicitly Rfam clan competition, printing to stdout; the cmstat field order read in this file is right (nseq f[3], eff_nseq f[4], clen f[5], bps f[7], bifs f[8], relent f[10]); and every cm_iterate.sh flag cm_candidate.sh passes is valid, with the caveats that it requires an already calibrated CM, defaults to --incE 1e-10, and writes its own run-log rows when given --doc. Two notes: cm_log.py's Last updated regex wants a bare date and a period, so it never fires on this file's parenthetical line, which is maintained by hand; and nodes.tsv has no acc or stall column, so explorer_class1b_clusters.py works only via its fallback of splitting id on the pipe |
+| 2026-11-17 | the deployed Class_1b successor is named `class1b_v2_inf112.cm`, and Part 9 gains a rule for model versions | DECIDED, closing E6's open sub-decision. The two options were to keep the filename CL_Class_1b_xrRNA_final.cm and swap its contents (stable annotation column, no downstream edits, but a file that contradicts its own name, with the MANIFEST md5 as the only record of which model produced which table) or to deploy under a new name (honest provenance, at the cost of a column rename to chase downstream). NEW NAME, since silently changing what a named file contains is the exact failure this document exists to prevent. The name is class1b_v2_inf112.cm, so the annotation column becomes class1b_v2_inf112.cm_hit: class1b keeps the column recognisable as THE Class_1b column and matches the lowercase convention of the models built here (class1c.cm, cl3..., cl4_v9) rather than the provided CL_*_final names; v2 marks it the successor to the provided model, which is v1 by implication; and _inf112 carries the builder version as Part 9's scheme requires, non-negotiable here because the whole Class_1b line is 1.1.2. NOT the build name class1b_plusFJIS_cluster5_inf112.cm: plusFJIS_cluster5 says HOW the model was made, which belongs in MANIFEST.tsv as build_path and in this log, not in every downstream table for the rest of the project -- and Part 9's stage scheme already renames on acceptance (cand_/conf_ -> a clean name), so renaming at deployment is the convention rather than an exception. SCHEME GAP FILLED: the stage scheme covered new candidates becoming new classes but said nothing about a new version of a model that already annotates, so Part 9 gains 'Versions of an existing model' -- <family>_v<n>_inf<ver>.cm, family name retained so the column stays recognisable, build name not surviving deployment, a version REPLACING its predecessor in the annotating set rather than joining it (two versions of one model would double-count every shared site, and the lower-E overlap rule is for competing classes, not a model against its own successor), the predecessor staying in its old cm_set as the provenance of the tables it produced, and a version bump requiring a recorded grep sweep because column names are the .tbl basenames including .cm. NEXT ACTION IS THE SWEEP, before E6 runs: grep -rn "CL_Class_1b_xrRNA_final" ~/Desktop/viromelib --include="*.py" --include="*.R" --include="*.sh" --include="*.md" \| grep -v CM_CANDIDATES.md |
+| 2026-11-17 | scope correction, the sweep result, and E8: the unit may be positional, so E6 is held | THREE THINGS. (1) SCOPE CORRECTION, my error in wording: 'the model to deploy is cluster 5 alone' is about which SEED-ADDITION SET survived E2 (cluster 5's six sequences, not strong/newvirus/all/c106), NOT about which elements the model covers. The accepted model already recovers four seed loci the original scored below inclusion -- PaRV xr4 NC_027817 543 22.3->28.3, MECDV xr1 NC_027819 561 22.3->27.7, CFAV xr3 LR694076 476 and MH237596 478 19.9->23.4 -- so CFAV's DOWNSTREAM element is already in twice over: CFAV_NC_001564-2_10555-10632_xr3 is a named sequence of the provided seed and the rebuild is what finally includes it in the library. And LR694076 10565 is fz 21, so the model already spans two frozen clusters and is not a one-cluster model on the clustering's own terms. The build name plusFJIS_cluster5 is the source of the confusion, a further reason not to carry it downstream. (2) THE _inf112 JUSTIFICATION WAS OVERSTATED: Part 9's rule is CONDITIONAL -- models carry _inf<ver> when built by a NON-DEFAULT Infernal -- and 1.1.2 is non-default here, so it applies, but it is not a blanket requirement and class1c.cm correctly has no suffix. The suffix is also redundant as data, since the builder version is in the .cm header, which is what cm_version reads and is authoritative where a filename can be wrong; it is in the name because the filename IS the annotation column and so carries the version into every downstream table, and because a 1.1.5 rebuild of the same seed is a different model (88/48.62/81/19/2 vs 88/87.08/78/18/2) that must not replace this one under one name. (3) E8 ADDED AND E6 HELD. PMC7527734 defines the element POSITIONALLY -- the P1-deviant subtype is found in downstream copies, xr3/xr4 -- and E5 found the same from the other direction, the clustering separating the array's last copy into a satellite three times over (5, 21, 135). No step has tested the positionally-defined set: E2 tested a bit-score cut, newvirus a novelty cut, and 11-03 tested the remaining sub-threshold sites ONE AT A TIME (kamiti NC_005064 11245 fz 21 loses OP860412 297; phaiomys MW897328 10653 fz 135 is 3'-truncated at PP 0.622 and loses three). Adding them as a SET is a different test, because a bit-score cut adds whatever is marginal and flattens emissions (eff_nseq 50.24->25.58 on 38 seqs) whereas a few sequences sharing a DEFINING feature can sharpen the distinguishing columns. Also outstanding: AEFV NC_012932 xr3, 13.2 b under the FJIS model, a downstream copy in no addition set. COUNTEREXAMPLE already in E5's data and printed by e8: MW897328's odd copy 10653 is UPSTREAM of its main-cluster copy 11228, so 'last copy' is not the whole definition and that array needs reading by eye. E6 held because cluster steps 10-13 and the no-CM recount are the expensive part while E8 costs one cmbuild and one cmsearch; if E8 passes, v2 should BE the positional model and the name is already right. New script class1b_arrays.py (modes nodes and tbl, two independent views, converts tbl hits to genomic coords via each sequence name's own offset) and cm_class1b_E.sh gains e8/e8b. (4) GREP SWEEP RUN, 49 hits, only THREE live consumers: build_pllg_outputs.py:142 and plot_combined_peaks.R:50 both bind the column name and must change, flavi_env.sh:29 is the predecessor path and stays. All the rest are archived/dated run logs, md5 provenance tables, or .sto/.cm paths for the predecessor, none to be edited. SURPRISE: scripts/env_261021_flaviLib.sh is NOT in the sweep, so $CMS does not name models by basename and is a directory or glob -- E6 step 4 may be a no-op, and if it is a glob then 'replaces, does not join' is enforced by the old model being physically ABSENT from cm_set_261117, not by editing a list. Check with: grep -n 'CMS\|cm_set\|CMDIR' scripts/env_261021_flaviLib.sh |
+| 2026-11-17 | E8 first run: the script filtered out the sites it was asking about; KC181923 carries an unrecorded cluster-21 satellite | TWO BUGS, ONE FINDING, ONE STALE PATH. BUG 1, the serious one: class1b_arrays.py filtered cls == '1b', and the explorer's cls is CM-DERIVED, so every copy the Class_1b model misses is labelled 'None found' -- which is every satellite copy by construction, the whole reason the expansion exists. The run therefore reported 106 rows over 73 accessions with NO satellite copy in AB981186, MH827524, NC_008604, NC_012671, NC_021069, NC_024299, LR694076 or NC_005064, every one of E5's documented satellites, and MW897328 absent entirely. Same error as the two accession-based greps corrected earlier today: using a CM-derived label to ask about what the CM misses. Fixed by keeping cls in {1b, None found}, dropping 1a/2/dumbbell (a Class_1a copy in the same genome is a different element, not an array member -- NC_027819's fz 7 node at 10587), and restricting to genomes with at least one confirmed 1b copy. BUG 2: 151 of 416 nodes have no frozen cluster and fz 'None' was read as a satellite, which manufactured all four reported counterexamples (MH282908, MT276199, NC_020902, NC_027817 -- all unclustered) and two of the three confirmations (MZ229974, OU592965); unassigned is now its own verdict. BUG 3, trivial: e8 wrote BASE=$C5_library_tbl, which bash reads as one identifier, so it died on 'unbound variable' under set -u before reaching view 2; now ${C5}_library.tbl. THE ONE REAL RESULT, which survived because its node is cls 1b: KC181923 has copies at 10492 (fz 133), 10630 (fz 133) and 10929 (fz 21) -- so a genome this file lists (11-03) as 'already Class_1b, cluster 133' carries a CLUSTER-21 SATELLITE AS ITS 3'-MOST COPY, in no addition set. Fourth instance of the satellite pattern, missed by E5 because E5 labelled only the B1/B2 stalls instead of enumerating every array. DECISIVE CHECK, and it must be positional not accession-based for the reason above: is KC181923 859, one of the nine marginal 23.4-27.8 b sites E2 loses, the same element as genomic 10929? If the nine marginal sites ARE the satellite copies then E2's fragility finding and the positional hypothesis are one result, and seeding them deliberately is the answer rather than leaving them at the inclusion threshold. Run: hits_at_stall ${C5}_library.tbl KC181923:10929 (signature is tbl first, then ACC:stall -- flavi_env.sh line 153). STALE PATH: ~/Desktop/viromelib/scripts/env_261021_flaviLib.sh DOES NOT EXIST, which is why the grep sweep missed it -- not because $CMS is a glob. This file's claim that $CMS lives there, 'the single definition of the CM set', is inherited from the 261021 run log and was never re-checked, so everything E6 step 4 says about editing it is unverified. Locate it before E6: find ~/Desktop/viromelib -name 'env_*flaviLib*'; grep -rn 'CMS=' ~/Desktop/viromelib --include='*.sh'. Do NOT create it |
+| 2026-11-17 | E8 view 1: the positional hypothesis holds for 8/8 assigned satellites, and there are TWO satellite positions; view 2 contradicts E3 on NC_008604 | VIEW 1, 314 rows / 73 accessions with a 1b copy / 35 multi-copy arrays. EVERY satellite the frozen clustering assigned to cluster 5 or 21 is its array's 3'-most copy, 8 of 8: AB981186 10732, MH827524 10759, NC_008604 10707, NC_021069 10735, NC_024299 10747 (all fz 5), KC181923 10929, LR694076 10565, NC_005064 11245 (all fz 21). Of the 22 reported failures, 20 carry (uncl) -- the 3'-most copy has no frozen cluster, an open case not a counterexample, and a reminder that 151 of 416 nodes are unassigned. THREE ARE REAL AND THEY ARE ONE PATTERN: LC602141 10648, MT210614 10562 and MT210620 10652 are all fz 39 at the array's 5' END, in genomes whose 3'-most copy IS a satellite (fz 135 at 10820, 10740, 10840). So SATELLITES OCCUPY THE ARRAY'S ENDS rather than only its 3' end, and cluster 39 -- HPPV 39, a pending gap in the Part 1 register -- is consistently the 5'-terminal copy in three genomes. Only genuine counterexamples left: MW897328 (3'-most 11228 is main fz 133, satellites upstream) and ON949931 (fz 106 mid-array at 10608). VIEW 2: its verdict line was my bug -- in tbl mode MAIN can never match an incl/sub label, so every INCLUDED hit was counted as odd, giving 'holds for 0, fails for 30'; the odd copy in that view is a SUB-THRESHOLD hit, now fixed. What view 2 does establish: FIVE OF THE SIX ADDED CLUSTER-5 SEQUENCES ARE INCLUDED AND THE SIXTH IS NOT -- AB981186 10733 23.4 !, MH827524 10760 26.6 !, NC_012671 10736 23.4 !, NC_021069 10737 24.9 !, NC_024299 10746 30.1 !, but NC_008604 10709 is 20.9 b '?', NOT INCLUDED. This CONTRADICTS the E3 row, which says NC_008604 10707 'was already an included hit'. Either E3's reason is wrong and the locus was never included by either model (conclusion survives, but a seed sequence is not recruited by the model built from it), or it was included by the original and is not now, in which case the accepted model LOST an included hit and fails the no-loss rule it was accepted under (94 seqs, 10 gained, 0 lost). Reading 2 would reopen the acceptance, so CHECK BEFORE E6 MOVES: hits_at_stall "$SAT/r0/search.tbl" NC_008604:10707 and hits_at_stall "${C5}_library.tbl" NC_008604:10707. THREE MORE VIEW-2 OBSERVATIONS: KJ741266 10930, LC536088 10908 and KC181923 10928 are all included at EXACTLY 29.0 b, three Aedes flavivirus 3'-most copies scoring identically, and two of those loci have NO explorer node, so the node set is incomplete relative to the tbl; the two views do not enumerate the same population (NC_005064 5 nodes vs 3 hits, MW897328 5 vs 2), so expecting their counts to agree was naive and they must be compared by POSITION; and ON949931 10829 is NOT the cluster-106 locus (fz 106 is at 10608, and 10275 is the 30.2 b hit E2b found was lost when 106 was admitted), so it is a third locus and adding it is not E2b's experiment. CORRECTION TO MY OWN EARLIER ROW: KC181923 859 is NOT one of E2's nine lost -- it is one of E2b's nineteen -- and view 2 shows KC181923 10928 included at 29.0 b, not marginal. CANDIDATE LIST FIXED, three ways: --seed excludes loci already in the accepted seed (NC_008604 10709 was in the printed list and is already seeded); --floor, default 20.0 b, excludes NC_020902 11020 at 9.5 and OM030329 10645 at 14.9, nowhere near the 23.4-27.8 band; but a floor would ALSO have discarded NC_005064 11245 at 18.5 b, the one candidate BOTH views support, so nodes mode now writes satellites.tsv and tbl mode takes --satellites, which exempts a cluster-backed candidate from the floor, and e8 chains the two |
+| 2026-11-17 | E8 CLOSED: the positional hypothesis is confirmed and there is nothing to add; clusters 39 and 135 are pegiviruses, not a second ISF position | SPECIES NAMES SETTLE IT. With species carried through from nodes.tsv, cluster 5 (5 copies: Culex flavivirus NC_008604 10707, Mosquito flavivirus AB981186 10732 and NC_021069 10735, Nienokoue virus NC_024299 10747, Quang Binh virus MH827524 10759) and cluster 21 (3 copies: Aedes flavivirus KC181923 10929, Cell fusing agent virus LR694076 10565, Kamiti River virus NC_005064 11245) are ENTIRELY INSECT-SPECIFIC FLAVIVIRUSES and 3'-most in 8 of 8. Cluster 135 (4 copies) and cluster 39 (3 copies) are ENTIRELY RODENT PEGIVIRUSES -- Phaiomys leucurus pegivirus MW897328, Rodent pegivirus LC602141, Wenzhou Rattus tanezumi pegivirus 1 MT210614, Wufeng Niviventer fulvescens pegivirus 1 MT210620 -- and cluster 39 is ALREADY in the Part 1 gap register as HPPV 39, 'rodent pegiviruses, explorer cluster 39', 4 sites, priority 5. RETRACTION of my own row from earlier today: 'satellites occupy the array's ends' merged two genera and is wrong. Within ISFs the hypothesis holds WITHOUT EXCEPTION, all 3'-most; the 5'-terminal satellite is a pegivirus phenomenon in a different genus. The only ISF exception is Kilpisjarvi flavivirus ON949931, whose deviant copy is mid-array at 10608 and is cluster 106, already rejected by E2b and absent from the Class_1b tbl entirely, which is consistent. VERDICT: every ISF positional element is either in the seed (NC_008604 10707, AB981186 10732, NC_021069 10735, NC_024299 10747, MH827524 10759, NC_012671 10735) or already annotated by the accepted model (KC181923 10928 29.0 !, LR694076 10565 23.4 !, MH237596 10555 23.4 !, NC_027817 10756 28.3 ! -- the last three recovered rather than seeded), EXCEPT Kamiti River virus NC_005064 11245 at 18.5 b '?', which was tested alone on 11-03 as kamiti and rejected because it loses OP860412 297. So the candidate list reduces to ONE sequence whose rejection is already recorded, e8b has no experiment left and is STRUCK, and E6 IS UNBLOCKED. DEEPER READING: the positional hypothesis was right and the accepted model IS the positional model -- cluster 5 was never the unit, it is the ISF 3'-terminal subtype of PMC7527734, and the 11-02 rebuild captured it by seeding cluster 5 and RECOVERING the rest (PaRV xr4, CFAV xr3 in two isolates). That is why E2's broadenings all failed: there was nothing left of this element to add. NEW FOR THE HPPV WORKSTREAM, not for E6: clusters 39 and 135 are two positions in ONE pegivirus array, 39 consistently 5'-terminal and 135 3'-terminal in the same three genomes, so they should be aligned together rather than as separate clusters. THE 13 PREVIOUSLY UNMENTIONED GENOMES ARE NOT ISFs: with species attached they are hepaciviruses (BK013349 Bat hepacivirus, KX905133 Norway rat hepacivirus 1, MN564793 Rodent hepacivirus), pegiviruses (KC796087 Bat pegivirus, MT210615, MT276199 Pegivirus equi, NC_020902 Equine pegivirus 1, NC_024377 Simian pegivirus, NC_030291 GB virus-D, OP860412 Eospalax rufescens pegivirus), pestiviruses (KY370100 Pestivirus R, KY370101 Pestivirus Q, MH282908 bat pestivirus, NC_025677 Norway rat pestivirus) and MZ229974 Tamana bat virus plus OU592965 Zikole virus -- non-Flavivirus Flaviviridae, belonging to the priority-8 clade pools and NOT to E7, whose target list is ISF genomes. Their 20 unclustered 3'-most copies are an observation about those genera and bear on nothing in E6. SCRIPT FIXES: species/genus now carried from nodes.tsv into the listing, into satellites.tsv (which gains species, genus, n_copies, is_3prime_most) and into a satellites-by-cluster summary; the tbl verdict uses 'sub' as the odd label; --seed, --satellites and --floor added; and the seed exclusion failed on its first attempt because seed names carry the library sequence name plus a RELATIVE subsequence range (ACC.1\|10000-11000/708-788), so matching raw numbers against a genomic position compared 708 with 10707 -- now converted through the offset as the tbl view does, which is what reduced the candidate list from 2 to 1 |
 | 2026-11-16 | cm_set_261021 mixes Infernal builder versions | Headers read by flavi_env.sh --check: CL_Class_1a, CL_Class_1b and CL_Class_2 are all 1.1.2 (provided); class1c.cm is 1.1.5 (built here); class1b_plusFJIS_cluster5_inf112.cm is 1.1.2. There is therefore no single correct env for the deployed set, which is the reason the env is derived per model from its header instead of being configured once. Any future class1c rebuild or extension must run in viromelib, not infernal112, and cm_env_for now selects that automatically |
 
 ### `cand_FJIS_fz106_261029`

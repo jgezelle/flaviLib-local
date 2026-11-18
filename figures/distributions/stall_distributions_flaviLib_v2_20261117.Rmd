@@ -1,0 +1,1072 @@
+---
+title: "flaviLib 150x150 — stall site distributions (v2, both Mg2+ conditions)"
+output:
+  html_document:
+    self_contained: true
+    toc: true
+    toc_float: true
+params:
+  input_dir: "~/Desktop/viromelib/flaviLib/figures/distributions/inputs"
+  outdir: "~/Desktop/viromelib/flaviLib/figures/distributions/plots/20261117_v2"
+---
+
+The flaviLib counterpart of `stall_distributions_v4_20261115.Rmd`. Every subtitle names the file and column
+its values came from.
+
+**This is not the viromelib notebook with new paths.** Four structural differences in the data force
+different figures, and they are the reason this is a separate file:
+
+| | viromelib (v4) | flaviLib | consequence here |
+|---|---|---|---|
+| conditions | one | **10 mM and 1 mM, called separately** | every panel carries a `condition` axis; the two are never pooled |
+| replicates | 3, gate >= 2 of 3 | 4, gate >= 2 of 4 (`_rep1..rep4`) | replicate columns are detected, not hard-coded |
+| regions | 3UTR / inferred_3UTR / intergenic / genome | **only 3UTR and inferred_3UTR** | `region_group` would collapse to one level, so panels split on `region` instead (section 1) |
+| families | many | **Flaviviridae / Hepaciviridae / Pestiviridae + a no-family group** | family is a 4-level axis; genus carries the resolution (section 4) |
+| tiles | 196 nt, 80 nt step | 196 nt, **20 nt step** | 450 of 699 sites are called in 2+ tiles, against 55 of 391 in viromelib. The confound check (section 9) is a headline caveat, not a footnote |
+| accession : virus | 1.16 | **1.61** (439 accessions = 273 TaxIDs) | every count table reports sites, accessions **and** viruses (section 7) |
+
+Figures:
+
+| # | figure | what it shows |
+|---|---|---|
+| 1 | `stop_by_region` | distance from the stop codon, annotated 3'UTR vs inferred 3'UTR, per condition |
+| 2 | `stop_by_family` | distance from the stop codon, the three families, per condition |
+| 3 | `sf_by_condition` | stall fraction, 10 mM vs 1 mM, over all sites (composition effect — read section 8 first) |
+| 4 | `sf_by_family`, `sf_by_genus` | stall fraction by family and by genus |
+| 5 | `sf_by_cm_class` | stall fraction by CM class (seven models) |
+| 6 | `sf_by_host` | stall fraction by host group — **skipped unless the host table exists** |
+| 7 | `counts_by_family` | sites / accessions / viruses per family and genus |
+| 8 | `condition_overlap` | sites called in one condition only (the step 13b result) |
+| 9 | — | confound check: stall fraction against position in tile |
+| 10 | — | sensitivity: adjacent sites at merge distance 0 (the open decision) |
+
+**What the notebook does not do:** it applies no gate of its own. Every row of `.sites.csv` already passed
+all v7.3 gates in >= 2 of 4 replicates (`min_reps_passing 2`, `min_median_sf 0.3`, `max_meta_qvalue 0.01`,
+`merge_distance 0`), and one row is one site, not one tile.
+
+**Inputs**, all in `params$input_dir`. Required:
+
+| file | gives |
+|---|---|
+| `261021_flaviLib_150x150_10mM.sites.csv` | 699 sites |
+| `261021_flaviLib_150x150_01mM.sites.csv` | 459 sites |
+| `261021_flaviLib_150x150_<COND>.tile_rows.csv` | sections 9 and 11 |
+
+Optional; the section that needs each one is skipped, with a printed note, if it is absent:
+
+| file | gives | produced by |
+|---|---|---|
+| `MANIFEST.tsv` | `taxid` -> the virus (TaxID) counts | `fetch_genbank_snapshot.py`, flaviLib step 11g |
+| `virus_taxonomy_flaviLib_261021.csv` | `lowest_group`, for the 145 accessions with no genus | step 11h |
+| `*_<COND>.sites_stopdist.csv` | `distance_from_stop` (sections 1 and 2) | `stall_distance_to_stop.py` — **not yet run for flaviLib** |
+| `host_by_accession_<date>.tsv` | host group (section 6) | `host_from_records.py` — **not yet run for flaviLib** |
+| `pair_conditions_sf_261021.tsv` | the point-to-point Mg2+ pairing (section 8) | `pair_conditions_sf.py`, step 13b |
+| `band_counts_flaviLib.csv` | detectability bands (section 7) | `detectability_floor.py`, step 13c |
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(glue)
+library(svglite)
+# error = TRUE: a chunk that fails prints its error into the HTML and the knit CONTINUES, so one run
+# names every problem instead of stopping at the first. Set back to FALSE once the notebook is known
+# good, so that a real failure is not quietly tolerated.
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, error = TRUE)
+```
+
+## 1. Config
+
+```{r config}
+INPUT_DIR <- path.expand(params$input_dir)
+OUTDIR    <- path.expand(params$outdir)
+dir.create(OUTDIR, recursive = TRUE, showWarnings = FALSE)
+
+PREFIX <- "261021_flaviLib_150x150"
+# Order matters: it sets the factor level order, so 10 mM is the reference everywhere.
+CONDITIONS  <- c("10mM", "01mM")
+COND_LABELS <- c("10mM" = "10 mM Mg2+", "01mM" = "1 mM Mg2+")
+cond_colors <- c("10 mM Mg2+" = "#B2182B", "1 mM Mg2+" = "#2166AC")
+
+sites_path <- function(cond) file.path(INPUT_DIR, glue("{PREFIX}_{cond}.sites.csv"))
+tiles_path <- function(cond) file.path(INPUT_DIR, glue("{PREFIX}_{cond}.tile_rows.csv"))
+stop_path  <- function(cond) file.path(INPUT_DIR, glue("{PREFIX}_{cond}.sites_stopdist.csv"))
+
+MANIFEST_TSV <- file.path(INPUT_DIR, "MANIFEST.tsv")
+TAX_CSV      <- file.path(INPUT_DIR, "virus_taxonomy_flaviLib_261021.csv")
+HOST_MAP_TSV <- Sys.glob(file.path(INPUT_DIR, "host_by_accession_*.tsv"))[1]
+PAIRING_TSV  <- file.path(INPUT_DIR, "pair_conditions_sf_261021.tsv")
+BANDS_CSV    <- file.path(INPUT_DIR, "band_counts_flaviLib.csv")
+
+FIG_W <- 9; FIG_H <- 6
+MIN_GROUP_N <- 5        # family / genus groups smaller than this are pooled
+HOST_MIN_N  <- 3        # host groups smaller than this are pooled
+HOST_LEVEL  <- "fine"   # "fine" or "broad"
+MERGE_NT    <- 1        # section 10 sensitivity. 1 nt, not viromelib's 3: at a 20 nt tile step the
+                        # question raised by the flaviLib log is specifically the 66 pairs within 1 nt
+SUBSET_FAMILIES   <- c("Flaviviridae")
+SUBSET_HOST_MIN_N <- 2
+
+# The no-family group is 21 of 699 sites at 10 mM (jingmenviruses, the Shi-et-al. invertebrate viromes,
+# Fluviflavili virus, Gentian Kobu-sho-associated virus). The flaviLib log is explicit that a family-level
+# panel must either show them as a labelled group or state that it drops them -- they must not vanish
+# silently. So this label is assigned explicitly and PROTECTED from small-group pooling below.
+FAMILY_NA_LABEL <- "no family assigned"
+GENUS_NA_LABEL  <- "no genus assigned"
+# Step 20e measured 32 of 319 site accessions with no host from either source (10 %), against 0 of 286 in
+# viromelib, because Virus-Host DB is keyed on RefSeq and 184 of flaviLib's 439 accessions are not NC_
+# records. So unlike viromelib this notebook MUST show a no-host group rather than quietly coalescing it
+# to "Unknown" and letting pool_small fold it away. Labelled, protected from pooling, and counted.
+HOST_NA_LABEL <- "no host assigned"
+family_colors <- c("Flaviviridae" = "#B2182B", "Hepaciviridae" = "#2166AC",
+                   "Pestiviridae" = "#1B7837", "no family assigned" = "#8C8C8C")
+
+# Seven CMs (decision 3). class1c sits next to 1a/1b deliberately: it is a SUBCLASS of class 1, not a
+# seventh tier (decision 18), and decision 28 -- which CM columns a figure displays -- is still open.
+# Set CM_GROUP_CLASS1 to TRUE to collapse 1a/1b/1c into one "Class 1" level and see the other reading.
+CM_GROUP_CLASS1 <- FALSE
+CM_COLS <- c(class1a  = "CL_Class_1a_xrRNA_final.cm_hit",
+             class1b  = "CL_Class_1b_xrRNA_final.cm_hit",
+             class1c  = "class1c.cm_hit",
+             class2   = "CL_Class_2_xrRNA_final.cm_hit",
+             class3   = "cl3_NAR_2025.align.mpkadded.edited.confident.dedup.IDcurated.SS_cons.cm_hit",
+             class4   = "class4_cl4_v9_20260824.cm_hit",
+             dumbbell = "dumbbell_RF00525.cm_hit")
+cm_labels <- c(class1a = "Class 1a", class1b = "Class 1b", class1c = "Class 1c",
+               class2 = "Class 2", class3 = "Class 3", class4 = "Class 4",
+               dumbbell = "Dumbbell", no_hit = "No hit")
+cm_colors <- c("Class 1a" = "#7D80DA", "Class 1b" = "#150578", "Class 1c" = "#3F48CC",
+               "Class 2" = "#7FDEFF", "Class 3" = "#9CBFA7", "Class 4" = "#EA9010",
+               "Dumbbell" = "#8C564B", "Class 1" = "#150578", "No hit" = "#8C8C8C")
+
+# flaviLib has no intergenic and no whole-genome features, so a stall's distance from the stop codon is
+# comparable across the library EXCEPT for one construction difference: parse.py pads an inferred 3'UTR
+# with 50 nt of upstream CDS, so its offset 0 lies inside the CDS, while an annotated 3UTR feature starts
+# at the GenBank 3'UTR boundary with no buffer. Distance-from-stop panels therefore split on this.
+region_colors <- c("3UTR" = "#1B7837", "inferred_3UTR" = "#7FBF7B")
+REGION_LABELS <- c("3UTR" = "annotated 3'UTR", "inferred_3UTR" = "inferred 3'UTR (50 nt CDS buffer)")
+STOP_XLIM <- c(-100, 900)
+```
+
+## 2. Load both conditions
+
+```{r preflight}
+# Every path this notebook can use, and whether it is there. Only the two sites tables are required; an
+# absent optional file disables its own section and nothing else. Checked before any reading, so a
+# mistyped or renamed download is named here rather than surfacing as an obscure error 200 lines later.
+pf <- tibble(
+  file = c(map_chr(CONDITIONS, sites_path), map_chr(CONDITIONS, tiles_path),
+           MANIFEST_TSV, TAX_CSV, map_chr(CONDITIONS, stop_path),
+           if (is.na(HOST_MAP_TSV)) NA_character_ else HOST_MAP_TSV, PAIRING_TSV, BANDS_CSV),
+  required = c(rep(TRUE, length(CONDITIONS)), rep(FALSE, length(CONDITIONS)),
+               FALSE, FALSE, rep(FALSE, length(CONDITIONS)), FALSE, FALSE, FALSE),
+  enables = c(rep("everything", length(CONDITIONS)), rep("sections 9 and 11", length(CONDITIONS)),
+              "virus (TaxID) counts", "genus fallback (lowest_group)",
+              rep("sections 1, 2 and the no-hit window", length(CONDITIONS)),
+              "sections 6 and 7 (host)", "section 8 paired panels", "detectability bands")) %>%
+  mutate(present = !is.na(file) & file.exists(file),
+         name = if_else(is.na(file), "(no host_by_accession_*.tsv found)", basename(file)))
+cat("input directory:", INPUT_DIR, "\n\n")
+print(pf %>% select(name, required, present, enables) %>% as.data.frame(), row.names = FALSE)
+
+miss <- pf %>% filter(required, !present)
+if (nrow(miss)) {
+  stop("missing required input", if (nrow(miss) > 1) "s" else "", ":\n  ",
+       paste(basename(miss$file), collapse = "\n  "),
+       "\n\nfiles actually present in ", INPUT_DIR, ":\n  ",
+       paste(list.files(INPUT_DIR), collapse = "\n  "),
+       "\n\nnames are built from PREFIX in the config chunk, so a renamed download ",
+       "(e.g. a ' (1)' suffix) will not be found.")
+}
+if (any(!pf$present)) {
+  cat("\nskipping, because the file above is absent:\n  ",
+      paste(pf$enables[!pf$present], collapse = "\n   "), "\n", sep = "")
+}
+```
+
+```{r load}
+# The sites table carries `organism` TWICE (columns 7 and 17): apply_publication_cutoffs.py writes it from
+# the snapshot manifest and it is also passed through from the annotation. Checked on the 261021 tables:
+# the two copies are byte-identical in all 699 + 459 rows. Kept as an assertion rather than an assumption.
+read_sites_one <- function(cond) {
+  p <- sites_path(cond)
+  stopifnot("sites file not found" = file.exists(p))
+  s <- suppressWarnings(read_csv(p, show_col_types = FALSE, name_repair = "minimal"))
+  for (nm in unique(names(s)[duplicated(names(s))])) {
+    cp <- s[, names(s) == nm, drop = FALSE]
+    stopifnot("duplicated columns differ in content" =
+                all(map_lgl(cp[-1], ~ identical(as.character(.x), as.character(cp[[1]])))))
+    cat(glue("{cond}: duplicated column '{nm}', {ncol(cp)} identical copies, one kept"), "\n")
+  }
+  s <- s[, !duplicated(names(s))]
+  s$condition <- cond
+  s
+}
+sites_raw <- map(set_names(CONDITIONS), read_sites_one)
+walk2(names(sites_raw), sites_raw, ~ cat(.x, ":", nrow(.y), "sites,", ncol(.y), "columns\n"))
+
+# bind_rows tolerates a column present in one condition and not the other; warn rather than silently fill.
+only_in <- map(sites_raw, names)
+if (length(setdiff(union(only_in[[1]], only_in[[2]]), intersect(only_in[[1]], only_in[[2]]))))
+  cat("NOTE columns not shared by both conditions:",
+      paste(setdiff(union(only_in[[1]], only_in[[2]]), intersect(only_in[[1]], only_in[[2]])),
+            collapse = ", "), "\n")
+sites <- bind_rows(sites_raw)
+
+SF_COL   <- c("median_treated_sf", "median_sf", "treated_sf", "sf")[
+             c("median_treated_sf", "median_sf", "treated_sf", "sf") %in% names(sites)][1]
+REPS_COL <- c("max_n_reps_passing", "n_reps_passing", "n_reps")[
+             c("max_n_reps_passing", "n_reps_passing", "n_reps") %in% names(sites)][1]
+N_REPS   <- length(grep("^treated_sf_rep[0-9]+$", names(sites)))
+cat("stall fraction column:", SF_COL, "| replicate column:", REPS_COL,
+    "| replicates detected:", N_REPS, "\n")
+stopifnot("expected 4 replicates for flaviLib" = N_REPS == 4)
+stopifnot("positional columns are required" =
+  all(c("stall_site_genomic_position", "genome_length", "feature_genomic_start", "feature_genomic_end",
+        "feature_length", "stall_offset_in_feature", "region", "site_id", "plain_accession",
+        "tile_start", "tile_end", "stall_position") %in% names(sites)))
+# viromelib dropped whole-genome features at load. flaviLib has none; assert rather than carry the code.
+stopifnot("unexpected whole-genome feature in flaviLib" = !any(sites$region == "genome"))
+```
+
+```{r derive}
+NO_HIT <- c("", "nan", "na", "none", "false", "0", "no", "null")
+is_hit <- function(x) { v <- str_trim(str_to_lower(as.character(x))); !is.na(v) & !(v %in% NO_HIT) }
+for (k in names(CM_COLS)) sites[[paste0("hit_", k)]] <-
+  if (CM_COLS[[k]] %in% names(sites)) is_hit(sites[[CM_COLS[[k]]]]) else FALSE
+missing_cm <- names(CM_COLS)[!CM_COLS %in% names(sites)]
+if (length(missing_cm)) cat("CM columns absent from the table:", paste(missing_cm, collapse = ", "), "\n")
+
+d <- sites %>%
+  mutate(
+    condition = factor(unname(COND_LABELS[condition]), levels = unname(COND_LABELS[CONDITIONS])),
+    region    = factor(region, levels = names(region_colors)),
+    region_lab = factor(unname(REGION_LABELS[as.character(region)]), levels = unname(REGION_LABELS)),
+    family = coalesce(na_if(na_if(as.character(family), "nan"), ""), FAMILY_NA_LABEL),
+    genus  = coalesce(na_if(na_if(as.character(genus), "nan"), ""), GENUS_NA_LABEL),
+    organism = coalesce(na_if(as.character(organism), ""), plain_accession),
+    sf = suppressWarnings(as.numeric(.data[[SF_COL]])),
+    reps_passing = suppressWarnings(as.integer(.data[[REPS_COL]])),
+    # positional axes
+    rel_genome         = stall_site_genomic_position / genome_length,
+    nt_from_genome_end = genome_length - stall_site_genomic_position,
+    offset_in_feature  = stall_offset_in_feature,          # NOT the distance from the stop codon
+    nt_from_feature_end = feature_genomic_end - stall_site_genomic_position,
+    rel_feature        = stall_offset_in_feature / feature_length,
+    # tile geometry, for section 9. treated_sf = stall reads / reads assigned to the tile, so the
+    # denominator shrinks as the stall approaches the tile 3' end.
+    nt_after_stall     = tile_end - stall_position,
+    # one CM class per site, priority 1a > 1b > 1c > 2 > 3 > 4 > dumbbell
+    cm_key = case_when(hit_class1a ~ "class1a", hit_class1b ~ "class1b", hit_class1c ~ "class1c",
+                       hit_class2 ~ "class2", hit_class3 ~ "class3", hit_class4 ~ "class4",
+                       hit_dumbbell ~ "dumbbell", TRUE ~ "no_hit"),
+    cm_key = if (CM_GROUP_CLASS1) str_replace(cm_key, "^class1[abc]$", "class1") else cm_key)
+cm_lab_used <- if (CM_GROUP_CLASS1)
+  c(class1 = "Class 1", cm_labels[!names(cm_labels) %in% c("class1a","class1b","class1c")]) else cm_labels
+d <- d %>% mutate(cm_class = factor(unname(cm_lab_used[cm_key]), levels = unname(cm_lab_used)))
+
+cat("\nsites per condition:\n"); print(d %>% count(condition, name = "n_sites"))
+cat("\nby region:\n"); print(d %>% count(condition, region, name = "n_sites"))
+cat("\nby CM class:\n"); print(d %>% count(condition, cm_class, name = "n_sites") %>%
+                               pivot_wider(names_from = condition, values_from = n_sites, values_fill = 0))
+cat("\nby replicates passing (of", N_REPS, "):\n")
+print(d %>% count(condition, reps_passing) %>%
+        pivot_wider(names_from = condition, values_from = n, values_fill = 0))
+```
+
+```{r taxid}
+# accession : virus is 1.61 here (439 accessions, 273 TaxIDs) because segmented jingmenviruses contribute
+# one accession per segment. Every count in this notebook therefore has to say which unit it uses, and
+# "viruses" needs the TaxID, which the sites table does not carry. MANIFEST.tsv does.
+HAS_TAXID <- file.exists(MANIFEST_TSV)
+if (HAS_TAXID) {
+  mani <- read_tsv(MANIFEST_TSV, show_col_types = FALSE, col_types = cols(.default = "c")) %>%
+    transmute(acc_nover = str_remove(accession, "\\..*$"), taxid,
+              organism_manifest = organism) %>% distinct(acc_nover, .keep_all = TRUE)
+  d <- d %>% mutate(acc_nover = str_remove(plain_accession, "\\..*$")) %>%
+    left_join(mani, by = "acc_nover")
+  cat("MANIFEST.tsv:", nrow(mani), "accessions |",
+      sum(is.na(d$taxid)), "site rows with no TaxID\n")
+  cat("site accessions:", n_distinct(d$plain_accession),
+      "| site viruses (TaxID):", n_distinct(d$taxid), "\n")
+} else {
+  d$taxid <- NA_character_
+  cat("NOT FOUND:", MANIFEST_TSV,
+      "\n  virus (TaxID) counts are reported as NA. Copy MANIFEST.tsv from",
+      "data/genbank_snapshot_flaviLib_261021/.\n")
+}
+
+HAS_TAX <- file.exists(TAX_CSV)
+if (HAS_TAX) {
+  tax <- read_csv(TAX_CSV, show_col_types = FALSE) %>%
+    select(acc_nover = accession, lowest_group = any_of("lowest_group")) %>%
+    mutate(acc_nover = str_remove(acc_nover, "\\..*$")) %>% distinct(acc_nover, .keep_all = TRUE)
+  d <- d %>% left_join(tax, by = "acc_nover")
+  # Panel D of the flaviLib log is by genus with lowest_group where no genus is assigned (the
+  # Jingmenvirus group is unranked, so it has no genus node to fall back on).
+  d <- d %>% mutate(genus_group = if_else(genus == GENUS_NA_LABEL,
+                                          coalesce(lowest_group, GENUS_NA_LABEL), genus))
+  cat("taxonomy:", basename(TAX_CSV), "| genus filled from lowest_group for",
+      sum(d$genus == GENUS_NA_LABEL & d$genus_group != GENUS_NA_LABEL), "site rows\n")
+} else {
+  d$genus_group <- d$genus
+  cat("NOT FOUND:", TAX_CSV, "\n  genus panel uses `genus` only;",
+      sum(d$genus == GENUS_NA_LABEL), "site rows stay '", GENUS_NA_LABEL, "'.\n", sep = "")
+}
+```
+
+```{r host}
+HAS_HOST <- !is.na(HOST_MAP_TSV) && file.exists(HOST_MAP_TSV)
+if (HAS_HOST) {
+  hm <- read_tsv(HOST_MAP_TSV, show_col_types = FALSE, col_types = cols(.default = "c")) %>%
+    transmute(acc_nover = str_remove(plain_accession, "\\..*$"),
+              host_broad = na_if(host_broad, ""), host_fine = na_if(host_fine, ""),
+              host_fine_all = if ("host_fine_all" %in% names(.)) na_if(host_fine_all, "") else NA_character_,
+              host_confidence, sample_host_flag)
+  d <- d %>% left_join(hm, by = "acc_nover")
+  cat("host table:", basename(HOST_MAP_TSV), "\n"); print(table(d$host_confidence, useNA = "ifany"))
+  d <- d %>% mutate(
+    host_fine_all = coalesce(host_fine_all, host_fine),
+    host_group = if (HOST_LEVEL == "fine") coalesce(host_fine, host_broad, HOST_NA_LABEL)
+                 else coalesce(host_broad, HOST_NA_LABEL),
+    host_split = if (HOST_LEVEL == "fine") coalesce(host_fine_all, host_broad, HOST_NA_LABEL)
+                 else coalesce(host_broad, HOST_NA_LABEL),
+    multi_host = str_detect(host_split, fixed(" + ")))
+  cat("\nhost level:", HOST_LEVEL, "| site rows with more than one host group:", sum(d$multi_host), "\n")
+  print(sort(table(d$host_group), decreasing = TRUE))
+  # Coverage, per condition and in accessions, because a 10 % hostless rate is a caveat on every host
+  # panel and the figure legend has to carry it.
+  cov <- d %>% group_by(condition) %>%
+    summarise(sites = n(), sites_no_host = sum(host_group == HOST_NA_LABEL),
+              accessions = n_distinct(plain_accession),
+              accessions_no_host = n_distinct(plain_accession[host_group == HOST_NA_LABEL]),
+              .groups = "drop") %>%
+    mutate(pct_sites_no_host = round(100 * sites_no_host / sites, 1))
+  cat("\nhost coverage (step 20e v1 measured 32 of 319 site accessions with no host):\n")
+  print(cov)
+  write_csv(cov, file.path(OUTDIR, "host_coverage.csv"))
+} else {
+  d <- d %>% mutate(host_group = HOST_NA_LABEL, host_split = HOST_NA_LABEL,
+                    host_fine_all = NA_character_, multi_host = FALSE)
+  cat("NO HOST TABLE in", INPUT_DIR, "\n  Section 6 is skipped and host does not appear in section 7.\n",
+      "  flaviLib has no step 20 yet. See the commands at the end of this notebook:",
+      "host_from_records.py\n  reads data/genbank_snapshot_flaviLib_261021/ directly, and 362 of the 439",
+      "records carry a\n  /host qualifier, so the axis is worth producing.\n")
+}
+# one row per site per host group, for every host-split plot
+expand_hosts <- function(df) {
+  if (!HAS_HOST) return(df %>% mutate(host_one = NA_character_))
+  df %>% separate_rows(host_split, sep = " \\+ ") %>% rename(host_one = host_split)
+}
+```
+
+```{r stopdist}
+# stall_distance_to_stop.py has not been run for flaviLib. When it is, drop the two CSVs in and
+# sections 1 and 2 appear with no other change.
+stop_files <- map_chr(CONDITIONS, stop_path)
+HAS_STOP <- all(file.exists(stop_files))
+if (HAS_STOP) {
+  sd <- map2_dfr(CONDITIONS, stop_files, function(cond, p) {
+    x <- suppressWarnings(read_csv(p, show_col_types = FALSE, name_repair = "minimal"))
+    x <- x[, !duplicated(names(x))]
+    stopifnot("stopdist file has no distance_from_stop column" = "distance_from_stop" %in% names(x))
+    x %>% select(site_id, distance_from_stop,
+                 any_of(c("cds_id", "cds_product", "stop_codon", "flags"))) %>%
+      mutate(condition = factor(unname(COND_LABELS[cond]),
+                                levels = unname(COND_LABELS[CONDITIONS])))
+  })
+  # site_id repeats across conditions, so the join key must include condition.
+  d <- d %>% left_join(sd, by = c("site_id", "condition"))
+  n_stop <- sum(!is.na(d$distance_from_stop))
+  cat("stopdist joined:", n_stop, "of", nrow(d), "site rows\n")
+  print(summary(d$distance_from_stop))
+  # The file existing is not the same as the join matching. The key is site_id + condition, and a
+  # stopdist table written for one condition, or with site_ids from a different gating run, joins to
+  # nothing and leaves every distance NA -- which then empties the facets rather than failing cleanly.
+  if (n_stop == 0) {
+    cat("\nWARNING the stopdist files exist but NOTHING joined, so sections 1, 2 and the no-hit window\n",
+        "  table are skipped. The join key is site_id + condition. Compare the two sides:\n", sep = "")
+    cat("  sites   site_id examples:", paste(head(unique(d$site_id), 3), collapse = " | "), "\n")
+    cat("  stopdist site_id examples:", paste(head(unique(sd$site_id), 3), collapse = " | "), "\n")
+    cat("  sites   conditions:", paste(levels(droplevels(d$condition)), collapse = " | "), "\n")
+    cat("  stopdist conditions:", paste(sort(unique(as.character(sd$condition))), collapse = " | "), "\n")
+    cat("  overlap on site_id alone:", length(intersect(d$site_id, sd$site_id)), "of",
+        n_distinct(d$site_id), "\n")
+  }
+} else {
+  cat("NOT FOUND:", paste(basename(stop_files[!file.exists(stop_files)]), collapse = ", "),
+      "\n  Sections 1 and 2 are skipped. Produce them with stall_distance_to_stop.py",
+      "(see the commands at the end).\n")
+  d$distance_from_stop <- NA_real_
+  n_stop <- 0L
+}
+# What the stop-distance sections are gated on: data, not a file. A facet on an empty frame throws
+# "Faceting variables must have at least one value" rather than skipping.
+HAS_STOP_DATA <- n_stop > 0
+cat("stop-distance sections", if (HAS_STOP_DATA) "WILL" else "will NOT", "be drawn\n")
+```
+
+```{r helpers}
+OTHER <- "Other (small groups)"
+# `protect` is the difference from the viromelib version: FAMILY_NA_LABEL must survive pooling even at
+# n = 4 (1 mM), because "21 sites with no family" is a stated finding, not a rounding error.
+pool_small <- function(x, n_min = MIN_GROUP_N, protect = character()) {
+  keep <- union(names(which(table(x) >= n_min)), protect)
+  f <- factor(ifelse(x %in% keep, as.character(x), OTHER))
+  if (OTHER %in% levels(f)) fct_relevel(f, OTHER, after = Inf) else f
+}
+# lab_n appends "(n=...)" to a factor level. Use it ONLY on an unfaceted axis: inside a condition facet it
+# would count over both conditions and so label each panel with the pooled n. Faceted panels therefore
+# carry plain levels and the per-condition n goes to the CSV written beside each figure.
+lab_n <- function(x) { x <- droplevels(as.factor(x)); tb <- table(x)
+  factor(paste0(levels(x), " (n=", as.integer(tb[levels(x)]), ")")[as.integer(x)],
+         levels = paste0(levels(x), " (n=", as.integer(tb[levels(x)]), ")")) }
+# Builds the plot before writing it, so a figure whose data is empty -- the usual cause being a facet
+# variable with no values -- is reported BY NAME and skipped instead of aborting the knit inside ggsave().
+save_fig <- function(p, name, w = FIG_W, h = FIG_H) {
+  ok <- tryCatch({ ggplot2::ggplot_build(p); TRUE },
+                 error = function(e) {
+                   cat("FIGURE NOT DRAWN:", name, "::", conditionMessage(e), "\n"); FALSE })
+  if (!ok) return(invisible(NULL))
+  ggsave(file.path(OUTDIR, paste0(name, ".pdf")), p, width = w, height = h, device = cairo_pdf)
+  ggsave(file.path(OUTDIR, paste0(name, ".svg")), p, width = w, height = h); invisible(p) }
+theme_fl <- theme_classic(base_size = 12) +
+  theme(plot.title = element_text(size = 12, face = "bold"),
+        plot.subtitle = element_text(size = 9, colour = "grey40"),
+        strip.background = element_blank(), strip.text = element_text(face = "bold", size = 9),
+        panel.grid.major.y = element_line(colour = "#F0F0F0", linewidth = 0.3))
+
+SRC_SITES <- glue("{PREFIX}_<COND>.sites.csv")
+SRC_HOST  <- if (HAS_HOST) basename(HOST_MAP_TSV) else "(no host table)"
+SRC_STOP  <- glue("{PREFIX}_<COND>.sites_stopdist.csv")
+src_line  <- function(...) paste0("source: ", paste0(..., collapse = ""))
+
+dd  <- d %>% filter(!is.na(sf))                                  # one row per site
+dh  <- expand_hosts(d)  %>% mutate(host_one = if (HAS_HOST) pool_small(host_one, HOST_MIN_N, protect = HOST_NA_LABEL) else host_one)
+ddh <- expand_hosts(dd) %>% mutate(host_one = if (HAS_HOST) pool_small(host_one, HOST_MIN_N, protect = HOST_NA_LABEL) else host_one)
+cat(nrow(d), "site rows |", nrow(dd), "with a stall fraction |", nrow(dh), "site-by-host rows\n")
+# What each figure draws from, and which sections are on. A zero row count here is the cause of
+# "Faceting variables must have at least one value", and this names the frame before any figure runs.
+cat("\nframes the figures use:\n")
+print(data.frame(frame = c("d (all sites)", "dd (with a stall fraction)", "dh (site x host)",
+                           "ddh (site x host, with SF)"),
+                 rows = c(nrow(d), nrow(dd), nrow(dh), nrow(ddh))), row.names = FALSE)
+cat("condition levels with data:", paste(levels(droplevels(d$condition)), collapse = " | "), "\n")
+cat("gates: HAS_STOP", HAS_STOP, "| HAS_STOP_DATA", HAS_STOP_DATA, "| HAS_HOST", HAS_HOST,
+    "| HAS_TAXID", HAS_TAXID, "| HAS_TAX", HAS_TAX, "\n")
+cat("distance_from_stop non-missing:", sum(!is.na(d$distance_from_stop)), "of", nrow(d), "\n")
+cat("THIS NOTEBOOK IS", basename(knitr::current_input()), "\n")
+```
+
+## 3. Figures
+
+### 1. Distance from the stop codon — annotated vs inferred 3'UTR
+
+Split on `region` rather than on viromelib's `region_group`: flaviLib has no intergenic and no whole-genome
+features, so `region_group` has a single level and the viromelib facet would be an empty distinction. The
+split that *does* matter here is how the zero point was obtained. An annotated `3UTR` feature begins at the
+GenBank 3'UTR boundary, which assumes the UTR starts immediately after the stop codon; an `inferred_3UTR`
+begins 50 nt inside the CDS, so its offsets 0–49 are CDS and a stall there is reported at a negative
+distance by construction.
+
+```{r fig1-stop-region, eval=HAS_STOP_DATA, fig.width=9, fig.height=6}
+ds <- d %>% filter(!is.na(distance_from_stop))
+f1 <- ds %>% filter(between(distance_from_stop, STOP_XLIM[1], STOP_XLIM[2])) %>%
+  ggplot(aes(distance_from_stop, colour = condition, fill = condition)) +
+  geom_density(adjust = 0.6, linewidth = 0.9, alpha = 0.12) +
+  geom_rug(alpha = 0.5, length = unit(0.03, "npc")) +
+  geom_vline(xintercept = 0, linewidth = 0.4, colour = "grey20") +
+  scale_colour_manual(values = cond_colors, name = NULL) +
+  scale_fill_manual(values = cond_colors, name = NULL) +
+  facet_wrap(~ lab_n(region_lab), ncol = 1, scales = "free_y") +
+  labs(title = "Distance from the stop codon, by feature type and Mg2+ condition",
+       subtitle = str_wrap(glue(
+         "density, area = 1 per curve. 0 = first base after the stop codon; negative = inside the CDS. ",
+         "An inferred 3'UTR carries a 50 nt CDS buffer (parse.py), so negative values there are expected; ",
+         "an annotated 3UTR has no buffer. Rug marks individual sites. ",
+         "{src_line('distance_from_stop from ', SRC_STOP, ', region from ', SRC_SITES)}"), 115),
+       x = "distance from stop codon (nt)", y = "density") +
+  theme_fl
+save_fig(f1, "stop_by_region", w = 9, h = 6); f1
+
+stop_tab <- ds %>% group_by(condition, region) %>%
+  summarise(n = n(), median = median(distance_from_stop), q25 = quantile(distance_from_stop, .25),
+            q75 = quantile(distance_from_stop, .75), min = min(distance_from_stop),
+            n_negative = sum(distance_from_stop < 0),
+            median_feature_length = median(feature_length), .groups = "drop")
+write_csv(stop_tab, file.path(OUTDIR, "stop_by_region.csv")); knitr::kable(stop_tab)
+for (rg in levels(droplevels(ds$region))) {
+  x <- ds %>% filter(region == rg) %>% mutate(g = droplevels(condition))
+  if (nlevels(x$g) == 2 && min(table(x$g)) >= 3)
+    cat(rg, ": Mann-Whitney across conditions p =",
+        signif(wilcox.test(distance_from_stop ~ g, data = x)$p.value, 3), "\n")
+}
+```
+
+### 2. Distance from the stop codon — by family
+
+viromelib's equivalent panel contrasted the flaviviruses with two plant families. flaviLib has no plant
+families, so the comparison that exists here is between its three: *Flaviviridae*, *Hepaciviridae*,
+*Pestiviridae*. The no-family group is kept and labelled.
+
+```{r fig2-stop-family, eval=HAS_STOP_DATA, fig.width=9, fig.height=6}
+f2 <- ds %>% filter(between(distance_from_stop, STOP_XLIM[1], STOP_XLIM[2])) %>%
+  mutate(fam = factor(family, levels = names(family_colors))) %>%
+  ggplot(aes(distance_from_stop, colour = fam, fill = fam)) +
+  geom_density(adjust = 0.6, linewidth = 0.9, alpha = 0.10) +
+  geom_rug(alpha = 0.4, length = unit(0.03, "npc")) +
+  geom_vline(xintercept = 0, linewidth = 0.4, colour = "grey20") +
+  scale_colour_manual(values = family_colors, name = NULL, drop = FALSE) +
+  scale_fill_manual(values = family_colors, name = NULL, drop = FALSE) +
+  facet_wrap(~ lab_n(condition), ncol = 1, scales = "free_y") +
+  labs(title = "Distance from the stop codon, by family",
+       subtitle = str_wrap(glue(
+         "density, area = 1 per curve. The 'no family assigned' group is 21 of 699 sites at 10 mM ",
+         "(jingmenviruses, unplaced invertebrate viromes) and is shown rather than dropped. ",
+         "{src_line('distance_from_stop from ', SRC_STOP, ', family from ', SRC_SITES)}"), 115),
+       x = "distance from stop codon (nt)", y = "density") +
+  theme_fl
+save_fig(f2, "stop_by_family", w = 9, h = 6); f2
+write_csv(ds %>% group_by(condition, family) %>%
+            summarise(n = n(), median = median(distance_from_stop),
+                      q25 = quantile(distance_from_stop, .25),
+                      q75 = quantile(distance_from_stop, .75), .groups = "drop"),
+          file.path(OUTDIR, "stop_by_family.csv"))
+```
+
+### 3. Stall fraction, 10 mM vs 1 mM
+
+**Read section 8 before reading this panel.** These are two different site sets — 699 and 459 sites, with
+only part of each shared — so the difference between the two boxes mixes the Mg2+ effect with which sites
+passed. The flaviLib log measured that directly: unpaired medians 0.588 and 0.404, but a median *paired*
+delta of only −0.029. The panel is drawn because it is the comparison a reader expects to see, and
+annotated with the paired figure so it cannot be read as a per-site effect.
+
+```{r fig3-sf-condition, fig.width=7, fig.height=5}
+paired_note <- if (file.exists(PAIRING_TSV)) "see section 8 for the paired comparison" else
+  "paired comparison not available: pair_conditions_sf.py output is absent (see section 8)"
+f3 <- dd %>% ggplot(aes(condition, sf, fill = condition)) +
+  geom_boxplot(width = 0.5, outlier.shape = NA, alpha = 0.55) +
+  geom_jitter(height = 0, width = 0.12, size = 1.1, alpha = 0.35, colour = "grey25") +
+  scale_fill_manual(values = cond_colors, guide = "none") +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
+  labs(title = "Stall fraction by Mg2+ condition — UNPAIRED, two different site sets",
+       subtitle = str_wrap(glue(
+         "one row per site; {nrow(filter(dd, condition == levels(dd$condition)[1]))} vs ",
+         "{nrow(filter(dd, condition == levels(dd$condition)[2]))} sites, overlapping only in part, so ",
+         "this contrast is partly composition and not a per-site change. {paired_note}. ",
+         "{src_line(SF_COL, ' from ', SRC_SITES)}"), 110),
+       x = NULL, y = "stall fraction") +
+  theme_fl
+save_fig(f3, "sf_by_condition", w = 7, h = 5); f3
+knitr::kable(dd %>% group_by(condition) %>%
+               summarise(n = n(), median = round(median(sf), 4), q25 = round(quantile(sf, .25), 4),
+                         q75 = round(quantile(sf, .75), 4), .groups = "drop"))
+```
+
+### 4. Stall fraction by family and by genus
+
+Family is a 4-level axis here, so genus carries the resolution that family carries in viromelib.
+
+```{r fig4-sf-family, fig.width=9, fig.height=5}
+f4a <- dd %>% mutate(fam = fct_reorder(pool_small(family, protect = FAMILY_NA_LABEL), sf, median)) %>%
+  ggplot(aes(sf, fam)) +
+  geom_boxplot(width = 0.6, outlier.shape = NA, fill = "grey92") +
+  geom_jitter(aes(colour = cm_class), height = 0.14, width = 0, size = 1.3, alpha = 0.75) +
+  scale_colour_manual(values = cm_colors, name = "CM class", drop = FALSE) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
+  facet_wrap(~ condition, ncol = 1, scales = "free_y") +
+  labs(title = "Stall fraction by viral family",
+       subtitle = str_wrap(glue(
+         "one row per site. 'no family assigned' is never pooled, even at n < {MIN_GROUP_N}. ",
+         "n per condition is in sf_by_family.csv. Depends on which tile the site was called in -- section 9. ",
+         "{src_line(SF_COL, ' from ', SRC_SITES)}"), 115),
+       x = "stall fraction", y = NULL) +
+  theme_fl + theme(panel.grid.major.y = element_blank(),
+                   panel.grid.major.x = element_line(colour = "#F0F0F0", linewidth = 0.3))
+save_fig(f4a, "sf_by_family", w = 9, h = 5); f4a
+write_csv(dd %>% group_by(condition, family) %>%
+            summarise(n = n(), median = round(median(sf), 4), q25 = round(quantile(sf, .25), 4),
+                      q75 = round(quantile(sf, .75), 4), .groups = "drop") %>% arrange(desc(n)),
+          file.path(OUTDIR, "sf_by_family.csv"))
+```
+
+```{r fig4-sf-genus, fig.width=9, fig.height=7}
+f4b <- dd %>% mutate(gen = fct_reorder(pool_small(genus_group, protect = GENUS_NA_LABEL), sf, median)) %>%
+  ggplot(aes(sf, gen)) +
+  geom_boxplot(width = 0.6, outlier.shape = NA, fill = "grey92") +
+  geom_jitter(aes(colour = cm_class), height = 0.14, width = 0, size = 1.3, alpha = 0.75) +
+  scale_colour_manual(values = cm_colors, name = "CM class", drop = FALSE) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
+  facet_wrap(~ condition, ncol = 1, scales = "free_y") +
+  labs(title = "Stall fraction by genus",
+       subtitle = str_wrap(glue(
+         "genus from the sites table, with `lowest_group` where NCBI assigns no genus ",
+         "(the Jingmenvirus group is unranked){if (HAS_TAX) '' else '; taxonomy file absent, so no fallback applied'}. ",
+         "Genera with n < {MIN_GROUP_N} pooled; n per condition in sf_by_genus.csv. ",
+         "{src_line(SF_COL, ' from ', SRC_SITES)}"), 115),
+       x = "stall fraction", y = NULL) +
+  theme_fl + theme(panel.grid.major.y = element_blank(),
+                   panel.grid.major.x = element_line(colour = "#F0F0F0", linewidth = 0.3))
+save_fig(f4b, "sf_by_genus", w = 9, h = 7); f4b
+write_csv(dd %>% group_by(condition, genus_group) %>%
+            summarise(n = n(), median = round(median(sf), 4), .groups = "drop") %>% arrange(desc(n)),
+          file.path(OUTDIR, "sf_by_genus.csv"))
+```
+
+### 5. Stall fraction by CM class
+
+```{r fig5-sf-cm, fig.width=9, fig.height=6}
+prio <- if (CM_GROUP_CLASS1) "1 > 2 > 3 > 4 > dumbbell" else "1a > 1b > 1c > 2 > 3 > 4 > dumbbell"
+f5 <- ggplot(dd, aes(sf, cm_class)) +
+  geom_boxplot(aes(fill = cm_class), width = 0.6, outlier.shape = NA, alpha = 0.55) +
+  geom_jitter(height = 0.12, width = 0, size = 1.2, alpha = 0.5, colour = "grey25") +
+  scale_fill_manual(values = cm_colors, guide = "none", drop = FALSE) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
+  facet_wrap(~ condition, ncol = 1, scales = "free_y") +
+  labs(title = "Stall fraction by CM class (seven models)",
+       subtitle = str_wrap(glue(
+         "single class per site by the priority {prio}. class1c is a SUBCLASS of class 1, not a seventh ",
+         "class (decision 18), and it was defined in this study -- do not aggregate it with the ",
+         "pre-existing models into one 'known class' level without saying which were known beforehand ",
+         "(decision 34). A .cm_hit is recorded only where the model matches at the stall. ",
+         "n per condition is in sf_by_cm_class.csv. {src_line(SF_COL, ' and *.cm_hit from ', SRC_SITES)}"), 115),
+       x = "stall fraction", y = NULL) +
+  theme_fl + theme(panel.grid.major.y = element_blank(),
+                   panel.grid.major.x = element_line(colour = "#F0F0F0", linewidth = 0.3))
+save_fig(f5, "sf_by_cm_class", w = 9, h = 6); f5
+write_csv(dd %>% group_by(condition, cm_class) %>%
+            summarise(n = n(), median = round(median(sf), 4), q25 = round(quantile(sf, .25), 4),
+                      q75 = round(quantile(sf, .75), 4), .groups = "drop"),
+          file.path(OUTDIR, "sf_by_cm_class.csv"))
+# CM class against family: which family each class sits in
+write_csv(d %>% count(condition, family, cm_class, name = "n_sites"),
+          file.path(OUTDIR, "counts_family_by_cm_class.csv"))
+knitr::kable(d %>% count(condition, cm_class, name = "n_sites") %>%
+               pivot_wider(names_from = condition, values_from = n_sites, values_fill = 0))
+```
+
+### 6. Stall fraction by host group
+
+```{r fig6-sf-host, eval=HAS_HOST, fig.width=9, fig.height=6}
+f6 <- ddh %>% mutate(host_one = fct_reorder(host_one, sf, median)) %>%
+  ggplot(aes(sf, host_one)) +
+  geom_boxplot(width = 0.6, outlier.shape = NA, fill = "grey92") +
+  geom_jitter(aes(colour = cm_class), height = 0.14, width = 0, size = 1.3, alpha = 0.75) +
+  scale_colour_manual(values = cm_colors, name = "CM class", drop = FALSE) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
+  facet_wrap(~ condition, ncol = 1, scales = "free_y") +
+  labs(title = glue("Stall fraction by host group ({HOST_LEVEL})"),
+       subtitle = str_wrap(glue(
+         "a virus with several host groups is counted in each, so rows ({nrow(ddh)}) exceed site rows ",
+         "({nrow(dd)}); groups with n < {HOST_MIN_N} pooled, except '{HOST_NA_LABEL}' which is never "
+         "pooled. n per condition in sf_by_host.csv. ",
+         "Host annotation on a vector-collected or metagenomic record names the organism sampled, ",
+         "not the virus's host. ",
+         "{src_line(SF_COL, ' from ', SRC_SITES, '; host from ', SRC_HOST)}"), 115),
+       x = "stall fraction", y = NULL) +
+  theme_fl + theme(panel.grid.major.y = element_blank(),
+                   panel.grid.major.x = element_line(colour = "#F0F0F0", linewidth = 0.3))
+save_fig(f6, "sf_by_host", w = 9, h = max(4, 0.42 * n_distinct(ddh$host_one))); f6
+write_csv(ddh %>% group_by(condition, host_one) %>%
+            summarise(n = n(), median = round(median(sf), 4), .groups = "drop") %>% arrange(desc(median)),
+          file.path(OUTDIR, "sf_by_host.csv"))
+```
+
+```{r fig6b-subset, eval=HAS_HOST && length(SUBSET_FAMILIES) > 0, fig.width=9, fig.height=5}
+SUB_LAB <- paste(SUBSET_FAMILIES, collapse = " + ")
+dsub  <- dd %>% filter(family %in% SUBSET_FAMILIES)
+dsubh <- expand_hosts(dsub) %>% mutate(host_one = pool_small(host_one, SUBSET_HOST_MIN_N, protect = HOST_NA_LABEL)) %>%
+  mutate(host_one = fct_reorder(host_one, sf, median))
+f6b <- ggplot(dsubh, aes(sf, host_one)) +
+  geom_boxplot(width = 0.6, outlier.shape = NA, fill = "grey92") +
+  geom_jitter(aes(colour = cm_class), height = 0.14, width = 0, size = 2, alpha = 0.85) +
+  scale_colour_manual(values = cm_colors, name = "CM class", drop = FALSE) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
+  facet_wrap(~ condition, ncol = 1, scales = "free_y") +
+  labs(title = glue("{SUB_LAB}: stall fraction by host"),
+       subtitle = str_wrap(glue(
+         "{nrow(dsub)} site rows -> {nrow(dsubh)} site-by-host rows. One family, so genome architecture ",
+         "is held constant and a difference between hosts is not a family difference. ",
+         "{src_line(SF_COL, ' from ', SRC_SITES, '; host from ', SRC_HOST)}"), 115),
+       x = "stall fraction", y = NULL) +
+  theme_fl + theme(panel.grid.major.y = element_blank(),
+                   panel.grid.major.x = element_line(colour = "#F0F0F0", linewidth = 0.3))
+save_fig(f6b, "subset_sf_by_host", w = 9, h = 5); f6b
+for (cn in levels(droplevels(dsubh$condition))) {
+  x <- dsubh %>% filter(condition == cn)
+  if (n_distinct(x$host_one) >= 2)
+    cat(cn, "Kruskal-Wallis on stall fraction across hosts within", SUB_LAB, ": p =",
+        signif(kruskal.test(sf ~ droplevels(as.factor(host_one)), data = x)$p.value, 3), "\n")
+}
+```
+
+### 7. How many sites, accessions and viruses
+
+Three units, reported together because flaviLib's accession-to-virus ratio is 1.61: 439 accessions are 273
+viruses, since segmented jingmenviruses contribute one accession per segment. A count without its unit named
+is ambiguous by 60 % here.
+
+```{r fig7-counts, fig.width=10, fig.height=6}
+unit_tab <- d %>% group_by(condition, family) %>%
+  summarise(n_sites = n(), n_accessions = n_distinct(plain_accession),
+            n_viruses = if (HAS_TAXID) n_distinct(taxid) else NA_integer_, .groups = "drop") %>%
+  mutate(sites_per_accession = round(n_sites / n_accessions, 2)) %>%
+  arrange(condition, desc(n_sites))
+write_csv(unit_tab, file.path(OUTDIR, "counts_by_family.csv")); knitr::kable(unit_tab)
+
+f7 <- d %>% count(condition, family, cm_class, name = "n_sites") %>%
+  mutate(family = fct_reorder(family, n_sites, sum)) %>%
+  ggplot(aes(n_sites, family, fill = cm_class)) +
+  geom_col(width = 0.7) +
+  scale_fill_manual(values = cm_colors, name = "CM class", drop = FALSE) +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.05))) +
+  facet_wrap(~ condition, ncol = 1, scales = "free_x") +
+  labs(title = "Stall sites by family and CM class",
+       subtitle = str_wrap(glue(
+         "one row per site. Accession and virus (TaxID) counts are in counts_by_family.csv -- they are ",
+         "not interchangeable here (439 accessions = 273 viruses). ",
+         "{src_line('family and CM columns from ', SRC_SITES)}"), 115),
+       x = "stall sites", y = NULL) +
+  theme_fl + theme(panel.grid.major.y = element_blank())
+save_fig(f7, "counts_by_family", w = 10, h = 6); f7
+
+cat("\nsites per accession (a ratio near 2 is what a tandem pair looks like):\n")
+print(d %>% group_by(condition) %>%
+        summarise(accessions = n_distinct(plain_accession),
+                  with_more_than_one_site = sum(table(plain_accession) > 1),
+                  max_sites_on_one_accession = max(table(plain_accession)), .groups = "drop"))
+if (HAS_HOST) {
+  host_cm <- dh %>% count(condition, host_one, cm_class, name = "n_sites")
+  write_csv(host_cm, file.path(OUTDIR, "counts_host_by_cm_class.csv"))
+  write_csv(dh %>% count(condition, host_one, family, name = "n_sites"),
+            file.path(OUTDIR, "host_group_by_family.csv"))
+}
+```
+
+```{r bands, eval=file.exists(BANDS_CSV)}
+# Detectability floor (step 13c): 9 of 439 accessions cannot support a "not detected" claim and 28 more
+# are uninformative. Passing sites are all above the floor by construction, so this changes confidence in
+# ABSENCES, not in these detections -- but a figure whose denominator is "all 439" needs the bands.
+bands <- read_csv(BANDS_CSV, show_col_types = FALSE)
+knitr::kable(bands)
+cat("The floor affects absences, not the sites plotted above: every passing site sits above it by\n",
+    "construction, since the floor is the minimum over passing sites.\n")
+```
+
+## 4. Section 8 — Mg2+ dependence: loss of sites, not graded weakening
+
+The flaviLib log's step 13b result: per-site stall fraction barely moves (median paired delta −0.029) while
+**337 sites are lost at 1 mM against 111 gained**. So the effect is whether a site is called at all, and
+section 3's boxes are the wrong way to show it.
+
+The pairing itself is `pair_conditions_sf.py`'s job and is not reimplemented here, because its matching rule
+is not reproducible from the sites tables alone: it reads the stall fraction of the failing side from
+`peaks_annotated.csv` (where candidate rows survive for sites that failed the gates), and it requires
+`stall_reads >= 10` on both ends. A naive overlap on `(accession, stall_site_genomic_position)` with a 1 nt
+tolerance over the two sites tables gives **316 / 78 / 383** (10 mM only / 1 mM only / both), against the
+script's **337 / 111 / 336** — the two do not agree, and the script's numbers are the ones to quote. The
+block below prints the naive overlap only as a labelled cross-check on which sites are shared.
+
+```{r pairing}
+if (file.exists(PAIRING_TSV)) {
+  pr <- read_tsv(PAIRING_TSV, show_col_types = FALSE)
+  cat("pairing table:", basename(PAIRING_TSV), nrow(pr), "rows\n")
+  if ("pair_class" %in% names(pr)) print(pr %>% count(pair_class, name = "n"))
+  write_csv(pr, file.path(OUTDIR, "pair_conditions_sf.csv"))
+} else {
+  cat("NOT FOUND:", PAIRING_TSV,
+      "\n  Run pair_conditions_sf.py (step 13b) and drop its output here to get the paired panels.\n\n")
+}
+
+# Labelled cross-check, NOT the step 13b numbers.
+key <- d %>% transmute(condition, plain_accession,
+                       pos = as.integer(round(stall_site_genomic_position)), site_id, sf, cm_class, family)
+k1 <- key %>% filter(condition == levels(key$condition)[1])
+k2 <- key %>% filter(condition == levels(key$condition)[2])
+TOL <- 1
+matched_1 <- k1 %>% rowwise() %>%
+  mutate(in_other = any(k2$plain_accession == plain_accession & abs(k2$pos - pos) <= TOL)) %>% ungroup()
+matched_2 <- k2 %>% rowwise() %>%
+  mutate(in_other = any(k1$plain_accession == plain_accession & abs(k1$pos - pos) <= TOL)) %>% ungroup()
+ov <- tibble(set = c(glue("{levels(key$condition)[1]} only"), glue("{levels(key$condition)[2]} only"),
+                     "matched in both (from the 10 mM side)"),
+             n = c(sum(!matched_1$in_other), sum(!matched_2$in_other), sum(matched_1$in_other)))
+knitr::kable(ov, caption = glue(
+  "Naive overlap on (accession, stall_site_genomic_position) at tolerance {TOL} nt. ",
+  "NOT the step 13b figures (337 / 111 / 336) -- pair_conditions_sf.py uses a different universe and a ",
+  "stall-read requirement. Quote the script, not this table."))
+write_csv(bind_rows(matched_1 %>% mutate(side = levels(key$condition)[1]),
+                    matched_2 %>% mutate(side = levels(key$condition)[2])),
+          file.path(OUTDIR, "condition_overlap_naive.csv"))
+
+f8 <- ov %>% filter(set != "matched in both (from the 10 mM side)") %>%
+  ggplot(aes(set, n, fill = set)) + geom_col(width = 0.5) +
+  geom_text(aes(label = n), vjust = -0.4, size = 3.5) +
+  scale_fill_manual(values = unname(cond_colors), guide = "none") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.12))) +
+  labs(title = "Sites called in one condition only",
+       subtitle = str_wrap(glue(
+         "What moves between conditions is whether a site is called, not its stall fraction. ",
+         "These are the naive-overlap counts; pair_conditions_sf.py reports 337 and 111. ",
+         "{src_line('both ', SRC_SITES)}"), 110),
+       x = NULL, y = "sites") + theme_fl
+save_fig(f8, "condition_overlap", w = 7, h = 5); f8
+```
+
+## 5. Section 9 — Confound check: stall fraction depends on where the stall sits in its tile
+
+`treated_sf` = stall reads / all reads assigned to the tile, so the denominator shrinks as the stall nears
+the tile 3' end. **This matters more in flaviLib than in viromelib**: at a 20 nt tile step, 450 of 699 sites
+at 10 mM (and 280 of 459 at 1 mM) are called in two or more tiles, up to nine, against 55 of 391 in
+viromelib. Sections 4–6 are all stall fraction, so check this before reading any of them as biology.
+
+```{r confound}
+confound_test <- function(df, grp, label, cond) {
+  df <- df %>% filter(!is.na(.data[[grp]]), !is.na(nt_after_stall)) %>%
+    mutate(g = droplevels(as.factor(.data[[grp]])))
+  if (nlevels(df$g) < 2) return(tibble(condition = cond, grouping = label, n = nrow(df),
+                                       n_groups = nlevels(df$g)))
+  a <- anova(lm(rank(sf) ~ rank(nt_after_stall), data = df),
+             lm(rank(sf) ~ rank(nt_after_stall) + g, data = df))
+  tibble(condition = cond, grouping = label, n = nrow(df), n_groups = nlevels(df$g),
+         p_sf_differs = kruskal.test(sf ~ g, data = df)$p.value,
+         p_position_differs = kruskal.test(nt_after_stall ~ g, data = df)$p.value,
+         p_group_after_position = a$`Pr(>F)`[2])
+}
+confound <- map_dfr(levels(dd$condition), function(cn) {
+  x <- dd %>% filter(condition == cn)
+  bind_rows(
+    confound_test(x %>% mutate(g2 = pool_small(family, protect = FAMILY_NA_LABEL)), "g2", "family", cn),
+    confound_test(x %>% mutate(g2 = pool_small(genus_group, protect = GENUS_NA_LABEL)), "g2", "genus", cn),
+    confound_test(x %>% mutate(g2 = pool_small(cm_class)), "g2", "CM class", cn),
+    if (HAS_HOST) confound_test(x %>% filter(!multi_host, host_group != HOST_NA_LABEL) %>%
+                                  mutate(g2 = pool_small(host_group)), "g2",
+                                glue("host {HOST_LEVEL}, single-host sites"), cn) else NULL,
+    if (HAS_HOST) confound_test(x %>% filter(family %in% SUBSET_FAMILIES, !multi_host) %>%
+                                  mutate(g2 = pool_small(host_group, 2)), "g2",
+                                glue("host, within {paste(SUBSET_FAMILIES, collapse='+')}"), cn) else NULL)
+}) %>% mutate(across(starts_with("p_"), ~ signif(.x, 3)))
+write_csv(confound, file.path(OUTDIR, "confound_tests.csv")); knitr::kable(confound)
+cat("p_position_differs not significant, or p_group_after_position significant, = the difference survives\n")
+
+cat("\nSpearman correlation of stall fraction with nt of tile after the stall:\n")
+print(dd %>% group_by(condition) %>%
+        summarise(n = sum(!is.na(nt_after_stall)),
+                  rho = round(cor(sf, nt_after_stall, method = "spearman", use = "complete.obs"), 3),
+                  median_nt_after_stall = median(nt_after_stall, na.rm = TRUE), .groups = "drop"))
+
+fc <- dd %>% filter(!is.na(nt_after_stall)) %>%
+  ggplot(aes(nt_after_stall, sf, colour = condition)) +
+  geom_point(size = 1.1, alpha = 0.4) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 0.9) +
+  scale_colour_manual(values = cond_colors, name = NULL) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "Stall fraction against position of the stall within its tile",
+       subtitle = str_wrap(glue(
+         "x = tile_end - stall_position, i.e. how much sequence follows the stall in the tile the site ",
+         "was called in. treated_sf divides by that tile's reads, so a stall near the tile 3' end has a ",
+         "smaller denominator. Diagnostic, not a result. {src_line(SF_COL, ' from ', SRC_SITES)}"), 115),
+       x = "nt of tile after the stall", y = "stall fraction") + theme_fl
+save_fig(fc, "sf_vs_position_in_tile", w = 9, h = 5); fc
+```
+
+## 6. Section 10 — Sensitivity: adjacent sites at merge distance 0
+
+The tables were produced with `merge_distance 0`. The flaviLib log flags **66 site pairs within 1 nt at
+10 mM and 41 at 1 mM** — about 9 % of sites — where a single stall whose 5' ends scatter by one base is
+counted twice. The 20 nt tile step makes this likelier than in viromelib, where the same question is
+decision 4. This is an open decision and has to be settled before the site count is quoted.
+
+```{r sensitivity}
+adj <- d %>% arrange(condition, plain_accession, stall_site_genomic_position) %>%
+  group_by(condition, plain_accession) %>%
+  mutate(gap_to_previous = stall_site_genomic_position - lag(stall_site_genomic_position)) %>%
+  ungroup()
+adj_tab <- map_dfr(c(1, 2, 3, 5, 10), function(nt)
+  adj %>% group_by(condition) %>%
+    summarise(merge_nt = nt, sites_at_0 = n(),
+              pairs_within = sum(gap_to_previous <= nt, na.rm = TRUE),
+              sites_after_merging = n() - sum(gap_to_previous <= nt, na.rm = TRUE), .groups = "drop")) %>%
+  arrange(condition, merge_nt)
+write_csv(adj_tab, file.path(OUTDIR, "merge_distance_sensitivity.csv")); knitr::kable(adj_tab)
+cat("\nAt merge distance", MERGE_NT, "nt the site count becomes:\n")
+print(adj_tab %>% filter(merge_nt == MERGE_NT) %>% select(condition, sites_at_0, sites_after_merging))
+
+write_csv(adj %>% filter(!is.na(gap_to_previous), gap_to_previous <= 1) %>%
+            select(condition, site_id, plain_accession, organism, family, region,
+                   stall_site_genomic_position, gap_to_previous, cm_class, sf, reps_passing),
+          file.path(OUTDIR, "adjacent_sites_within_1nt.csv"))
+cat("\nadjacent_sites_within_1nt.csv lists every member of a <=1 nt pair, for the merge-distance decision.\n")
+```
+
+## 7. Section 11 — Diagnostic: how much the reported stall fraction depends on tile choice
+
+`apply_publication_cutoffs.py` picks a site's representative tile row (`is_site_representative`). This
+re-takes the stall fraction from the tile with the **most** sequence after the stall — the opposite end of
+the confound in section 9 — to show how much the reported value depends on that choice. Not a figure.
+
+```{r interior}
+tile_files <- map_chr(CONDITIONS, tiles_path)
+if (all(file.exists(tile_files))) {
+  tr <- map2_dfr(CONDITIONS, tile_files, function(cond, p) {
+    x <- suppressWarnings(read_csv(p, show_col_types = FALSE, name_repair = "minimal"))
+    x <- x[, !duplicated(names(x))]
+    TR_SF <- c(SF_COL, "median_treated_sf")[c(SF_COL, "median_treated_sf") %in% names(x)][1]
+    x %>% transmute(site_id, condition = unname(COND_LABELS[cond]),
+                    sf_tile = suppressWarnings(as.numeric(.data[[TR_SF]])),
+                    nt_after_tile = tile_end - stall_position,
+                    is_rep = str_to_lower(as.character(is_site_representative)) %in% c("true", "1"))
+  })
+  int <- tr %>% group_by(condition, site_id) %>%
+    summarise(n_tiles = n(),
+              sf_interior = sf_tile[which.max(nt_after_tile)],
+              sf_representative = if (any(is_rep)) sf_tile[which(is_rep)[1]] else NA_real_,
+              .groups = "drop")
+  cmp <- dd %>% left_join(int, by = c("site_id", "condition")) %>%
+    mutate(n_tiles = coalesce(n_tiles, 1L), sf_interior = coalesce(sf_interior, sf))
+  # the representative row in the tile table should be the row the sites table reports
+  mism <- cmp %>% filter(!is.na(sf_representative), abs(sf - sf_representative) > 1e-9)
+  cat(nrow(mism), "sites where the sites table's stall fraction differs from the tile row flagged",
+      "is_site_representative (expected 0)\n")
+  multi <- cmp %>% filter(n_tiles >= 2)
+  print(multi %>% group_by(condition) %>%
+          summarise(sites_2plus_tiles = n(),
+                    differs_from_most_interior_tile = sum(abs(sf - sf_interior) > 1e-9),
+                    median_sf_reported = round(median(sf), 3),
+                    median_sf_most_interior = round(median(sf_interior), 3), .groups = "drop"))
+  write_csv(cmp %>% select(condition, site_id, family, genus_group, sf, sf_interior,
+                           sf_representative, n_tiles),
+            file.path(OUTDIR, "diagnostic_sf_reported_vs_interior.csv"))
+} else {
+  cat("NOT FOUND:", paste(basename(tile_files[!file.exists(tile_files)]), collapse = ", "),
+      "\n  Section 11 skipped.\n")
+}
+```
+
+## 8. Supporting tables and manifest
+
+```{r tables}
+# Not a figure. A .cm_hit is recorded only where the model matches AT the stall, so "CM hits are near the
+# stop codon" is true by construction. The non-circular question is how many stalls with NO known model
+# fall where the known ones do. Needs distance_from_stop.
+if (HAS_STOP_DATA) {
+  ds2 <- d %>% filter(!is.na(distance_from_stop)) %>%
+    mutate(cm_hit = if_else(cm_class == "No hit", "No CM hit", "CM hit"))
+  known_win <- ds2 %>% filter(cm_hit == "CM hit") %>% group_by(condition, region) %>%
+    summarise(lo = quantile(distance_from_stop, .25), hi = quantile(distance_from_stop, .75),
+              n_known = n(), .groups = "drop")
+  nohit <- ds2 %>% filter(cm_hit == "No CM hit") %>% left_join(known_win, by = c("condition", "region")) %>%
+    mutate(in_window = !is.na(lo) & distance_from_stop >= lo & distance_from_stop <= hi)
+  win_tab <- nohit %>% group_by(condition, region) %>%
+    summarise(n_nohit = n(), n_known = first(n_known),
+              known_IQR = glue("{round(first(lo))} to {round(first(hi))}"),
+              n_in_window = sum(in_window), pct_in_window = round(100 * mean(in_window), 1),
+              .groups = "drop")
+  write_csv(win_tab, file.path(OUTDIR, "nohit_in_known_window.csv")); knitr::kable(win_tab)
+  write_csv(nohit %>% filter(in_window) %>%
+              select(condition, site_id, organism, family, genus_group, region,
+                     distance_from_stop, sf),
+            file.path(OUTDIR, "nohit_inside_known_window.csv"))
+}
+
+# Which organisms carry sites in the subset family, and in which conditions
+write_csv(d %>% filter(family %in% SUBSET_FAMILIES) %>%
+            group_by(plain_accession, organism, genus_group) %>%
+            summarise(n_sites = n(), conditions = paste(sort(unique(as.character(condition))),
+                                                        collapse = " + "), .groups = "drop") %>%
+            arrange(genus_group, organism),
+          file.path(OUTDIR, "subset_accessions.csv"))
+```
+
+```{r manifest}
+write_csv(d %>% select(-starts_with("hit_")), file.path(OUTDIR, "sites_annotated_both_conditions.csv"))
+cat("inputs used:\n")
+print(tibble(file = c(map_chr(CONDITIONS, sites_path), map_chr(CONDITIONS, tiles_path),
+                      MANIFEST_TSV, TAX_CSV, map_chr(CONDITIONS, stop_path),
+                      HOST_MAP_TSV %||% NA_character_, PAIRING_TSV, BANDS_CSV)) %>%
+        filter(!is.na(file)) %>% mutate(present = file.exists(file), file = basename(file)))
+cat("\nwritten to", OUTDIR, ":\n")
+tibble(file = list.files(OUTDIR)) %>% arrange(file) %>% knitr::kable()
+```
+
+## 9. The two inputs this notebook is still missing
+
+Both are cluster-side, and both are one command. Sections 1, 2 and the no-hit window table need the first;
+section 6 and the host columns of section 7 need the second.
+
+```bash
+source /groups/as6282_gp/scratch_bkup/jgg2144/xrrna_seq/viromelib/scripts/env_261021_flaviLib.sh
+
+# (a) distance from the stop codon, per condition -- rule mode needs no .gbk
+for MG in $CONDITIONS; do
+  python3 -I $ROOT/scripts/stall_distance_to_stop.py \
+    $POSTPROC_BASE/$MG/${DS}_${MG}.sites.csv \
+    --fasta $ROOT/$FA \
+    --out   $POSTPROC_BASE/$MG/${DS}_${MG}.sites_stopdist.csv
+done 2>&1 | tee $LOG/step13b_stopdist.txt
+
+# (b) host per accession -- the full three-source step 20, parallel to viromelib.
+#     Full runbook, with the flaviLib-specific decisions, in RUNBOOK_step20_flaviLib_hosts.md.
+H=$POSTPROC_BASE/host_261116; mkdir -p $H
+
+# b0. The accession list must be the UNION of both conditions: 315 at 10 mM, 245 at 1 mM, union 319.
+#     Passing one condition drops 4 accessions from every review list.
+{ echo "plain_accession"
+  for MG in $CONDITIONS; do
+    python3 -I -c "
+import csv,sys
+print('\n'.join(sorted({r['plain_accession'] for r in csv.DictReader(open(sys.argv[1]))})))" \
+      $POSTPROC_BASE/$MG/${DS}_${MG}.sites.csv
+  done | sort -u
+} > $H/site_accessions_union.csv
+
+# b1. source 3: /host across every GenBank record of each virus (login node, network, ~35 min, 273 TaxIDs)
+python3 -I $ROOT/scripts/host_from_genbank_taxid.py \
+  --taxonomy   $ROOT/data/virus_taxonomy_flaviLib_261021.csv \
+  --accessions $H/site_accessions_union.csv \
+  --taxdump    $ROOT/data/taxdump_261019 \
+  --email      jeaninegezelle@gmail.com --api-key "$NCBI_API_KEY" \
+  --cache-dir  $H/genbank_hosts_cache \
+  --out        $H/host_by_genbank_taxid_261116.tsv 2>&1 | tee $LOG/step20b_host_by_genbank_taxid.txt
+
+# b2. assign. --taxonomy is NOT optional here: 216 of 439 accessions share a TaxID with another (49 %,
+#     against 24 % in viromelib), so without the virus-TaxID join half the library loses sibling hosts.
+#     Overrides: one merged table for both libraries -- NC_012534 (Bagaza) and the 8 Jingmen rows already
+#     in viromelib's table apply verbatim to flaviLib accessions.
+python3 -I $ROOT/scripts/host_from_records.py \
+  --genbank-dir $ROOT/data/genbank_snapshot_flaviLib_261021 \
+  --taxdump     $ROOT/data/taxdump_261019 \
+  --vhdb        $ROOT/data/virushostdb_261114/virushostdb.tsv \
+  --taxonomy    $ROOT/data/virus_taxonomy_flaviLib_261021.csv \
+  --genbank-taxid-hosts $H/host_by_genbank_taxid_261116_by_group.tsv \
+  --accessions  $H/site_accessions_union.csv \
+  --overrides   $ROOT/data/host_overrides_261116.tsv \
+  --out         $H/host_by_accession_261116.tsv 2>&1 | tee $LOG/step20c_host_by_accession.txt
+
+# b3. verify
+python3 -I $ROOT/scripts/verify_host_assignments.py \
+  --hosts    $H/host_by_accession_261116.tsv \
+  --vhdb     $ROOT/data/virushostdb_261114/virushostdb.tsv \
+  --taxdump  $ROOT/data/taxdump_261019 \
+  --taxonomy $ROOT/data/virus_taxonomy_flaviLib_261021.csv \
+  --sites    $H/site_accessions_union.csv \
+  --out-dir  $H/check 2>&1 | tee $LOG/step20d_host_check.txt
+```
+
+Then copy the inputs to the laptop:
+
+```bash
+D=~/Desktop/viromelib/flaviLib/figures/distributions/inputs; mkdir -p $D
+H=jgg2144@hpc.c2b2.columbia.edu
+P=/groups/as6282_gp/scratch_bkup/jgg2144/xrrna_seq/viromelib
+scp $H:"$P/work/07_postproc/261021_flaviLib_150x150/{10mM,01mM}/261021_flaviLib_150x150_*.{sites,tile_rows,sites_stopdist}.csv" "$D/"
+scp $H:"$P/data/genbank_snapshot_flaviLib_261021/MANIFEST.tsv" "$D/"
+scp $H:"$P/data/virus_taxonomy_flaviLib_261021.csv" "$D/"
+scp $H:"$P/work/07_postproc/261021_flaviLib_150x150/host_261116/host_by_accession_261116.tsv" "$D/"
+( cd $D && md5 -r *.csv *.tsv > MANIFEST_inputs.tsv && cat MANIFEST_inputs.tsv )
+```
+
+**Two things to settle before any number here is quoted.** `rank_matches_input_stall_site_rank: false` for
+both conditions, so the rank computed by `apply_publication_cutoffs.py` disagrees with the
+`stall_site_rank` already in the input — the notebook uses neither for ordering, but a figure that ranks
+sites must say which it used. And the merge distance (section 10) is open: at 1 nt the 10 mM count falls
+from 699, so the site count is not final.

@@ -220,16 +220,12 @@ PY
 
   echo
   echo "== insertcheck: do included library sites occupy the insert columns beside cm 29 / 43?"
-  python3 "$FLAVISCRIPTS/cm_round_stats.py" fetch "${C5}_library.tbl" 81 0.70 "$OUT/insertcheck" || return 1
-  # the fetch subcommand's output suffix is not fixed, so find what it wrote rather than assume
-  local FL2; FL2=$(ls -t "$OUT"/insertcheck* 2>/dev/null | grep -vE '\.(fa|stk|log)$' | head -1)
-  if [ -z "$FL2" ]; then
-    echo "cm_round_stats.py fetch wrote nothing matching $OUT/insertcheck*"
-    echo "  what is in $OUT:"; ls -la "$OUT" | sed 's|^|    |'
-    echo "  run the fetch by hand and pass the list to esl-sfetch -Cf, then re-run e4."
-    return 1
-  fi
-  echo "using fetch list: $FL2  ($(wc -l < "$FL2") rows)"
+  # cm_round_stats.py fetch writes to its OUT argument EXACTLY -- no suffix is added.
+  # Passing "$OUT/insertcheck" and then looking for insertcheck.fetchlist is what failed on 11-17.
+  local FL2=$OUT/insertcheck.fetchlist
+  python3 "$FLAVISCRIPTS/cm_round_stats.py" fetch "${C5}_library.tbl" 81 0.70 "$FL2" || return 1
+  need "$FL2" || return 1
+  echo "fetch list: $FL2  ($(wc -l < "$FL2") rows, >=70% model coverage, ! plus-strand only)"
   esl-sfetch -Cf "$FA" "$FL2" > "$OUT/insertcheck.fa" || return 1
   conda run -n "$MENV" cmalign --cpu $CPU -o "$OUT/insertcheck.stk" "$C5.cm" "$OUT/insertcheck.fa" \
     > "$OUT/insertcheck.log" || return 1
@@ -263,11 +259,23 @@ e5() {
   # explorer_cm_scan.py extract is the VALIDATED parser -- it derives the frozen cluster `fz`
   # per node and produced the memberships recorded in Part 3 (41 12/12, 44 8/8, 5 5/5, 106 3/3).
   # Prefer its node table; `fz` is not a raw field on DATA.nodes.
-  local TSV; TSV=$(ls -t "$X"/nodes*.tsv 2>/dev/null | head -1)
+  # prefer the PLAIN node table: nodes_class1c.tsv / nodes_cl3.tsv are annotated variants and an
+  # mtime-ordered glob picks whichever was written last (it picked nodes_cl3.tsv on 2026-11-17).
+  local TSV=""
+  for c in "$X/nodes.tsv" "$X/nodes_all.tsv"; do [ -s "$c" ] && { TSV=$c; break; }; done
+  [ -n "$TSV" ] || TSV=$(ls -t "$X"/nodes*.tsv 2>/dev/null | head -1)
   if [ -z "$TSV" ]; then
-    echo "no node table under $X -- running explorer_cm_scan.py extract"
-    python3 "$FLAVISCRIPTS/explorer_cm_scan.py" extract "$EXPLORER" "$X" || return 1
-    TSV=$(ls -t "$X"/nodes*.tsv 2>/dev/null | head -1)
+    cat <<'EOF'
+No node table under $SCAN.
+  `explorer_cm_scan.py extract` would normally write it, but on the REGENERATED explorer it
+  raises KeyError: 'fz' -- its nodes no longer carry that field (the assignment moved to
+  DATA.sets[].cl). Apply scripts/explorer_cm_scan_fz.patch first, then re-run e5.
+  Falling back to reading DATA.sets directly; check the chosen set before trusting the numbers.
+EOF
+    python3 "$FLAVISCRIPTS/explorer_class1b_clusters.py" "$EXPLORER" --list-sets
+    python3 "$FLAVISCRIPTS/explorer_class1b_clusters.py" "$EXPLORER" \
+      | tee "$PLUS/E5_class1b_clusters.txt"
+    return 0
   fi
   if [ -n "$TSV" ]; then
     echo "node table: $TSV"
@@ -284,7 +292,96 @@ e5() {
   echo "class1b_groups.tsv, and: clog class1b 'E5 main Class_1b clusters' '<clusters; labels>'"
 }
 
+e8() {
+  flavi_require
+  OUT=$PLUS/E8_downstream; mkdir -p "$OUT"
+  echo "== E8. Is the unit positional? 'the 3'-most copy of every ISF array'"
+  echo "   Untested by E2 (a bit-score cut), by newvirus (a novelty cut) and by"
+  echo "   the 11-03 sub-threshold tests (one site at a time). E5's satellite"
+  echo "   pattern is the reason to think this set is the real one."
+  echo
+
+  # view 1: the explorer's clustering, which knows nothing about any CM
+  TSV=$SCAN/nodes.tsv
+  if [ -s "$TSV" ]; then
+    echo "-- view 1: explorer nodes (CM-independent)"
+    ( cd "$OUT" && python3 -I "$FLAVISCRIPTS/class1b_arrays.py" nodes "$TSV" ) \
+      | tee "$OUT/arrays_from_nodes.txt"
+  else
+    echo "no $TSV -- run e5 first (or explorer_cm_scan.py extract)"
+  fi
+  echo
+
+  # view 2: the deployed baseline's own tbl, which carries bits and inclusion
+  BASE=${C5}_library.tbl
+  if [ -s "$BASE" ]; then
+    echo "-- view 2: the accepted model's library tbl ($BASE)"
+    # --seed excludes loci already in the accepted seed; --satellites lets the
+    # CM-independent clustering exempt a candidate from the bit floor
+    ( cd "$OUT" && python3 -I "$FLAVISCRIPTS/class1b_arrays.py" tbl "$BASE" \
+        --seed "$C5.stk" --satellites satellites.tsv ) \
+      | tee "$OUT/arrays_from_tbl.txt"
+  else
+    echo "no library tbl for $C5 -- expected ${C5}_library.tbl"
+    return 1
+  fi
+
+  echo
+  echo "READING THE TWO VIEWS: they do NOT enumerate the same population, so"
+  echo "copy COUNTS are expected to differ -- view 1 lists explorer features,"
+  echo "view 2 lists CM hits, and a locus can be in either alone. Compare by"
+  echo "POSITION, which is what --satellites does. Known counterexample from E5:"
+  echo "MW897328's odd copy (10653, fz 135) is UPSTREAM of its main-cluster copy"
+  echo "(11228, fz 133)."
+  echo
+  echo "then: e8b   (builds the positional set and runs the no-loss rule)"
+}
+
+e8b() {
+  flavi_require
+  OUT=$PLUS/E8_downstream
+  FL=$OUT/positional_candidates.fetchlist
+  [ -s "$FL" ] || { echo "no $FL -- run e8 first"; return 1; }
+  echo "== E8b. seed the positional set and apply the no-loss rule"
+  wc -l "$FL"
+  MENV=$(cm_env_require "$C5.cm") || return 1
+  MODEL=class1b_v3_downstream_inf112
+
+  esl-sfetch -Cf "$FA" "$FL" > "$OUT/${MODEL}_added.fa"
+  # --mapali against the ACCEPTED seed, not the provided one: this tests whether
+  # the positional set adds to the model being deployed, which is the question.
+  cmalign --cpu "$CPU" --mapali "$C5.stk" -o "$OUT/$MODEL.stk" \
+    "$C5.cm" "$OUT/${MODEL}_added.fa" > "$OUT/${MODEL}_cmalign.log"
+  echo "-- added sequences, aligned (cm from-to, trunc, bits, avg PP)"
+  grep -v '^#' "$OUT/${MODEL}_cmalign.log" | awk 'NF>=8 {print $2, $4"-"$5, $6, $7, $8}'
+
+  conda run -n "$MENV" cmbuild --hand -F -n "$MODEL" "$OUT/$MODEL.cm" "$OUT/$MODEL.stk" \
+    > "$OUT/${MODEL}_cmbuild.log"
+  conda run -n "$MENV" cmcalibrate --cpu "$CPU" "$OUT/$MODEL.cm" > "$OUT/${MODEL}_cmcalibrate.log"
+  cmsearch --toponly --incE 0.01 --cpu "$CPU" -o /dev/null \
+    --tblout "$OUT/${MODEL}_library.tbl" "$OUT/$MODEL.cm" "$FA"
+
+  echo "-- cmstat: nseq eff_nseq clen bps bifs (watch eff_nseq against 50.24)"
+  conda run -n "$MENV" cmstat "$OUT/$MODEL.cm" | grep -v '^#'
+  echo "-- compare against the accepted baseline"
+  python3 "$FLAVISCRIPTS/cm_round_stats.py" compare \
+    "${C5}_library.tbl" "$OUT/${MODEL}_library.tbl"
+  echo "-- the nine marginal sites E2 found are the ones to watch"
+  grep -E 'AB021287|NC_027819|MH827524|MH307700|NC_021069|AB981186|NC_012671|LR694076|MH237596|LOST|NEW' \
+    "$OUT/${MODEL}_library.tbl.compare.tsv"
+
+  echo
+  echo "DECISION RULE, same as every merge here: accept only if no included hit"
+  echo "is lost. E2 predicts failure -- eff_nseq fell 50.24 -> 25.58 on 38 similar"
+  echo "sequences and the marginal band went with it. But this set is small and"
+  echo "coherent rather than a bit-score cut, so the prediction is worth testing:"
+  echo "if a few positionally-defined sequences DEFINE the subtype, scores rise"
+  echo "where a broad cut flattens them. Either result settles what v2 deploys."
+  echo
+  echo "then: clog class1b 'E8 positional downstream set' '<nseq/eff_nseq; lost; verdict>'"
+}
+
 case "${1:-}" in
-  e1|e2|e2b|e3|e4|e5) "$1" ;;
+  e1|e2|e2b|e3|e4|e5|e8|e8b) "$1" ;;
   *) sed -n '2,4p' "$0"; exit 2 ;;
 esac

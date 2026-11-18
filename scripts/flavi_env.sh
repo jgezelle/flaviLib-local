@@ -146,6 +146,61 @@ stk_oneblock() {
     print "//" }' "$1" > "$2"
 }
 
+# Do included hits actually sit at the stall? A grep by accession answers the wrong question:
+# these genomes carry several elements, so an accession can "come in" at a locus 80 nt away.
+# Sequence names carry their own offset -- ACC|<start>-<end>_<tag> -- so the stall's
+# subsequence-relative position is (genomic_stall - start + 1), +/-1 for the inclusive convention.
+#   hits_at_stall <tblout> <ACC:genomic_stall> [ACC:stall ...]
+hits_at_stall() {
+  local tbl=$1; shift
+  [ -s "$tbl" ] || { echo "MISSING: $tbl"; return 1; }
+  python3 -I - "$tbl" "$@" <<'PYEOF'
+import sys, re
+tbl, want = sys.argv[1], {}
+for a in sys.argv[2:]:
+    acc, stall = a.split(':')
+    want.setdefault(acc.split('.')[0], []).append(int(stall))
+rows = []
+for line in open(tbl):
+    if line.startswith('#'):
+        continue
+    f = line.split()
+    if len(f) < 18:
+        continue
+    name = f[0]
+    acc = name.split('|')[0].split('.')[0]
+    if acc not in want:
+        continue
+    m = re.search(r'\|(\d+)-(\d+)', name)
+    if not m:
+        continue
+    off = int(m.group(1))
+    sf, st = int(f[7]), int(f[8])
+    lo, hi = min(sf, st), max(sf, st)
+    rows.append((acc, off, lo, hi, float(f[14]), f[15], f[16], f[0]))
+print(f"{'acc':12} {'stall(gen)':>10} {'stall(rel)':>10} {'hit(rel)':>14} {'bits':>7} {'E':>9} {'inc':>3}  at stall?")
+seen = set()
+for acc, stalls in want.items():
+    for stall in stalls:
+        hit_any = False
+        for r in [x for x in rows if x[0] == acc]:
+            _, off, lo, hi, bits, ev, inc, nm = r
+            rel = stall - off + 1
+            cov = lo - 1 <= rel <= hi + 1
+            hit_any = hit_any or cov
+            print(f"{acc:12} {stall:>10} {rel:>10} {f'{lo}-{hi}':>14} {bits:>7} {ev:>9} {inc:>3}  {'YES' if cov else 'no'}")
+            seen.add(acc)
+        if not hit_any:
+            offs = {x[1] for x in rows if x[0] == acc}
+            rel = str(stall - min(offs) + 1) if offs else '?'
+            print(f"{acc:12} {stall:>10} {rel:>10} {'--':>14} {'--':>7} {'--':>9} {'--':>3}  "
+                  "NO INCLUDED OR REPORTED HIT COVERS THE STALL")
+for acc in want:
+    if acc not in seen:
+        print(f"{acc:12} no hits at all in this tblout")
+PYEOF
+}
+
 # "<structure> (<total> = <energy> + <covariance>)" from a wrapped, space-padded mlocarna log
 alifold_line() {
   awk -v re='\\( *-?[0-9.]+ *= *-?[0-9.]+ *\\+ *-?[0-9.]+\\)' '
